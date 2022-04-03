@@ -6,11 +6,12 @@
 class Board
 {
 public:
-	int board[8][8]; // 0 - wk, 1 - wq, 2-wn, 3-wb, 4-wr, 5-wp, 6 - bk, 7 - bq, 8-bn, 9-bb, 10-br, 11-bp
-	int kingPos[2]; // kingPos[0] - wk position, kingPos[1] - bk position
+	int board[8][8]; // [0,0] - a8, 0 - wk, 1 - wq, 2-wn, 3-wb, 4-wr, 5-wp, 6 - bk, 7 - bq, 8-bn, 9-bb, 10-br, 11-bp
+	int kingPos[2][2]; // kingPos[0] - wk position, kingPos[1] - bk position
 	int seventyFiveMoveRuleCounter; // moves without capture or pawn move
+	int turnCounter; // turn counter
 	bool castlingFlags[4]; // wk,wq,bk,bq
-	int enPassant;
+	int enPassant[2]; // en passant destination
 	bool sideToMove; // true - white, false - black
 	bool attackFields[8][8], attackFieldsOpponent[8][8];
 	int NeuralNetworkRepresentation[12][8][8];
@@ -25,6 +26,8 @@ public:
 	void Pop() {}
 	void MakeMove(Move move) {}
 	void ConvertForNeuralNetwork() {}
+	static char* ConvertPositionToStr(int pos[2]);
+	static int* ConvertStrToPosition(const char pos[2]);
 private:
 	void CalculateAttackFields() {}
 };

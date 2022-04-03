@@ -2,6 +2,8 @@
 class Move
 {
 public:
-	int from, to, promotion;
+	int from[2];
+	int destination[2];
+	int promotion;
 };
 
