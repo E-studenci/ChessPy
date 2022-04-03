@@ -2,10 +2,11 @@
 //
 
 #include <iostream>
+#include "Board.h"
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    Board b("rnbqkbnr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

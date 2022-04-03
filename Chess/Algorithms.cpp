@@ -12,9 +12,9 @@ int Algorithms::Perft(Board& board, int depth) {
 	int legalMoveCount = 0;
 	if (depth > 0) {
 		board.CalculateLegalMoves();
-		auto currentLegalMoves = board.allLegalMoves;
-		for (const auto& keyValuePair : currentLegalMoves) {
-			for (const auto& move : keyValuePair.second) {
+		std::map<int, std::vector<Move>> currentLegalMoves = board.allLegalMoves;
+		for (const std::pair<int, std::vector<Move>>& keyValuePair : currentLegalMoves) {
+			for (const Move& move : keyValuePair.second) {
 				if (depth == 1) {
 					legalMoveCount++;
 				}
@@ -53,10 +53,11 @@ int Algorithms::PerftStarter(int depth) {
 	std::vector<std::thread> threads;
 	for (int i = 0; i < threadCount; i++)
 	{
-		std::thread t(std::bind(&Algorithms::Worker, this), tasks, result, depth);
-		threads.push_back(t);
+		std::thread t(Algorithms::Worker, std::ref(tasks), std::ref(result), depth);
+		threads.push_back(std::move(t));
 	}
 	for (int i = 0; i < threadCount; i++) {
 		threads[i].join();
 	}
+	return result;
 }

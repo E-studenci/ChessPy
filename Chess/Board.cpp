@@ -1,4 +1,6 @@
 #include "Board.h"
+#include <iterator>
+#include <sstream>
 Board::Board(int board[8][8], bool castling[4], int enPassant, bool sideToMove) {}
 Board::Board(const Board& other) {}
 Board::Board(std::string fen) {
@@ -14,7 +16,21 @@ Board::Board(std::string fen) {
     { {'k',2},{'K',0},
         {'q',3},{'Q',1},
     };
-    char* splitFen = strtok(fen.data(), " "); // splitfen[0] - piece positions 1 -side to move, 2 - castling flags, 3 - enpassant destination, 4 - 75moverule, 5 - turn counter
-    this->sideToMove = splitFen[1] == 'w' ? true : false;
+    std::istringstream iss(fen);
+    std::istream_iterator<std::string> first(iss), last;
+
+    std::vector<std::string> splitFen;// splitfen[0] - piece positions 1 -side to move, 2 - castling flags, 3 - enpassant destination, 4 - 75moverule, 5 - turn counter
+    std::copy(first, last, std::back_inserter(splitFen));
+    this->sideToMove = splitFen[1] == "w" ? true : false;
+    if (splitFen[2] == "-") {
+        this->castlingFlags[0] = false;
+        this->castlingFlags[1] = false;
+        this->castlingFlags[2] = false;
+        this->castlingFlags[3] = false;
+    }
+    else {
+        for (const auto& flag : splitFen[2]) {
+            this->castlingFlags[castlingMap[flag]] = true;
+        }
+    }
 }
-Board::~Board() {}
