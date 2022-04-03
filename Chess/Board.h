@@ -6,28 +6,31 @@
 class Board
 {
 public:
-	int board[8][8]; // [0,0] - a8, 0 - wk, 1 - wq, 2-wn, 3-wb, 4-wr, 5-wp, 6 - bk, 7 - bq, 8-bn, 9-bb, 10-br, 11-bp
+	int board[8][8]; // [0,0] - a8, 1 - wk, 2 - wq, 3-wn, 4-wb, 5-wr, 6-wp, 7 - bk, 8 - bq, 9-bn, 10-bb, 11-br, 12-bp
 	int kingPos[2][2]; // kingPos[0] - wk position, kingPos[1] - bk position
 	int seventyFiveMoveRuleCounter; // moves without capture or pawn move
 	int turnCounter; // turn counter
 	bool castlingFlags[4]; // wk,wq,bk,bq
 	int enPassant[2]; // en passant destination
 	bool sideToMove; // true - white, false - black
-	bool attackFields[8][8], attackFieldsOpponent[8][8];
-	int NeuralNetworkRepresentation[12][8][8];
-	std::map<int, std::vector<Move>> allLegalMoves;
-	std::map<int, std::vector<int>> pinLines, pinLinesOpponent;
-	std::vector<Move> moveHistory;
+	bool attackFields[8][8], attackFieldsOpponent[8][8]; // true if field is attacked, false if not
+	int neuralNetworkRepresentation[14][8][8]; // 0-11 - pieces, 13,14 - attack fields
+	std::map<int[2], std::vector<Move>> allLegalMoves; // piece_position: moves
+	std::map<int[2], std::vector<int[2]>> pinLines, pinLinesOpponent; // key - pinned piece position, values - positions in the pinline
+	std::vector<Move> moveHistory; // all past moves
+	std::vector<int[8][8]> boardHistory; // all past positions for the threefold repetion rule
 	Board(int board[8][8], bool castling[4], int enPassant, bool sideToMove);
 	Board(const Board& other);
 	Board(std::string fen);
 	Board() :Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 	std::vector<Move> CalculateLegalMoves() { return std::vector<Move>{}; }
-	void Pop() {}
-	void MakeMove(Move move) {}
-	void ConvertForNeuralNetwork() {}
-	static char* ConvertPositionToStr(int pos[2]);
-	static int* ConvertStrToPosition(const char pos[2]);
+	void Pop() {} // unmake the last move
+	void MakeMove(Move move) {} // commit a move
+	void ConvertForNeuralNetwork() {} // convert the board to its nn representation
+	static char* ConvertPositionToStr(int pos[2]); // [0][0] to a8...
+	static int* ConvertStrToPosition(const char pos[2]); // a8 to [0][0]...
 private:
-	void CalculateAttackFields() {}
+	void CalculateAttackFields() {} // calculate attackfields for both sides
+	void Take(int destination[2]) {} // invoked inside Board::MakeMove if the move was a take
+	int GameStatus() {} // 0-ongoing, 1-draw, 2-win
 };

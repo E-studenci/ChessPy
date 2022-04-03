@@ -5,14 +5,13 @@
 Board::Board(int board[8][8], bool castling[4], int enPassant, bool sideToMove) {}
 Board::Board(const Board& other) {}
 Board::Board(std::string fen) {
-    fen = "rnbqkbnr/p1p1pppp/8/1pPp4/8/8/PP1PPPPP/RNBQKBNR w KQkq b6 0 3";
     std::map<char, int> pieceMap
-    { {'k',6},{'K',0},
-        {'q',7},{'Q',1},
-        {'n',8},{'N',2},
-        {'b', 9}, {'B', 3},
-        {'r', 10}, {'R', 4},
-        {'p', 11 }, {'P', 5}
+    { {'k',7},{'K',1},
+        {'q',8},{'Q',2},
+        {'n',9},{'N',3},
+        {'b', 10}, {'B', 4},
+        {'r', 11}, {'R', 5},
+        {'p', 12}, {'P', 6}
     };
     std::map<char, int> castlingMap
     { {'k',2},{'K',0},
