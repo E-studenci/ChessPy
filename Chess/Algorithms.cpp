@@ -12,8 +12,8 @@ int Algorithms::Perft(Board& board, int depth) {
 	int legalMoveCount = 0;
 	if (depth > 0) {
 		board.CalculateLegalMoves();
-		std::map<int, std::vector<Move>> currentLegalMoves = board.allLegalMoves;
-		for (const std::pair<int, std::vector<Move>>& keyValuePair : currentLegalMoves) {
+		std::map<int[2], std::vector<Move>> currentLegalMoves = board.allLegalMoves;
+		for (const std::pair<const int[2], std::vector<Move>>& keyValuePair : currentLegalMoves) {
 			for (const Move& move : keyValuePair.second) {
 				if (depth == 1) {
 					legalMoveCount++;

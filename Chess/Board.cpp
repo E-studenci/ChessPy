@@ -85,6 +85,86 @@ Board::Board(std::string fen) {
     // /parse turn counter
 }
 
+void Board::Capture(int destination[2]) {}
+void Board::MakeMove(Move move) {
+    int movingPiece = this->board[move.from[0]][move.from[1]];
+    bool resetEnPassant = true;
+    
+    this->seventyFiveMoveRuleCounter++;
+
+    // move is a take
+    if (this->board[move.destination[0]][move.destination[1]] != 0) {
+        this->Capture(move.destination);
+    }
+    // /move is a take
+    // move is made by a pawn
+    if (movingPiece == 6 || movingPiece == 12) {
+        this->seventyFiveMoveRuleCounter = 0;
+        // en passant
+        if (move.destination == this->enPassant) {
+            this->Capture(new int[] {move.destination[0] + (movingPiece==6? 1 : -1), move.destination[1]}); // capture the en passant victim
+        }
+        // /en passant
+        // first move
+        if ((move.from[0] == 1 && movingPiece == 12) ||
+            (move.from[0] == 6 && movingPiece == 6)) {
+            this->enPassant[0] = move.from[0] == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
+            resetEnPassant = false;
+        }
+        // /first move
+        // promotion
+        if (move.promotion != 0) {
+            this->board[move.from[0]][move.from[1]] = move.promotion;
+        }
+        // /promotion
+    }
+    // /move is made by a pawn
+    // move is made by a king
+    else if (movingPiece == 1 || movingPiece == 7) {
+        // castle
+        if (move.from[1] - move.destination[1] == -2) { // king side castle, move the rook to it's final value
+            this->board[move.from[0]][move.from[1] + 1] = this->board[move.from[0]][move.from[1] + 3];
+            this->board[move.from[0]][move.from[1] + 3] = 0;
+        } 
+        else if (move.from[1] - move.destination[1] == 2) {// queen side castle, move the rook to it's final value
+            this->board[move.from[0]][move.from[1] - 1] = this->board[move.from[0]][move.from[1] - 4];
+            this->board[move.from[0]][move.from[1] - 4] = 0;
+        } 
+        // /castle
+        // reset castle flags
+        if (movingPiece == 1) {
+            this->castlingFlags[0] = false;
+            this->castlingFlags[1] = false;
+        }
+        else if (movingPiece == 7) {
+            this->castlingFlags[2] = false;
+            this->castlingFlags[3] = false;
+        }
+        // /reset castle flags
+    }
+    // /move is made by a king
+    // move is made by a rook
+    else if (movingPiece == 5 || movingPiece == 11) {
+        if (this->castlingFlags[0] && move.from[0] == 7 && move.from[1] == 7) { this->castlingFlags[0] = false; } // reset wk castle flag
+        else if (this->castlingFlags[1] && move.from[0] == 7 && move.from[1] == 0) {this->castlingFlags[1] = false;} // reset wq castle flag
+        else if (this->castlingFlags[2] && move.from[0] == 0 && move.from[1] == 7) {this->castlingFlags[2] = false;} // reset bk castle flag
+        else if (this->castlingFlags[3] && move.from[0] == 0 && move.from[1] == 0) {this->castlingFlags[3] = false;} // reset bq castle flag
+    }
+    // /move is made by a rook
+    // reset en passant flag
+    if (resetEnPassant) {
+        this->enPassant[0] = -1;
+        this->enPassant[1] = -1;
+    }
+    // /reset en passant flag
+    // move the piece
+    this->board[move.destination[0]][move.destination[1]] = this->board[move.from[0]][move.from[1]];
+    this->board[move.from[0]][move.from[1]] = 0;
+    // /move the piece
+    // save the move in move history
+    // /save the move in move history
+}
+
 int* Board::ConvertStrToPosition(const char* pos) {
     std::map<char, int> columnMap {{'a',0},{'b',1},{'c',2},{'d',3},{'e',4},{'f',5},{'g',6},{'h',7}};
     std::map<char, int> rowMap{ {'8',0},{'7',1},{'6',2},{'5',3},{'4',4},{'3',5},{'2',6},{'1',7} };

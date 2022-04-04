@@ -24,13 +24,13 @@ public:
 	Board(std::string fen);
 	Board() :Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 	std::vector<Move> CalculateLegalMoves() { return std::vector<Move>{}; }
-	void Pop() {} // unmake the last move
-	void MakeMove(Move move) {} // commit a move
+	void Pop(); // unmake the last move
+	void MakeMove(Move move); // commit a move
 	void ConvertForNeuralNetwork() {} // convert the board to its nn representation
 	static char* ConvertPositionToStr(int pos[2]); // [0][0] to a8...
 	static int* ConvertStrToPosition(const char pos[2]); // a8 to [0][0]...
 private:
-	void CalculateAttackFields() {} // calculate attackfields for both sides
-	void Take(int destination[2]) {} // invoked inside Board::MakeMove if the move was a take
-	int GameStatus() {} // 0-ongoing, 1-draw, 2-win
+	void CalculateAttackFields(); // calculate attackfields for both sides
+	void Capture(int destination[2]); // invoked inside Board::MakeMove if the move was a take
+	int GameStatus(); // 0-ongoing, 1-draw, 2-win
 };
