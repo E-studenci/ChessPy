@@ -92,8 +92,36 @@ void Board::MakeMove(Move move) {
     
     this->seventyFiveMoveRuleCounter++;
 
+    // append a copy of this->board to board history
+    int boardCopy[8][8];
+    std::copy(&this->board[0][0], &this->board[0][0] + 8 * 8, &boardCopy[0][0]);
+    this->boardHistory.push_back(boardCopy);
+    // /append a copy of this->board to board history
+
+    // prepare variables for move history, probably temporary
+    int capturedPiecePosition[2];
+    capturedPiecePosition[0] = -1;
+    capturedPiecePosition[1] = -1;
+    int pieceMoved = movingPiece;
+    int pieceCaptured = -1;
+    bool castlingFlags[4];
+    std::copy(std::begin(this->castlingFlags), std::end(this->castlingFlags), std::begin(castlingFlags));
+    int castleFrom[2];
+    castleFrom[0] = -1;
+    castleFrom[1] = -1;
+    int castleDestination[2];
+    castleDestination[0] = -1;
+    castleDestination[1] = -1;
+    int seventyFiveMoveRule = this->seventyFiveMoveRuleCounter;
+    // /prepare variables for move history
+
     // move is a take
     if (this->board[move.destination[0]][move.destination[1]] != 0) {
+        // move history stuff
+        capturedPiecePosition[0] = move.destination[0];
+        capturedPiecePosition[1] = move.destination[1];
+        pieceCaptured = this->board[move.destination[0]][move.destination[1]];
+        // /move history stuff
         this->Capture(move.destination);
     }
     // /move is a take
@@ -102,7 +130,15 @@ void Board::MakeMove(Move move) {
         this->seventyFiveMoveRuleCounter = 0;
         // en passant
         if (move.destination == this->enPassant) {
-            this->Capture(new int[] {move.destination[0] + (movingPiece==6? 1 : -1), move.destination[1]}); // capture the en passant victim
+            int enPassantVictimPosition[2];
+            enPassantVictimPosition[0] = move.destination[0] + (movingPiece == 6 ? 1 : -1);
+            enPassantVictimPosition[1] = move.destination[1];
+            // move history stuff
+            capturedPiecePosition[0] = enPassantVictimPosition[0];
+            capturedPiecePosition[1] = enPassantVictimPosition[1];
+            pieceCaptured = this->board[enPassantVictimPosition[0]][enPassantVictimPosition[1]];
+            // /move history stuff
+            this->Capture(enPassantVictimPosition); // capture the en passant victim
         }
         // /en passant
         // first move
@@ -121,16 +157,23 @@ void Board::MakeMove(Move move) {
     // /move is made by a pawn
     // move is made by a king
     else if (movingPiece == 1 || movingPiece == 7) {
-        // castle
-        if (move.from[1] - move.destination[1] == -2) { // king side castle, move the rook to it's final value
-            this->board[move.from[0]][move.from[1] + 1] = this->board[move.from[0]][move.from[1] + 3];
-            this->board[move.from[0]][move.from[1] + 3] = 0;
-        } 
-        else if (move.from[1] - move.destination[1] == 2) {// queen side castle, move the rook to it's final value
-            this->board[move.from[0]][move.from[1] - 1] = this->board[move.from[0]][move.from[1] - 4];
-            this->board[move.from[0]][move.from[1] - 4] = 0;
-        } 
-        // /castle
+        bool kingSideCastle = move.from[1] - move.destination[1] == -2;
+        bool queenSideCastle = move.from[1] - move.destination[1] == 2;
+        // castling
+        if (kingSideCastle || queenSideCastle) {
+            int castleFromCol = move.from[1] + kingSideCastle ? 3 : -4;
+            int castleDestCol = move.from[1] + kingSideCastle ? 1 : -1;
+            this->board[move.from[0]][castleDestCol] = this->board[move.from[0]][castleFromCol];
+            this->board[move.from[0]][castleFromCol] = 0;
+
+            // move history stuff
+            castleFrom[0] = move.from[0];
+            castleFrom[1] = castleFromCol;
+            castleDestination[0] = move.from[0];
+            castleDestination[1] = castleDestCol;
+            // /move history stuff
+        }
+        // /castling
         // reset castle flags
         if (movingPiece == 1) {
             this->castlingFlags[0] = false;
@@ -162,6 +205,11 @@ void Board::MakeMove(Move move) {
     this->board[move.from[0]][move.from[1]] = 0;
     // /move the piece
     // save the move in move history
+    this->moveHistory.push_back(Move(move.from, move.destination,
+        move.promotion, capturedPiecePosition,
+        pieceMoved, pieceCaptured,
+        castlingFlags, castleFrom,
+        castleDestination, seventyFiveMoveRule));
     // /save the move in move history
 }
 

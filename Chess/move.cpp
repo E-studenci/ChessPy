@@ -4,7 +4,6 @@ Move::Move(int from[2], int destination[2],
 	int pieceMoved, int pieceCaptured, 
 	bool castlingFlags[4], int castleFrom[2], 
 	int castleDestination[2], int seventyFiveMoveRule) {
-
 	this->from = from;
 	this->destination = destination;
 	this->promotion = promotion;
