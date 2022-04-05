@@ -6,7 +6,7 @@
 #include <thread>
 #include <functional> 
 Algorithms::Algorithms(Board board) {
-	this->board = board;
+	//this->board = board; //TODO copy constructor
 }
 int Algorithms::Perft(Board& board, int depth) {
 	int legalMoveCount = 0;

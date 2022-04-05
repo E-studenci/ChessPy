@@ -23,7 +23,7 @@ Board::Board(std::string fen) {
     std::vector<std::string> splitFen;// splitfen[0] - piece positions 1 -side to move, 2 - castling flags, 3 - enpassant destination, 4 - 75moverule, 5 - turn counter
     std::copy(first, last, std::back_inserter(splitFen));
 
-    // parse pieces
+    //parse pieces
     int row=0, col = 0;
     for (char character : splitFen[0]) {
         if (character != '/') {
@@ -74,6 +74,10 @@ Board::Board(std::string fen) {
         this->enPassant[0] = pos[0];
         this->enPassant[1] = pos[1];
     }
+    else {
+        this->enPassant[0] = -1;
+        this->enPassant[1] = -1;
+    }
     // /parse en passant destination
     
     // parse 75 move rule
@@ -89,11 +93,12 @@ void Board::Capture(int destination[2]) {}
 void Board::MakeMove(Move move) {
     int movingPiece = this->board[move.from[0]][move.from[1]];
     bool resetEnPassant = true;
-    
-    this->seventyFiveMoveRuleCounter++;
 
     // append a copy of this->board to board history
-    int boardCopy[8][8];
+    int** boardCopy = new int*[8];
+    for (int i = 0;i < 8;i++) {
+        boardCopy[i] = new int[8];
+    }
     std::copy(&this->board[0][0], &this->board[0][0] + 8 * 8, &boardCopy[0][0]);
     this->boardHistory.push_back(boardCopy);
     // /append a copy of this->board to board history
@@ -102,7 +107,7 @@ void Board::MakeMove(Move move) {
     // TODO: I'm a dum dum, remove some trash from here
     bool castlingFlags[4];
     std::copy(std::begin(this->castlingFlags), std::end(this->castlingFlags), std::begin(castlingFlags));
-    bool enPassant[2];
+    int enPassant[2];
     std::copy(std::begin(this->enPassant), std::end(this->enPassant), std::begin(enPassant));
     int seventyFiveMoveRule = this->seventyFiveMoveRuleCounter;
     // /prepare variables for move history
@@ -137,7 +142,7 @@ void Board::MakeMove(Move move) {
         // /promotion
     }
     // /move is made by a pawn
-    // move is made by a king
+    // move is made by a king TODO: update this->kingPos
     else if (movingPiece == 1 || movingPiece == 7) {
         bool kingSideCastle = move.from[1] - move.destination[1] == -2;
         bool queenSideCastle = move.from[1] - move.destination[1] == 2;
@@ -180,32 +185,82 @@ void Board::MakeMove(Move move) {
     this->board[move.from[0]][move.from[1]] = 0;
     // /move the piece
     // save the move in move history
-    this->moveHistory.push_back(Move(move.from, move.destination,
-        move.promotion, castlingFlags, seventyFiveMoveRule));
+    Move m(move.from, move.destination, move.promotion, castlingFlags, enPassant, seventyFiveMoveRule);
+    this->moveHistory.push_back(m);
     // /save the move in move history
+    if (!sideToMove) {
+        this->turnCounter++;
+    }
+    this->seventyFiveMoveRuleCounter++;
+    this->sideToMove = !this->sideToMove;
 }
 void Board::Pop(){
     // revert the changes made by the move
+    int boardIndex = this->boardHistory.size() - 1;
+    int moveIndex = this->moveHistory.size() - 1;
     for (int i =0; i<8; i++){
         for(int j=0; j<8;j++){
-            this->board[i][j] = this->boardHistory[this->boardHistory.size][i][j];
+            this->board[i][j] = this->boardHistory[boardIndex][i][j];
         }
     }
+    this->seventyFiveMoveRuleCounter = this->moveHistory[moveIndex].seventyFiveMoveRule;
+    this->enPassant[0] = this->moveHistory[moveIndex].enPassant[0];
+    this->enPassant[1] = this->moveHistory[moveIndex].enPassant[1];
+    this->castlingFlags[0] = this->moveHistory[moveIndex].castlingFlags[0];
+    this->castlingFlags[1] = this->moveHistory[moveIndex].castlingFlags[1];
+    this->castlingFlags[2] = this->moveHistory[moveIndex].castlingFlags[2];
+    this->castlingFlags[3] = this->moveHistory[moveIndex].castlingFlags[3];
     // revert the changes made by the move
-    // pop the move and board from move history]
+    // pop the move and board from move history
     this->boardHistory.pop_back();
     this->moveHistory.pop_back();
     // /pop the move and board from history
+    // TODO delete???
 }
 
 
+std::string Board::ToString() {
+    std::map<int, std::string> pieceMap{
+        {0, " "},
+        {7, "k"}, {1,"K"},
+        {8, "q"}, {2, "Q"},
+        {9, "n"}, {3, "N"},
+        {10, "b"}, {4, "B"},
+        {11, "r"}, {5, "R"},
+        {12, "p"}, {6, "P"}
+    };
+    std::string retString;
+    retString += "king pos white: ";
+    retString += this->ConvertPositionToStr(this->kingPos[0]);
+    retString += ", king pos black: ";
+    retString += this->ConvertPositionToStr(this->kingPos[1]);
+    retString += ", 75 move rule counter: ";
+    retString += this->seventyFiveMoveRuleCounter;
+    retString += ", enPassant: ";
+    retString += this->ConvertPositionToStr(this->enPassant);
+    retString += "\n";
+    retString += "\n-------------------------------\n";
+    std::map<int, char> rowMap{ {0,'8'},{1,'7'},{2,'6'},{3,'5'},{4,'4'},{5,'3'},{6,'2'},{7,'1'} };
+    for (int i = 0; i < 8; i++) {
+        retString += "| ";
+        for (int j = 0; j < 8; j++) {
+            retString += pieceMap[this->board[i][j]];
+            retString += " | ";
+        }
+        retString += rowMap[i];
+        retString += "\n";
+        retString += "-------------------------------\n";
+    }
+    retString += "  a   b   c   d   e   f   g   h";
+    return retString;
+}
 int* Board::ConvertStrToPosition(const char* pos) {
     std::map<char, int> columnMap {{'a',0},{'b',1},{'c',2},{'d',3},{'e',4},{'f',5},{'g',6},{'h',7}};
     std::map<char, int> rowMap{ {'8',0},{'7',1},{'6',2},{'5',3},{'4',4},{'3',5},{'2',6},{'1',7} };
     return new int[2]{rowMap[pos[1]], columnMap[pos[0]]};
 }
-char* Board::ConvertPositionToStr(int pos[2]) {
-    std::map<int, char> columnMap{ {0,'a'},{1,'b'},{2,'c'},{3,'d'},{4,'e'},{5,'f'},{6,'g'},{7,'h'}};
-    std::map<int, char> rowMap{ {0,'8'},{1,'7'},{2,'6'},{3,'5'},{4,'4'},{5,'3'},{6,'2'},{7,'1'}};
-    return new char[2]{columnMap[pos[1]],rowMap[pos[0]]};
+std::string Board::ConvertPositionToStr(int pos[2]) {
+    std::map<int, std::string> columnMap{ {-1, "-"}, {0,"a"},{1,"b"},{2,"c"},{3,"d"},{4,"e"},{5,"f"},{6,"g"},{7,"h"}};
+    std::map<int, std::string> rowMap{ {-1, "-"}, {0,"8"},{1,"7"},{2,"6"},{3,"5"},{4,"4"},{5,"3"},{6,"2"},{7,"1"}};
+    return columnMap[pos[1]] + rowMap[pos[0]];
 }

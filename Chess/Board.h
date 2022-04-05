@@ -18,7 +18,7 @@ public:
 	std::map<int[2], std::vector<Move>> allLegalMoves; // piece_position: moves
 	std::map<int[2], std::vector<int[2]>> pinLines, pinLinesOpponent; // key - pinned piece position, values - positions in the pinline
 	std::vector<Move> moveHistory; // all past moves
-	std::vector<int[8][8]> boardHistory; // all past positions for the threefold repetion rule
+	std::vector<int**> boardHistory; // all past positions for the threefold repetion rule
 	Board(int board[8][8], bool castling[4], int enPassant, bool sideToMove);
 	Board(const Board& other);
 	Board(std::string fen);
@@ -27,7 +27,8 @@ public:
 	void Pop(); // unmake the last move
 	void MakeMove(Move move); // commit a move
 	void ConvertForNeuralNetwork() {} // convert the board to its nn representation
-	static char* ConvertPositionToStr(int pos[2]); // [0][0] to a8...
+	std::string ToString();
+	static std::string ConvertPositionToStr(int pos[2]); // [0][0] to a8...
 	static int* ConvertStrToPosition(const char pos[2]); // a8 to [0][0]...
 private:
 	void CalculateAttackFields(); // calculate attackfields for both sides
