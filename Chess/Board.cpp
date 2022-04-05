@@ -98,30 +98,17 @@ void Board::MakeMove(Move move) {
     this->boardHistory.push_back(boardCopy);
     // /append a copy of this->board to board history
 
-    // prepare variables for move history, probably temporary
-    int capturedPiecePosition[2];
-    capturedPiecePosition[0] = -1;
-    capturedPiecePosition[1] = -1;
-    int pieceMoved = movingPiece;
-    int pieceCaptured = -1;
+    // prepare variables for move history, probably temporary 
+    // TODO: I'm a dum dum, remove some trash from here
     bool castlingFlags[4];
     std::copy(std::begin(this->castlingFlags), std::end(this->castlingFlags), std::begin(castlingFlags));
-    int castleFrom[2];
-    castleFrom[0] = -1;
-    castleFrom[1] = -1;
-    int castleDestination[2];
-    castleDestination[0] = -1;
-    castleDestination[1] = -1;
+    bool enPassant[2];
+    std::copy(std::begin(this->enPassant), std::end(this->enPassant), std::begin(enPassant));
     int seventyFiveMoveRule = this->seventyFiveMoveRuleCounter;
     // /prepare variables for move history
 
     // move is a take
     if (this->board[move.destination[0]][move.destination[1]] != 0) {
-        // move history stuff
-        capturedPiecePosition[0] = move.destination[0];
-        capturedPiecePosition[1] = move.destination[1];
-        pieceCaptured = this->board[move.destination[0]][move.destination[1]];
-        // /move history stuff
         this->Capture(move.destination);
     }
     // /move is a take
@@ -133,11 +120,6 @@ void Board::MakeMove(Move move) {
             int enPassantVictimPosition[2];
             enPassantVictimPosition[0] = move.destination[0] + (movingPiece == 6 ? 1 : -1);
             enPassantVictimPosition[1] = move.destination[1];
-            // move history stuff
-            capturedPiecePosition[0] = enPassantVictimPosition[0];
-            capturedPiecePosition[1] = enPassantVictimPosition[1];
-            pieceCaptured = this->board[enPassantVictimPosition[0]][enPassantVictimPosition[1]];
-            // /move history stuff
             this->Capture(enPassantVictimPosition); // capture the en passant victim
         }
         // /en passant
@@ -165,13 +147,6 @@ void Board::MakeMove(Move move) {
             int castleDestCol = move.from[1] + kingSideCastle ? 1 : -1;
             this->board[move.from[0]][castleDestCol] = this->board[move.from[0]][castleFromCol];
             this->board[move.from[0]][castleFromCol] = 0;
-
-            // move history stuff
-            castleFrom[0] = move.from[0];
-            castleFrom[1] = castleFromCol;
-            castleDestination[0] = move.from[0];
-            castleDestination[1] = castleDestCol;
-            // /move history stuff
         }
         // /castling
         // reset castle flags
@@ -206,12 +181,23 @@ void Board::MakeMove(Move move) {
     // /move the piece
     // save the move in move history
     this->moveHistory.push_back(Move(move.from, move.destination,
-        move.promotion, capturedPiecePosition,
-        pieceMoved, pieceCaptured,
-        castlingFlags, castleFrom,
-        castleDestination, seventyFiveMoveRule));
+        move.promotion, castlingFlags, seventyFiveMoveRule));
     // /save the move in move history
 }
+void Board::Pop(){
+    // revert the changes made by the move
+    for (int i =0; i<8; i++){
+        for(int j=0; j<8;j++){
+            this->board[i][j] = this->boardHistory[this->boardHistory.size][i][j];
+        }
+    }
+    // revert the changes made by the move
+    // pop the move and board from move history]
+    this->boardHistory.pop_back();
+    this->moveHistory.pop_back();
+    // /pop the move and board from history
+}
+
 
 int* Board::ConvertStrToPosition(const char* pos) {
     std::map<char, int> columnMap {{'a',0},{'b',1},{'c',2},{'d',3},{'e',4},{'f',5},{'g',6},{'h',7}};
