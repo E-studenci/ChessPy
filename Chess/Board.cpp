@@ -90,6 +90,7 @@ Board::Board(std::string fen) {
 }
 
 void Board::Capture(int destination[2]) {
+    int capturedPiece = this->board[destination[0]][destination[1]];
     // remove the piece from the board
     this->board[destination[0]][destination[1]] = 0;
     // /remove the piece from the board
@@ -97,8 +98,10 @@ void Board::Capture(int destination[2]) {
     this->seventyFiveMoveRuleCounter = 0;
     // /reset the 75move rule counter
     // take care of castling flags
-    if (this->board[destination[0]][destination[1]] == 5 || this->board[destination[0]][destination[1]] == 11) {
-        
+    if ((destination[1] == 0 || destination[1] == 7) &&
+        (capturedPiece == 5 || capturedPiece == 11)) { // check if the captured piece is a rook and is on the 1st or 8th column
+        int flagIndex = destination[1] == 0 ? (capturedPiece == 5 ? 1 : 3) : (capturedPiece == 5 ? 0 : 2);
+        this->castlingFlags[flagIndex] = false;
     }
     // /take care of castling flags
 }
@@ -248,6 +251,10 @@ std::string Board::ToString() {
         {11, "r"}, {5, "R"},
         {12, "p"}, {6, "P"}
     };
+    std::map<int, std::string> castlingMap
+    { {2,"k"},{0,"K"},
+        {3, "q"},{1, "Q"}
+    };
     std::string retString;
     retString += "\nking pos white: ";
     retString += this->ConvertPositionToStr(this->kingPos[0]);
@@ -257,6 +264,11 @@ std::string Board::ToString() {
     retString += this->seventyFiveMoveRuleCounter;
     retString += ", enPassant: ";
     retString += this->ConvertPositionToStr(this->enPassant);
+    retString += ", castling flags: ";
+    for (int i = 0; i < 4;i++) {
+        if (this->castlingFlags[i])
+            retString += castlingMap[i];
+    }
     retString += "\n";
     retString += "\n-------------------------------\n";
     std::map<int, char> rowMap{ {0,'8'},{1,'7'},{2,'6'},{3,'5'},{4,'4'},{5,'3'},{6,'2'},{7,'1'} };

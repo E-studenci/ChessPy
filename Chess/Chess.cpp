@@ -25,6 +25,9 @@ int main()
     Move m5(new int[] {5, 1}, new int[] {5, 2});
     b.MakeMove(m5);
     std::cout << b.ToString();
+    Move m6(new int[] {5, 2}, new int[] {0, 7});
+    b.MakeMove(m6);
+    std::cout << b.ToString();
     return 0;
 }
 
