@@ -89,7 +89,19 @@ Board::Board(std::string fen) {
     // /parse turn counter
 }
 
-void Board::Capture(int destination[2]) {}
+void Board::Capture(int destination[2]) {
+    // remove the piece from the board
+    this->board[destination[0]][destination[1]] = 0;
+    // /remove the piece from the board
+    // reset the 75move rule counter
+    this->seventyFiveMoveRuleCounter = 0;
+    // /reset the 75move rule counter
+    // take care of castling flags
+    if (this->board[destination[0]][destination[1]] == 5 || this->board[destination[0]][destination[1]] == 11) {
+        
+    }
+    // /take care of castling flags
+}
 void Board::MakeMove(Move move) {
     int movingPiece = this->board[move.from[0]][move.from[1]];
     bool resetEnPassant = true;
@@ -121,7 +133,7 @@ void Board::MakeMove(Move move) {
     if (movingPiece == 6 || movingPiece == 12) {
         this->seventyFiveMoveRuleCounter = 0;
         // en passant
-        if (move.destination == this->enPassant) {
+        if (move.destination[0] == this->enPassant[0] && move.destination[1] == this->enPassant[1]) {
             int enPassantVictimPosition[2];
             enPassantVictimPosition[0] = move.destination[0] + (movingPiece == 6 ? 1 : -1);
             enPassantVictimPosition[1] = move.destination[1];
@@ -132,6 +144,8 @@ void Board::MakeMove(Move move) {
         if ((move.from[0] == 1 && movingPiece == 12) ||
             (move.from[0] == 6 && movingPiece == 6)) {
             this->enPassant[0] = move.from[0] == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
+            this->enPassant[1] = move.from[1]; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
+
             resetEnPassant = false;
         }
         // /first move
@@ -164,6 +178,11 @@ void Board::MakeMove(Move move) {
             this->castlingFlags[3] = false;
         }
         // /reset castle flags
+        // update king position
+        this->kingPos[movingPiece == 1?0:1][0] = move.destination[0];
+        this->kingPos[movingPiece == 1?0:1][1] = move.destination[1];
+        // /update king position
+
     }
     // /move is made by a king
     // move is made by a rook
@@ -230,7 +249,7 @@ std::string Board::ToString() {
         {12, "p"}, {6, "P"}
     };
     std::string retString;
-    retString += "king pos white: ";
+    retString += "\nking pos white: ";
     retString += this->ConvertPositionToStr(this->kingPos[0]);
     retString += ", king pos black: ";
     retString += this->ConvertPositionToStr(this->kingPos[1]);
