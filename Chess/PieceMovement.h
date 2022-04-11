@@ -3,7 +3,6 @@
 #include <map>
 #include <tuple>
 #include <vector>
-
 class PieceMovement
 {
 public:

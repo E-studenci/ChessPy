@@ -7,30 +7,30 @@
 int main()
 {
     
-    Board b("1r2kbnr/pb1qpppp/Q1n5/1Np5/2P5/1K1B3N/PP1P2PP/R1B2q1R w k - 0 13");
+    Board b("1r2kbnr/pb1qpppp/Q1n5/1Np5/2P5/1K1B3N/PP1P2PP/R1B2q1R w kQ - 0 13");
     std::cout << b.ToString();
     Move m(Coordinates(6,6), Coordinates(4,6));
-    b.MakeMove(&m);
+    b.MakeMove(m);
     std::cout << b.ToString();
 
     Move m2(Coordinates(4, 6), Coordinates(3, 6));
-    b.MakeMove(&m2);
+    b.MakeMove(m2);
     std::cout << b.ToString();
 
     Move m3(Coordinates(1,5), Coordinates(3,5));
-    b.MakeMove(&m3);
+    b.MakeMove(m3);
     std::cout << b.ToString();
 
     Move m4(Coordinates(3, 6), Coordinates(2, 5));
-    b.MakeMove(&m4);
+    b.MakeMove(m4);
     std::cout << b.ToString();
 
     Move m5(Coordinates(5, 1), Coordinates(5, 2));
-    b.MakeMove(&m5);
+    b.MakeMove(m5);
     std::cout << b.ToString();
 
     Move m6(Coordinates(5, 2), Coordinates(0,7));
-    b.MakeMove(&m6);
+    b.MakeMove(m6);
     std::cout << b.ToString();
 
 
