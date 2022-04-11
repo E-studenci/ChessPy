@@ -9,25 +9,47 @@ int main()
     
     Board b("1r2kbnr/pb1qpppp/Q1n5/1Np5/2P5/1K1B3N/PP1P2PP/R1B2q1R w k - 0 13");
     std::cout << b.ToString();
-    Move m(new int[] {6, 6}, new int[] {4, 6});
-    b.MakeMove(m);
+    Move m(Coordinates(6,6), Coordinates(4,6));
+    b.MakeMove(&m);
     std::cout << b.ToString();
 
-    Move m2(new int[] {4, 6}, new int[] {3, 6});
-    b.MakeMove(m2);
+    Move m2(Coordinates(4, 6), Coordinates(3, 6));
+    b.MakeMove(&m2);
     std::cout << b.ToString();
-    Move m3(new int[] {1, 5}, new int[] {3, 5});
-    b.MakeMove(m3);
+
+    Move m3(Coordinates(1,5), Coordinates(3,5));
+    b.MakeMove(&m3);
     std::cout << b.ToString();
-    Move m4(new int[] {3, 6}, new int[] {2, 5});
-    b.MakeMove(m4);
+
+    Move m4(Coordinates(3, 6), Coordinates(2, 5));
+    b.MakeMove(&m4);
     std::cout << b.ToString();
-    Move m5(new int[] {5, 1}, new int[] {5, 2});
-    b.MakeMove(m5);
+
+    Move m5(Coordinates(5, 1), Coordinates(5, 2));
+    b.MakeMove(&m5);
     std::cout << b.ToString();
-    Move m6(new int[] {5, 2}, new int[] {0, 7});
-    b.MakeMove(m6);
+
+    Move m6(Coordinates(5, 2), Coordinates(0,7));
+    b.MakeMove(&m6);
     std::cout << b.ToString();
+
+
+    b.Pop();
+    std::cout << b.ToString();
+    b.Pop();
+    std::cout << b.ToString();
+    b.Pop();
+    std::cout << b.ToString();
+    b.Pop();
+    std::cout << b.ToString();
+    b.Pop();
+    std::cout << b.ToString();
+    b.Pop();
+    std::cout << b.ToString();
+
+    b.CalculateLegalMoves();
+    std::cout << "byebye";
+    // TODO: Board deconstructor vectors
     return 0;
 }
 

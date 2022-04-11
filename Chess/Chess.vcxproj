@@ -144,12 +144,16 @@
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Chess.cpp" />
     <ClCompile Include="Move.cpp" />
+    <ClCompile Include="PieceMovement.cpp" />
     <ClCompile Include="SafeQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algorithms.h" />
     <ClInclude Include="Board.h" />
+    <ClInclude Include="Coordinates.h" />
     <ClInclude Include="Move.h" />
+    <ClInclude Include="PieceCharacteristics.h" />
+    <ClInclude Include="PieceMovement.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

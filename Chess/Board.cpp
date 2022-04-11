@@ -1,9 +1,9 @@
+#include "PieceMovement.h"
+#include "Coordinates.h"
 #include "Board.h"
 #include <iterator>
 #include <sstream>
 #include <map>
-Board::Board(int board[8][8], bool castling[4], int enPassant, bool sideToMove) {}
-Board::Board(const Board& other) {}
 Board::Board(std::string fen) {
     std::map<char, int> pieceMap
     { {'k',7},{'K',1},
@@ -11,12 +11,34 @@ Board::Board(std::string fen) {
         {'n',9},{'N',3},
         {'b', 10}, {'B', 4},
         {'r', 11}, {'R', 5},
-        {'p', 12}, {'P', 6}
+        {'p', 12}, {'P', 6},
     };
     std::map<char, int> castlingMap
     { {'k',2},{'K',0},
         {'q',3},{'Q',1},
     };
+
+    // allocate arrays
+    this->board = new int* [8];
+    for (int i = 0; i < 8; i++) {
+        this->board[i] = new int[8];
+        for (int j = 0; j < 8; j++) {
+            this->board[i][j] = 0;
+        }
+    }
+    this->kingPos = new Coordinates[2];
+    this->castlingFlags = new bool[4];
+
+    this->attackFields = new bool** [2];
+    this->attackFields[0] = new bool* [8];
+    this->attackFields[1] = new bool* [8];
+    for (int i = 0; i < 8; i++) {
+        this->attackFields[0][i] = new bool[8];
+        this->attackFields[1][i] = new bool[8];
+
+    }
+    // /allocate arrays
+
 
     std::istringstream iss(fen);
     std::istream_iterator<std::string> first(iss), last;
@@ -33,12 +55,12 @@ Board::Board(std::string fen) {
             else if (isalpha(character)) {
                 this->board[row][col] = pieceMap[character];
                 if (character == 'K') {
-                    this->kingPos[0][0] = row;
-                    this->kingPos[0][1] = col;
+                    this->kingPos[0].row = row;
+                    this->kingPos[0].column = col;
                 }
                 else if (character == 'k') {
-                    this->kingPos[1][0] = row;
-                    this->kingPos[1][1] = col;
+                    this->kingPos[1].row = row;
+                    this->kingPos[1].column = col;
                 }
                 col++;
             }
@@ -70,13 +92,7 @@ Board::Board(std::string fen) {
     
     // parse en passant destination
     if (splitFen[3] != "-") {
-        auto pos = ConvertStrToPosition(splitFen[3].c_str());
-        this->enPassant[0] = pos[0];
-        this->enPassant[1] = pos[1];
-    }
-    else {
-        this->enPassant[0] = -1;
-        this->enPassant[1] = -1;
+        this->enPassant = ConvertStrToPosition(splitFen[3].c_str());
     }
     // /parse en passant destination
     
@@ -89,86 +105,85 @@ Board::Board(std::string fen) {
     // /parse turn counter
 }
 
-void Board::Capture(int destination[2]) {
-    int capturedPiece = this->board[destination[0]][destination[1]];
+void Board::Capture(Coordinates destination) {
+    int capturedPiece = this->board[destination.row][destination.column];
     // remove the piece from the board
-    this->board[destination[0]][destination[1]] = 0;
+    this->board[destination.row][destination.column] = 0;
     // /remove the piece from the board
     // reset the 75move rule counter
     this->seventyFiveMoveRuleCounter = 0;
     // /reset the 75move rule counter
     // take care of castling flags
-    if ((destination[1] == 0 || destination[1] == 7) &&
+    if ((destination.column == 0 || destination.column == 7) &&
         (capturedPiece == 5 || capturedPiece == 11)) { // check if the captured piece is a rook and is on the 1st or 8th column
-        int flagIndex = destination[1] == 0 ? (capturedPiece == 5 ? 1 : 3) : (capturedPiece == 5 ? 0 : 2);
+        int flagIndex = destination.column == 0 ? (capturedPiece == 5 ? 1 : 3) : (capturedPiece == 5 ? 0 : 2);
         this->castlingFlags[flagIndex] = false;
     }
     // /take care of castling flags
 }
-void Board::MakeMove(Move move) {
-    int movingPiece = this->board[move.from[0]][move.from[1]];
+void Board::MakeMove(const Move* move) {
+    int movingPiece = this->board[move->from.row][move->from.column];
     bool resetEnPassant = true;
 
     // append a copy of this->board to board history
     int** boardCopy = new int*[8];
     for (int i = 0;i < 8;i++) {
         boardCopy[i] = new int[8];
+        for (int j = 0; j < 8; j++) {
+            boardCopy[i][j] = this->board[i][j];
+        }
     }
-    std::copy(&this->board[0][0], &this->board[0][0] + 8 * 8, &boardCopy[0][0]);
     this->boardHistory.push_back(boardCopy);
     // /append a copy of this->board to board history
 
-    // prepare variables for move history, probably temporary 
-    // TODO: I'm a dum dum, remove some trash from here
+    // prepare variables for move history, probably temporary
     bool castlingFlags[4];
-    std::copy(std::begin(this->castlingFlags), std::end(this->castlingFlags), std::begin(castlingFlags));
-    int enPassant[2];
-    std::copy(std::begin(this->enPassant), std::end(this->enPassant), std::begin(enPassant));
+    for (int i = 0; i < 4; i++) {
+        castlingFlags[i] = this->castlingFlags[i];
+    }
+    Coordinates enPassant(this->enPassant);
     int seventyFiveMoveRule = this->seventyFiveMoveRuleCounter;
     // /prepare variables for move history
 
     // move is a take
-    if (this->board[move.destination[0]][move.destination[1]] != 0) {
-        this->Capture(move.destination);
+    if (this->board[move->destination.row][move->destination.column] != 0) {
+        this->Capture(move->destination);
     }
     // /move is a take
     // move is made by a pawn
     if (movingPiece == 6 || movingPiece == 12) {
         this->seventyFiveMoveRuleCounter = 0;
         // en passant
-        if (move.destination[0] == this->enPassant[0] && move.destination[1] == this->enPassant[1]) {
-            int enPassantVictimPosition[2];
-            enPassantVictimPosition[0] = move.destination[0] + (movingPiece == 6 ? 1 : -1);
-            enPassantVictimPosition[1] = move.destination[1];
-            this->Capture(enPassantVictimPosition); // capture the en passant victim
+        if (move->destination.row == this->enPassant.row && move->destination.column == this->enPassant.column) {
+            this->Capture(Coordinates(move->destination.row + (movingPiece == 6 ? 1 : -1), move->destination.column)); // capture the en passant victim
         }
         // /en passant
         // first move
-        if ((move.from[0] == 1 && movingPiece == 12) ||
-            (move.from[0] == 6 && movingPiece == 6)) {
-            this->enPassant[0] = move.from[0] == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
-            this->enPassant[1] = move.from[1]; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
+        if ((move->from.row == 1 && movingPiece == 12) ||
+            (move->from.row == 6 && movingPiece == 6)) {
+            this->enPassant.row = move->from.row == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
+            this->enPassant.column = move->from.column; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
 
             resetEnPassant = false;
         }
         // /first move
         // promotion
-        if (move.promotion != 0) {
-            this->board[move.from[0]][move.from[1]] = move.promotion;
+        if (move->promotion != 0) {
+            this->board[move->from.row][move->from.column] = move->promotion;
         }
         // /promotion
     }
     // /move is made by a pawn
     // move is made by a king TODO: update this->kingPos
     else if (movingPiece == 1 || movingPiece == 7) {
-        bool kingSideCastle = move.from[1] - move.destination[1] == -2;
-        bool queenSideCastle = move.from[1] - move.destination[1] == 2;
+        bool kingSideCastle = move->from.column - move->destination.column == -2;
+        bool queenSideCastle = move->from.column - move->destination.column == 2;
         // castling
         if (kingSideCastle || queenSideCastle) {
-            int castleFromCol = move.from[1] + kingSideCastle ? 3 : -4;
-            int castleDestCol = move.from[1] + kingSideCastle ? 1 : -1;
-            this->board[move.from[0]][castleDestCol] = this->board[move.from[0]][castleFromCol];
-            this->board[move.from[0]][castleFromCol] = 0;
+            int castleFromCol = move->from.column + kingSideCastle ? 3 : -4;
+            int castleDestCol = move->from.column + kingSideCastle ? 1 : -1;
+            this->board[move->from.row][castleDestCol] = this->board[move->from.row][castleFromCol];
+            this->board[move->from.row][castleFromCol] = 0;
         }
         // /castling
         // reset castle flags
@@ -182,32 +197,32 @@ void Board::MakeMove(Move move) {
         }
         // /reset castle flags
         // update king position
-        this->kingPos[movingPiece == 1?0:1][0] = move.destination[0];
-        this->kingPos[movingPiece == 1?0:1][1] = move.destination[1];
+        this->kingPos[movingPiece == 1?0:1].row = move->destination.row;
+        this->kingPos[movingPiece == 1?0:1].column = move->destination.column;
         // /update king position
 
     }
     // /move is made by a king
     // move is made by a rook
     else if (movingPiece == 5 || movingPiece == 11) {
-        if (this->castlingFlags[0] && move.from[0] == 7 && move.from[1] == 7) { this->castlingFlags[0] = false; } // reset wk castle flag
-        else if (this->castlingFlags[1] && move.from[0] == 7 && move.from[1] == 0) {this->castlingFlags[1] = false;} // reset wq castle flag
-        else if (this->castlingFlags[2] && move.from[0] == 0 && move.from[1] == 7) {this->castlingFlags[2] = false;} // reset bk castle flag
-        else if (this->castlingFlags[3] && move.from[0] == 0 && move.from[1] == 0) {this->castlingFlags[3] = false;} // reset bq castle flag
+        if (this->castlingFlags[0] && move->from.row == 7 && move->from.column == 7) { this->castlingFlags[0] = false; } // reset wk castle flag
+        else if (this->castlingFlags[1] && move->from.row == 7 && move->from.column == 0) {this->castlingFlags[1] = false;} // reset wq castle flag
+        else if (this->castlingFlags[2] && move->from.row == 0 && move->from.column == 7) {this->castlingFlags[2] = false;} // reset bk castle flag
+        else if (this->castlingFlags[3] && move->from.row == 0 && move->from.column == 0) {this->castlingFlags[3] = false;} // reset bq castle flag
     }
     // /move is made by a rook
     // reset en passant flag
     if (resetEnPassant) {
-        this->enPassant[0] = -1;
-        this->enPassant[1] = -1;
+        this->enPassant.row = -1;
+        this->enPassant.column = -1;
     }
     // /reset en passant flag
     // move the piece
-    this->board[move.destination[0]][move.destination[1]] = this->board[move.from[0]][move.from[1]];
-    this->board[move.from[0]][move.from[1]] = 0;
+    this->board[move->destination.row][move->destination.column] = this->board[move->from.row][move->from.column];
+    this->board[move->from.row][move->from.column] = 0;
     // /move the piece
     // save the move in move history
-    Move m(move.from, move.destination, move.promotion, castlingFlags, enPassant, seventyFiveMoveRule);
+    Move* m = new Move(move->from, move->destination, move->promotion, movingPiece, castlingFlags, enPassant, seventyFiveMoveRule);
     this->moveHistory.push_back(m);
     // /save the move in move history
     if (!sideToMove) {
@@ -217,29 +232,85 @@ void Board::MakeMove(Move move) {
     this->sideToMove = !this->sideToMove;
 }
 void Board::Pop(){
-    // revert the changes made by the move
-    int boardIndex = this->boardHistory.size() - 1;
-    int moveIndex = this->moveHistory.size() - 1;
-    for (int i =0; i<8; i++){
-        for(int j=0; j<8;j++){
-            this->board[i][j] = this->boardHistory[boardIndex][i][j];
+    // TODO: revert attacked fields?
+    if (this->boardHistory.size() > 0 && this->moveHistory.size() > 0) {
+        // revert the changes made by the move
+        int boardIndex = this->boardHistory.size() - 1;
+        int moveIndex = this->moveHistory.size() - 1;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8;j++) {
+                this->board[i][j] = this->boardHistory[boardIndex][i][j];
+            }
         }
+        // update kingPos if the moving piece was a king
+        if (this->moveHistory[moveIndex]->movingPiece == 1 ||
+            this->moveHistory[moveIndex]->movingPiece == 7) {
+            this->kingPos[this->moveHistory[moveIndex]->movingPiece == 1 ? 0 : 1].row = this->moveHistory[moveIndex]->from.row;
+            this->kingPos[this->moveHistory[moveIndex]->movingPiece == 1 ? 0 : 1].column = this->moveHistory[moveIndex]->from.column;
+        }
+        this->seventyFiveMoveRuleCounter = this->moveHistory[moveIndex]->seventyFiveMoveRule;
+        this->enPassant.row = this->moveHistory[moveIndex]->enPassant.row;
+        this->enPassant.column = this->moveHistory[moveIndex]->enPassant.column;
+        this->castlingFlags[0] = this->moveHistory[moveIndex]->castlingFlags[0];
+        this->castlingFlags[1] = this->moveHistory[moveIndex]->castlingFlags[1];
+        this->castlingFlags[2] = this->moveHistory[moveIndex]->castlingFlags[2];
+        this->castlingFlags[3] = this->moveHistory[moveIndex]->castlingFlags[3];
+        // revert the changes made by the move
+        // decrement turn
+        if (sideToMove) {
+            this->turnCounter--;
+        }
+        this->sideToMove = !this->sideToMove;
+        // /decrement turn
+        // delete trash
+        for (int i = 0; i < 8;i++) {
+            delete[] this->boardHistory.back()[i];
+        }
+        delete[] this->boardHistory.back();
+        delete this->moveHistory.back();
+        // /delete trash
+        // pop the move and board from move history
+        this->boardHistory.pop_back();
+        this->moveHistory.pop_back();
+        // /pop the move and board from history
     }
-    this->seventyFiveMoveRuleCounter = this->moveHistory[moveIndex].seventyFiveMoveRule;
-    this->enPassant[0] = this->moveHistory[moveIndex].enPassant[0];
-    this->enPassant[1] = this->moveHistory[moveIndex].enPassant[1];
-    this->castlingFlags[0] = this->moveHistory[moveIndex].castlingFlags[0];
-    this->castlingFlags[1] = this->moveHistory[moveIndex].castlingFlags[1];
-    this->castlingFlags[2] = this->moveHistory[moveIndex].castlingFlags[2];
-    this->castlingFlags[3] = this->moveHistory[moveIndex].castlingFlags[3];
-    // revert the changes made by the move
-    // pop the move and board from move history
-    this->boardHistory.pop_back();
-    this->moveHistory.pop_back();
-    // /pop the move and board from history
-    // TODO delete???
 }
 
+std::map<Coordinates, std::vector<Move>> Board::CalculateLegalMoves() {
+    this->CalculateAttackFields(); // temp ofc
+    return std::map<Coordinates, std::vector<Move>>{};
+}
+void Board::CalculateAttackFields() {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            int piece = this->board[i][j];
+            if (piece != 0) {
+                bool pieceColor = piece > 6;
+                // pawn
+                if (piece == 6 || piece == 12) { // Omitting enPassant, since it's irrelevant for attacked fields, as such pawn only attack forward diagonal fields
+                    int attackedRow = i + pieceColor ? 1 : -1;
+                    int attackedCol1 = j + 1;
+                    int attackedCol2 = j - 1;
+                    if (attackedRow < 8 && attackedRow >= 0) {
+                        if (attackedCol1 < 8)
+                            this->attackFields[pieceColor][attackedRow][attackedCol1] = true;
+                        if (attackedCol2 >= 0)
+                            this->attackFields[pieceColor][attackedRow][attackedCol2] = true;
+                    }
+                }
+                // /pawn
+                // every other piece
+                else {
+
+                    if (PieceMovement::Get(piece).isSliding) {
+                        
+                    }
+                }
+                // /every other piece
+            }
+        }
+    }
+}
 
 std::string Board::ToString() {
     std::map<int, std::string> pieceMap{
@@ -275,7 +346,10 @@ std::string Board::ToString() {
     for (int i = 0; i < 8; i++) {
         retString += "| ";
         for (int j = 0; j < 8; j++) {
-            retString += pieceMap[this->board[i][j]];
+            if (this->board[i][j] > 0) {
+                retString += pieceMap[this->board[i][j]];
+            }
+            else retString += " ";
             retString += " | ";
         }
         retString += rowMap[i];
@@ -285,13 +359,38 @@ std::string Board::ToString() {
     retString += "  a   b   c   d   e   f   g   h";
     return retString;
 }
-int* Board::ConvertStrToPosition(const char* pos) {
+Coordinates Board::ConvertStrToPosition(const char* pos) {
     std::map<char, int> columnMap {{'a',0},{'b',1},{'c',2},{'d',3},{'e',4},{'f',5},{'g',6},{'h',7}};
     std::map<char, int> rowMap{ {'8',0},{'7',1},{'6',2},{'5',3},{'4',4},{'3',5},{'2',6},{'1',7} };
-    return new int[2]{rowMap[pos[1]], columnMap[pos[0]]};
+    return Coordinates(rowMap[pos[1]], columnMap[pos[0]]);
 }
-std::string Board::ConvertPositionToStr(int pos[2]) {
+std::string Board::ConvertPositionToStr(Coordinates pos) {
     std::map<int, std::string> columnMap{ {-1, "-"}, {0,"a"},{1,"b"},{2,"c"},{3,"d"},{4,"e"},{5,"f"},{6,"g"},{7,"h"}};
     std::map<int, std::string> rowMap{ {-1, "-"}, {0,"8"},{1,"7"},{2,"6"},{3,"5"},{4,"4"},{5,"3"},{6,"2"},{7,"1"}};
-    return columnMap[pos[1]] + rowMap[pos[0]];
+    return columnMap[pos.column] + rowMap[pos.row];
+}
+Board::~Board() {
+    for (int i = 0; i < 8; i++) {
+        delete[] this->board[i];
+        delete[] this->attackFields[0][i];
+        delete[] this->attackFields[1][i];
+    }
+    for (int index = 0;index < this->boardHistory.size(); index++) {
+        for (int i = 0; i < 8;i++) {
+            delete[] this->boardHistory[index][i];
+        }
+        delete[] this->boardHistory[index];
+        delete this->moveHistory[index];
+    }
+    this->moveHistory.clear();
+    this->boardHistory.clear();
+
+
+    delete[] this->board;
+    delete[] this->kingPos;
+    delete[] this->castlingFlags;
+
+    delete[] this->attackFields[0];
+    delete[] this->attackFields[1];
+    delete[] this->attackFields;
 }
