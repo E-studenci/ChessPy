@@ -31,6 +31,7 @@ public:
 	void MakeMove(const Move move); // commit a move
 	void ConvertForNeuralNetwork() {} // convert the board to its nn representation
 	std::string ToString();
+	std::string AttackedFieldsToString();
 	static std::string ConvertPositionToStr(Coordinates pos); // [0][0] to a8...
 	static Coordinates ConvertStrToPosition(const std::array<char,2> pos); // a8 to [0][0]...
 private:

@@ -47,9 +47,6 @@ int main()
     b.Pop();
     std::cout << b.ToString();
 
-    b.CalculateLegalMoves();
-    std::cout << "byebye";
-
     Board b2{ "r3k2r/pppppppp/1nbq1bn1/8/8/1NBQ1BN1/PPPPPPPP/R3K2R w KQkq - 0 1"};
     // K
     std::cout << b2.ToString();
@@ -71,6 +68,13 @@ int main()
     b2.MakeMove(Move{ Coordinates(0,4), Coordinates(0, 2) });
     std::cout << b2.ToString();
     b2.Pop();
+
+    Board b3("rnb2bnr/ppp1pppp/8/3k4/3p2q1/2QR4/PPPPPPPP/1NB1KBNR w K - 0 1");
+    std::cout << b3.ToString();
+
+    b3.CalculateLegalMoves();
+    std::cout << b3.AttackedFieldsToString();
+    std::cout << "byebye";
 
 
     return 0;

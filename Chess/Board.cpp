@@ -258,14 +258,14 @@ void Board::CalculateAttackFields() {
                 bool movingPieceColor = movingPiece > 6;
                 // pawn
                 if (movingPiece == 6 || movingPiece == 12) { // TODO: enpassant
-                    int attackedRow = row + movingPieceColor ? 1 : -1;
-                    int attackedCol1 = column+ 1;
-                    int attackedCol2 = column- 1;
+                    int attackedRow = row + (movingPieceColor ? 1 : -1);
+                    int attackedCol1 = column + 1;
+                    int attackedCol2 = column - 1;
                     if (attackedRow < 8 && attackedRow >= 0) {
                         if (attackedCol1 < 8)
-                            this->attackedFields[movingPieceColor][attackedRow][attackedCol1] = true;
+                            this->SetAttackedField(movingPieceColor, Coordinates(attackedRow, attackedCol1));
                         if (attackedCol2 >= 0)
-                            this->attackedFields[movingPieceColor][attackedRow][attackedCol2] = true;
+                            this->SetAttackedField(movingPieceColor, Coordinates(attackedRow, attackedCol2));
                     }
                 }
                 // /pawn
@@ -380,6 +380,47 @@ std::string Board::ToString() {
         for (int j = 0; j < 8; j++) {
             if (this->board[i][j] > 0) {
                 retString += pieceMap[this->board[i][j]];
+            }
+            else retString += " ";
+            retString += " | ";
+        }
+        retString += rowMap[i];
+        retString += "\n";
+        retString += "-------------------------------\n";
+    }
+    retString += "  a   b   c   d   e   f   g   h";
+    return retString;
+}
+std::string Board::AttackedFieldsToString() {
+    std::string retString;
+    std::map<int, char> rowMap{ {0,'8'},{1,'7'},{2,'6'},{3,'5'},{4,'4'},{5,'3'},{6,'2'},{7,'1'} };
+    retString += "\nattacked fields (X), defended fields (+) black\n";
+    for (int i = 0; i < 8; i++) {
+        retString += "| ";
+        for (int j = 0; j < 8; j++) {
+            if (this->attackedFields[1][i][j]) {
+                retString += "X";
+            }
+            else if (this->defendedFields[1][i][j]) {
+                retString += "+";
+            }
+            else retString += " ";
+            retString += " | ";
+        }
+        retString += rowMap[i];
+        retString += "\n";
+        retString += "-------------------------------\n";
+    }
+    retString += "  a   b   c   d   e   f   g   h";
+    retString += "\nattacked fields (X), defended fields (+) white\n";
+    for (int i = 0; i < 8; i++) {
+        retString += "| ";
+        for (int j = 0; j < 8; j++) {
+            if (this->attackedFields[0][i][j]) {
+                retString += "X";
+            }
+            else if (this->defendedFields[0][i][j]) {
+                retString += "+";
             }
             else retString += " ";
             retString += " | ";
