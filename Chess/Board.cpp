@@ -70,7 +70,7 @@ Board::Board(std::string fen) {
     
     // parse en passant destination
     if (splitFen[3] != "-") {
-        this->enPassant = ConvertStrToPosition(splitFen[3].c_str());
+        this->enPassant = ConvertStrToPosition(std::array<char, 2>{splitFen[3].c_str()[0], splitFen[3].c_str()[1]});
     }
     // /parse en passant destination
     
@@ -146,14 +146,14 @@ void Board::MakeMove(const Move move) {
         resetMoveCounter = true;
     }
     // /move is made by a pawn
-    // move is made by a king TODO: update this->kingPos
+    // move is made by a king
     else if (movingPiece == 1 || movingPiece == 7) {
-        bool kingSideCastle = move.from.column - move.destination.column == -2;
-        bool queenSideCastle = move.from.column - move.destination.column == 2;
+        bool kingSideCastle = (move.from.column - move.destination.column) == -2;
+        bool queenSideCastle = (move.from.column - move.destination.column) == 2;
         // castling
         if (kingSideCastle || queenSideCastle) {
-            int castleFromCol = move.from.column + kingSideCastle ? 3 : -4;
-            int castleDestCol = move.from.column + kingSideCastle ? 1 : -1;
+            int castleFromCol = move.from.column + (kingSideCastle ? 3 : -4);
+            int castleDestCol = move.from.column + (kingSideCastle ? 1 : -1);
             this->board[move.from.row][castleDestCol] = this->board[move.from.row][castleFromCol];
             this->board[move.from.row][castleFromCol] = 0;
         }
@@ -250,37 +250,100 @@ std::map<Coordinates, std::vector<Move>> Board::CalculateLegalMoves() {
     return std::map<Coordinates, std::vector<Move>>{};
 }
 void Board::CalculateAttackFields() {
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            int piece = this->board[i][j];
-            if (piece != 0) {
-                bool pieceColor = piece > 6;
+    // for each piece calculate it's attack fields and if the piece is sliding, calculate pin lines
+    for (int row = 0; row < 8; row++) {
+        for (int column= 0; column< 8; column++) {
+            int movingPiece = this->board[row][column];
+            if (movingPiece != 0) {
+                bool movingPieceColor = movingPiece > 6;
                 // pawn
-                if (piece == 6 || piece == 12) { // Omitting enPassant, since it's irrelevant for attacked fields, as such pawn only attack forward diagonal fields
-                    int attackedRow = i + pieceColor ? 1 : -1;
-                    int attackedCol1 = j + 1;
-                    int attackedCol2 = j - 1;
+                if (movingPiece == 6 || movingPiece == 12) { // TODO: enpassant
+                    int attackedRow = row + movingPieceColor ? 1 : -1;
+                    int attackedCol1 = column+ 1;
+                    int attackedCol2 = column- 1;
                     if (attackedRow < 8 && attackedRow >= 0) {
                         if (attackedCol1 < 8)
-                            this->attackFields[pieceColor][attackedRow][attackedCol1] = true;
+                            this->attackedFields[movingPieceColor][attackedRow][attackedCol1] = true;
                         if (attackedCol2 >= 0)
-                            this->attackFields[pieceColor][attackedRow][attackedCol2] = true;
+                            this->attackedFields[movingPieceColor][attackedRow][attackedCol2] = true;
                     }
                 }
                 // /pawn
                 // every other piece
                 else {
+                    PieceCharacteristics pieceCharacteristics = PieceMovement::Get(movingPiece);
+                    for (int directionIndex = 0; directionIndex < pieceCharacteristics.pieceMovement.size(); directionIndex++) {
+                        Coordinates currentlyCalculatedPosition{ 
+                            row + pieceCharacteristics.pieceMovement[directionIndex].row,
+                            column + pieceCharacteristics.pieceMovement[directionIndex].column};
+                        // move can be made
+                        if (this->FieldIsInBounds(currentlyCalculatedPosition)) {
+                            this->SetAttackedField(movingPieceColor, currentlyCalculatedPosition);
+                            if (pieceCharacteristics.isSliding) { // piece is sliding
+                                // pin line is the line from the center of the moving piece to the opponent's king
+                                // piece in way is true if there is any piece in the way of the moving piece
+                                // if the piece in way is of the same color as the moving piece, the pin line is broken
+                                std::vector<Coordinates> pinLine{ Coordinates{row, column}, currentlyCalculatedPosition };
+                                int attackedPiece = this->board[currentlyCalculatedPosition.row][currentlyCalculatedPosition.column];
+                                bool pieceInWay = attackedPiece != 0;
+                                bool enemyKingInWay = (attackedPiece != 0) &&
+                                    (attackedPiece == (movingPieceColor ? 1 : 7));
+                                bool interrupted = pieceInWay &&
+                                    ((attackedPiece > 6) == movingPieceColor);
 
-                    if (PieceMovement::Get(piece).isSliding) {
-                        
+                                Coordinates pinnedPiece = pieceInWay ? Coordinates(currentlyCalculatedPosition) : Coordinates();
+
+                                currentlyCalculatedPosition += pieceCharacteristics.pieceMovement[directionIndex];
+
+                                while (!interrupted && this->FieldIsInBounds(currentlyCalculatedPosition)) {
+                                    attackedPiece = this->board[currentlyCalculatedPosition.row][currentlyCalculatedPosition.column];
+                                    pinLine.push_back(currentlyCalculatedPosition);
+                                    
+                                    if (!pieceInWay) {
+                                        this->SetAttackedField(movingPieceColor, currentlyCalculatedPosition);
+                                    }
+                                    
+                                    if (attackedPiece != 0) {// there is a piece in way
+                                        if ((attackedPiece > 6) == movingPieceColor) {// the piece in way is of moving piece color
+                                            interrupted = true;
+                                        }
+                                        else if (attackedPiece == (movingPieceColor ? 1 : 7)) { // the piece in way is the enemy's king
+                                            enemyKingInWay = true;
+                                            if (pieceInWay)
+                                                interrupted = true;
+                                            else
+                                                pieceInWay = true;
+                                        }
+                                        else {// the piece in way is any other enemy piece
+                                            if (pieceInWay)
+                                                interrupted = true;
+                                            else
+                                                pinnedPiece = Coordinates(currentlyCalculatedPosition);
+                                                pieceInWay = true;
+                                        }
+                                    }
+                                    currentlyCalculatedPosition += pieceCharacteristics.pieceMovement[directionIndex];
+                                }
+                                if (enemyKingInWay) {
+                                    this->attackedLines[movingPieceColor].push_back(AttackedLine{ pinLine, pinnedPiece });
+                                }
+                            } // /piece is sliding
+                        } // /move can be made
                     }
-                }
-                // /every other piece
+                } // /every other piece
             }
         }
     }
 }
+void Board::SetAttackedField(bool attackingPieceColor, Coordinates attackedField) {
+    // if attacked field is empty or attacked piece is opponent's -> the field is attacked, else the field is defended
+    if ((this->board[attackedField.row][attackedField.column] > 0) && 
+        (this->board[attackedField.row][attackedField.column] > 6) == attackingPieceColor)
+        defendedFields[attackingPieceColor][attackedField.row][attackedField.column] = true;
+    else 
+        attackedFields[attackingPieceColor][attackedField.row][attackedField.column] = true;
 
+}
 std::string Board::ToString() {
     std::map<int, std::string> pieceMap{
         {0, " "},
@@ -328,7 +391,7 @@ std::string Board::ToString() {
     retString += "  a   b   c   d   e   f   g   h";
     return retString;
 }
-Coordinates Board::ConvertStrToPosition(const char* pos) {
+Coordinates Board::ConvertStrToPosition(const std::array<char,2> pos) {
     std::map<char, int> columnMap {{'a',0},{'b',1},{'c',2},{'d',3},{'e',4},{'f',5},{'g',6},{'h',7}};
     std::map<char, int> rowMap{ {'8',0},{'7',1},{'6',2},{'5',3},{'4',4},{'3',5},{'2',6},{'1',7} };
     return Coordinates(rowMap[pos[1]], columnMap[pos[0]]);

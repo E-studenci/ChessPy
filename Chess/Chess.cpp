@@ -49,7 +49,30 @@ int main()
 
     b.CalculateLegalMoves();
     std::cout << "byebye";
-    // TODO: Board deconstructor vectors
+
+    Board b2{ "r3k2r/pppppppp/1nbq1bn1/8/8/1NBQ1BN1/PPPPPPPP/R3K2R w KQkq - 0 1"};
+    // K
+    std::cout << b2.ToString();
+    b2.MakeMove(Move{Coordinates(7,4), Coordinates(7, 6)});
+    std::cout << b2.ToString();
+    b2.Pop();
+    // Q   
+    std::cout << b2.ToString();
+    b2.MakeMove(Move{ Coordinates(7,4), Coordinates(7, 2) });
+    std::cout << b2.ToString();
+    b2.Pop();
+    //k
+    std::cout << b2.ToString();
+    b2.MakeMove(Move{ Coordinates(0,4), Coordinates(0, 6) });
+    std::cout << b2.ToString();
+    b2.Pop();
+    //q
+    std::cout << b2.ToString();
+    b2.MakeMove(Move{ Coordinates(0,4), Coordinates(0, 2) });
+    std::cout << b2.ToString();
+    b2.Pop();
+
+
     return 0;
 }
 

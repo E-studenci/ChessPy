@@ -1,6 +1,7 @@
 #pragma once
 #include "Move.h"
 #include "Coordinates.h"
+#include "AttackedLine.h"
 #include <string>
 #include <vector>
 #include <array>
@@ -15,10 +16,11 @@ public:
 	std::array<bool,4> castlingFlags; // wk,wq,bk,bq
 	Coordinates enPassant; // en passant destination
 	bool sideToMove; // false - white, true - black
-	std::array<std::array<std::array<bool,8>,8>,2> attackFields; // 0-white, 1-black, 8x8bool table
+	std::array<std::array<std::array<bool,8>,8>,2> attackedFields; // 0-white, 1-black, 8x8bool table
+	std::array<std::array<std::array<bool, 8>, 8>, 2> defendedFields; // 0-white, 1-black, 8x8bool table
 	int neuralNetworkRepresentation[14][8][8]; // 0-11 - pieces, 13,14 - attack fields
 	std::map<Coordinates, std::vector<Move>> allLegalMoves; // piece_position: moves
-	std::map<Coordinates, std::vector<Coordinates>> pinLines, pinLinesOpponent; // key - pinned piece position, values - positions in the pinline
+	std::array <std::vector<AttackedLine>, 2> attackedLines; // 0-white, 1-black
 	std::vector<Move> moveHistory; // all past moves
 	std::vector<std::array<std::array<int, 8>, 8>> boardHistory; // all past positions for the threefold repetion rule TODO: make this a map
 	Board(std::string fen);
@@ -30,10 +32,14 @@ public:
 	void ConvertForNeuralNetwork() {} // convert the board to its nn representation
 	std::string ToString();
 	static std::string ConvertPositionToStr(Coordinates pos); // [0][0] to a8...
-	static Coordinates ConvertStrToPosition(const char pos[2]); // a8 to [0][0]...
+	static Coordinates ConvertStrToPosition(const std::array<char,2> pos); // a8 to [0][0]...
 private:
 	void CalculateAttackFields(); // calculate attackfields for both sides
 	void Capture(Coordinates destination); // invoked inside Board::MakeMove if the move was a take
 	int GameStatus(); // 0-ongoing, 1-draw, 2-win
 	bool PieceColor(int piece) { return piece < 7; }
+	void SetAttackedField(bool attackingPieceColor, Coordinates attackedField);
+	inline bool FieldIsInBounds(Coordinates field) { 
+		return (field.row < 8 && field.row >= 0) && (field.column < 8 && field.column >= 0); }
+
 };
