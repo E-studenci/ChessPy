@@ -100,6 +100,8 @@ void Board::Capture(Coordinates destination) {
     // /take care of castling flags
 }
 void Board::MakeMove(const Move move) {
+    this->movesAreCalculated = false;
+
     int movingPiece = this->board[move.from.row][move.from.column];
     bool resetEnPassant = true;
     bool resetMoveCounter = false;
@@ -210,6 +212,7 @@ void Board::MakeMove(const Move move) {
 void Board::Pop(){
     // TODO: revert attacked fields?
     if (this->boardHistory.size() > 0 && this->moveHistory.size() > 0) {
+        this->movesAreCalculated = false;
         // revert the changes made by the move
         int boardIndex = this->boardHistory.size() - 1;
         int moveIndex = this->moveHistory.size() - 1;
@@ -245,9 +248,15 @@ void Board::Pop(){
     }
 }
 
-std::map<Coordinates, std::vector<Move>> Board::CalculateLegalMoves() {
-    this->CalculateAttackFields(); // temp ofc
-    return std::map<Coordinates, std::vector<Move>>{};
+std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves() {
+    if (!movesAreCalculated) {
+        this->CalculateAttackFields();
+        this->CalculateLegalMoves();
+    }
+    return this->allLegalMoves;
+}
+void Board::CalculateLegalMoves() {
+    
 }
 void Board::CalculateAttackFields() {
     // for each piece calculate it's attack fields and if the piece is sliding, calculate pin lines
@@ -308,11 +317,12 @@ void Board::CalculateAttackFields() {
                                             interrupted = true;
                                         }
                                         else if (attackedPiece == (movingPieceColor ? 1 : 7)) { // the piece in way is the enemy's king
-                                            enemyKingInWay = true;
                                             if (pieceInWay)
                                                 interrupted = true;
-                                            else
+                                            else {
+                                                enemyKingInWay = true;
                                                 pieceInWay = true;
+                                            }
                                         }
                                         else {// the piece in way is any other enemy piece
                                             if (pieceInWay)
@@ -325,7 +335,7 @@ void Board::CalculateAttackFields() {
                                     currentlyCalculatedPosition += pieceCharacteristics.pieceMovement[directionIndex];
                                 }
                                 if (enemyKingInWay) {
-                                    this->attackedLines[movingPieceColor].push_back(AttackedLine{ pinLine, pinnedPiece });
+                                    this->attackedLines[movingPieceColor].push_back(AttackedLine{ pinLine, pinnedPiece }); // TODO: change it to map of pin lines and vector of attack lines
                                 }
                             } // /piece is sliding
                         } // /move can be made
@@ -445,4 +455,20 @@ std::string Board::ConvertPositionToStr(Coordinates pos) {
 Board::~Board() {
     this->moveHistory.clear();
     this->boardHistory.clear();
+}
+std::array<std::array<std::array<bool, 8>, 8>, 16> Board::GetNeuralNetworkRepresentation() {
+    std::array<std::array<std::array<bool, 8>, 8>, 16> retArray;
+
+    for (int row = 0;row < 8;row++) {
+        for (int column = 0; column < 8; column++) {
+            if (this->board[row][column] != 0) {
+                retArray[this->board[row][column]-1][row][column] = true;
+            }
+            retArray[12][row][column] = this->attackedFields[0][row][column];
+            retArray[13][row][column] = this->attackedFields[1][row][column];
+            retArray[14][row][column] = this->defendedFields[0][row][column];
+            retArray[15][row][column] = this->defendedFields[1][row][column];
+        }
+    }
+    return retArray;
 }
