@@ -252,11 +252,12 @@ std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves() {
     if (!movesAreCalculated) {
         this->CalculateAttackFields();
         this->CalculateLegalMoves();
+        this->movesAreCalculated = true;
     }
     return this->allLegalMoves;
 }
 void Board::CalculateLegalMoves() {
-    
+
 }
 void Board::CalculateAttackFields() {
     // for each piece calculate it's attack fields and if the piece is sliding, calculate pin lines
@@ -264,6 +265,7 @@ void Board::CalculateAttackFields() {
         for (int column= 0; column< 8; column++) {
             int movingPiece = this->board[row][column];
             if (movingPiece != 0) {
+                PieceCharacteristics pieceCharacteristics = PieceMovement::Get(movingPiece);
                 bool movingPieceColor = movingPiece > 6;
                 // pawn
                 if (movingPiece == 6 || movingPiece == 12) { // TODO: enpassant
@@ -280,7 +282,6 @@ void Board::CalculateAttackFields() {
                 // /pawn
                 // every other piece
                 else {
-                    PieceCharacteristics pieceCharacteristics = PieceMovement::Get(movingPiece);
                     for (int directionIndex = 0; directionIndex < pieceCharacteristics.pieceMovement.size(); directionIndex++) {
                         Coordinates currentlyCalculatedPosition{ 
                             row + pieceCharacteristics.pieceMovement[directionIndex].row,
@@ -288,19 +289,19 @@ void Board::CalculateAttackFields() {
                         // move can be made
                         if (this->FieldIsInBounds(currentlyCalculatedPosition)) {
                             this->SetAttackedField(movingPieceColor, currentlyCalculatedPosition);
-                            if (pieceCharacteristics.isSliding) { // piece is sliding
-                                // pin line is the line from the center of the moving piece to the opponent's king
-                                // piece in way is true if there is any piece in the way of the moving piece
-                                // if the piece in way is of the same color as the moving piece, the pin line is broken
-                                std::vector<Coordinates> pinLine{ Coordinates{row, column}, currentlyCalculatedPosition };
-                                int attackedPiece = this->board[currentlyCalculatedPosition.row][currentlyCalculatedPosition.column];
-                                bool pieceInWay = attackedPiece != 0;
-                                bool enemyKingInWay = (attackedPiece != 0) &&
-                                    (attackedPiece == (movingPieceColor ? 1 : 7));
+                            // pin line is the line from the center of the moving piece to the opponent's king
+                            // piece in way is true if there is any piece in the way of the moving piece
+                            // if the piece in way is of the same color as the moving piece, the pin line is broken
+                            std::vector<Coordinates> pinLine{ Coordinates{row, column}, currentlyCalculatedPosition };
+                            int attackedPiece = this->board[currentlyCalculatedPosition.row][currentlyCalculatedPosition.column];
+                            bool pieceInWay = attackedPiece != 0;
+                            bool enemyKingInWay = (attackedPiece != 0) &&
+                                (attackedPiece == (movingPieceColor ? 1 : 7));
+
+                            Coordinates pinnedPiece = (pieceInWay && !enemyKingInWay) ? Coordinates(currentlyCalculatedPosition) : Coordinates();
+                            if (pieceCharacteristics.isSliding) { // piece is sliding (rook, bishop, queen)
                                 bool interrupted = pieceInWay &&
                                     ((attackedPiece > 6) == movingPieceColor);
-
-                                Coordinates pinnedPiece = pieceInWay ? Coordinates(currentlyCalculatedPosition) : Coordinates();
 
                                 currentlyCalculatedPosition += pieceCharacteristics.pieceMovement[directionIndex];
 
@@ -317,8 +318,10 @@ void Board::CalculateAttackFields() {
                                             interrupted = true;
                                         }
                                         else if (attackedPiece == (movingPieceColor ? 1 : 7)) { // the piece in way is the enemy's king
-                                            if (pieceInWay)
+                                            if (pieceInWay) {
+                                                enemyKingInWay = true;
                                                 interrupted = true;
+                                            }
                                             else {
                                                 enemyKingInWay = true;
                                                 pieceInWay = true;
@@ -334,10 +337,13 @@ void Board::CalculateAttackFields() {
                                     }
                                     currentlyCalculatedPosition += pieceCharacteristics.pieceMovement[directionIndex];
                                 }
-                                if (enemyKingInWay) {
-                                    this->attackedLines[movingPieceColor].push_back(AttackedLine{ pinLine, pinnedPiece }); // TODO: change it to map of pin lines and vector of attack lines
-                                }
                             } // /piece is sliding
+                            if (enemyKingInWay) {
+                                if (pinnedPiece)
+                                    this->pinLines[movingPieceColor].insert({ pinnedPiece, pinLine });
+                                else 
+                                    this->attackLines[movingPieceColor].push_back(pinLine); 
+                            }
                         } // /move can be made
                     }
                 } // /every other piece

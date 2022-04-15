@@ -31,7 +31,10 @@ public:
 private:
 	std::array<std::array<std::array<bool,8>,8>,2> attackedFields; // 0-white, 1-black, 8x8bool table
 	std::array<std::array<std::array<bool, 8>, 8>, 2> defendedFields; // 0-white, 1-black, 8x8bool table
-	std::array <std::vector<AttackedLine>, 2> attackedLines; // 0-white, 1-black
+
+	std::array<std::vector<std::vector<Coordinates>>, 2> attackLines; // 0-white, 1-black
+	std::array<std::map<Coordinates,std::vector<Coordinates>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
+
 	std::vector<std::array<std::array<int, 8>, 8>> boardHistory; // all past positions for the threefold repetion rule TODO: make this a map
 	std::map<Coordinates, std::vector<Move>> allLegalMoves; // piece_position: moves
 	bool movesAreCalculated;

@@ -19,6 +19,9 @@ struct Coordinates
 	bool operator==(const Coordinates& other) {
 		return this->row == other.row && this->column == other.column;
 	}
+	operator bool()const { // TODO: Check if this works
+		return (this->row != -1) && (this->column!=-1);
+	}
 	void Update(const Coordinates& other) {
 		this->row += other.row;
 		this->column += other.column;
