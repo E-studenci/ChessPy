@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  keycloak:
+    image: jboss/keycloak:11.0.2
+    container_name: keycloak
+    ports:
+      - 8080:8080
+    env_file:
+      - ./etc/keycloak.env
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:13.0-alpine
+    container_name: postgres
+    ports:
+      - 5432:5432
+    env_file:
+      - ./etc/postgres.env
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
+volumes:
+  postgres:
