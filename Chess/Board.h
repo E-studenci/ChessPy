@@ -2,9 +2,12 @@
 #include "Move.h"
 #include "Coordinates.h"
 #include "AttackedLine.h"
+#include "PieceCharacteristics.h"
+
 #include <string>
 #include <vector>
 #include <array>
+#include <unordered_map>
 #include <map>
 class Board
 {
@@ -28,7 +31,12 @@ public:
 	std::string AttackedFieldsToString();
 	static std::string ConvertPositionToStr(Coordinates pos); // [0][0] to a8...
 	static Coordinates ConvertStrToPosition(const std::array<char,2> pos); // a8 to [0][0]...
+
+	PieceCharacteristics GetPieceMovement(int piece);
 private:
+	std::array<PieceCharacteristics, 12> pieceMovement;
+	void InitPieceMovement();
+
 	std::array<std::array<std::array<bool,8>,8>,2> attackedFields; // 0-white, 1-black, 8x8bool table
 	std::array<std::array<std::array<bool, 8>, 8>, 2> defendedFields; // 0-white, 1-black, 8x8bool table
 

@@ -2,12 +2,19 @@
 //
 
 #include "Board.h"
+#include "Coordinates.h"
+
+
 #include <iostream>
 #include <chrono>
 
 #include "Coordinates.h"
 int main()
 {
+
+
+
+
     Board b("1r2kbnr/pb1qpppp/Q1n5/1Np5/2P5/1K1B3N/PP1P2PP/R1B2q1R w kQ - 0 13");
     std::cout << b.ToString();
     Move m(Coordinates(6,6), Coordinates(4,6));

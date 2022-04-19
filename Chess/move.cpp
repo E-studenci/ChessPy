@@ -1,4 +1,4 @@
-#include "move.h"
+#include "Move.h"
 #include "Coordinates.h"
 #include <array>
 Move::Move(Coordinates from, Coordinates destination,

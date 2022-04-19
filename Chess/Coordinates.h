@@ -1,4 +1,6 @@
 #pragma once
+#include <cmath>
+
 struct Coordinates
 {
 	Coordinates() {
@@ -19,7 +21,7 @@ struct Coordinates
 	bool operator==(const Coordinates& other) {
 		return this->row == other.row && this->column == other.column;
 	}
-	operator bool()const { // TODO: Check if this works
+	operator bool()const {
 		return (this->row != -1) && (this->column!=-1);
 	}
 	void Update(const Coordinates& other) {

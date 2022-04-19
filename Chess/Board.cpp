@@ -1,4 +1,5 @@
-#include "PieceMovement.h"
+#include "PieceCharacteristics.h"
+
 #include "Coordinates.h"
 #include "Board.h"
 #include <iterator>
@@ -6,6 +7,8 @@
 #include <array>
 #include <map>
 Board::Board(std::string fen) {
+    this->InitPieceMovement();
+
     std::map<char, int> pieceMap
     { {'k',7},{'K',1},
         {'q',8},{'Q',2},
@@ -265,7 +268,7 @@ void Board::CalculateAttackFields() {
         for (int column= 0; column< 8; column++) {
             int movingPiece = this->board[row][column];
             if (movingPiece != 0) {
-                PieceCharacteristics pieceCharacteristics = PieceMovement::Get(movingPiece);
+                PieceCharacteristics pieceCharacteristics = this->GetPieceMovement(movingPiece);
                 bool movingPieceColor = movingPiece > 6;
                 // pawn
                 if (movingPiece == 6 || movingPiece == 12) { // TODO: enpassant
@@ -477,4 +480,68 @@ std::array<std::array<std::array<bool, 8>, 8>, 16> Board::GetNeuralNetworkRepres
         }
     }
     return retArray;
+}
+
+void Board::InitPieceMovement() {
+    // directions
+    Coordinates u{ -1,0 };
+    Coordinates ur{ -1,1 };
+    Coordinates r{ 0,1 };
+    Coordinates dr{ 1,1 };
+    Coordinates d{ 1,0 };
+    Coordinates dl{ 1,-1 };
+    Coordinates l{ 0,-1 };
+    Coordinates ul{ -1,-1 };
+
+    Coordinates uur{ -2, 1 };
+    Coordinates rru{ -1, 2 };
+    Coordinates rrd{ 1, 2 };
+    Coordinates ddr{ 2, 1 };
+    Coordinates ddl{ 2, -1 };
+    Coordinates lld{ 1, -2 };
+    Coordinates llu{ -1, -2 };
+    Coordinates uul{ -2, -1 };
+    // /directions
+
+    std::vector<Coordinates> wkMovement{ u,ur,r,dr,d,dl,l,ul };
+    std::vector<Coordinates> wqMovement{ u,ur,r,dr,d,dl,l,ul };
+    std::vector<Coordinates> wnMovement{ uur, rru,rrd,ddr,ddl,lld,llu,uul };
+    std::vector<Coordinates> wbMovement{ ur,dr,dl,ul };
+    std::vector<Coordinates> wrMovement{ u,r,d,l };
+    std::vector<Coordinates> wpMovement{ u };
+    std::vector<Coordinates> bkMovement{ u,ur,r,dr,d,dl,l,ul };
+    std::vector<Coordinates> bqMovement{ u,ur,r,dr,d,dl,l,ul };
+    std::vector<Coordinates> bnMovement{ uur, rru,rrd,ddr,ddl,lld,llu,uul };
+    std::vector<Coordinates> bbMovement{ ur,dr,dl,ul };
+    std::vector<Coordinates> brMovement{ u,r,d,l };
+    std::vector<Coordinates> bpMovement{ d };
+
+    PieceCharacteristics wk(wkMovement, false);
+    PieceCharacteristics wq(wqMovement, true);
+    PieceCharacteristics wn(wnMovement, false);
+    PieceCharacteristics wb(wbMovement, true);
+    PieceCharacteristics wr(wrMovement, true);
+    PieceCharacteristics wp(wpMovement, false);
+    PieceCharacteristics bk(bkMovement, false);
+    PieceCharacteristics bq(bqMovement, true);
+    PieceCharacteristics bn(bnMovement, false);
+    PieceCharacteristics bb(bbMovement, true);
+    PieceCharacteristics br(brMovement, true);
+    PieceCharacteristics bp(bpMovement, false);
+
+    this->pieceMovement[0] = wk;
+    this->pieceMovement[1] = wq;
+    this->pieceMovement[2] = wn;
+    this->pieceMovement[3] = wb;
+    this->pieceMovement[4] = wr;
+    this->pieceMovement[5] = wp;
+    this->pieceMovement[6] = bk;
+    this->pieceMovement[7] = bq;
+    this->pieceMovement[8] = bn;
+    this->pieceMovement[9] = bb;
+    this->pieceMovement[10] = br;
+    this->pieceMovement[11] = bp;
+}
+PieceCharacteristics Board::GetPieceMovement(int piece) {
+    return this->pieceMovement[piece - 1];
 }
