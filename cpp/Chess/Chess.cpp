@@ -7,14 +7,9 @@
 
 #include <iostream>
 #include <chrono>
-
 #include "Coordinates.h"
 int main()
 {
-
-
-
-
     Board b("1r2kbnr/pb1qpppp/Q1n5/1Np5/2P5/1K1B3N/PP1P2PP/R1B2q1R w kQ - 0 13");
     std::cout << b.ToString();
     Move m(Coordinates(6,6), Coordinates(4,6));
@@ -77,22 +72,11 @@ int main()
     std::cout << b2.ToString();
     b2.Pop();
 
-    Board b3("rnb2bnr/ppp1pppp/8/3k4/3p2q1/1Q1R4/PPPPPPPP/1NB1KBNR b K - 1 1");
-    std::cout << b3.ToString();
-
-    Coordinates c;
-    Coordinates c2(1, 2);
-
-    b3.GetAllLegalMoves();
-    std::cout << b3.AttackedFieldsToString();
-    std::cout << "byebye";
-
-    Board b5{ "rnbq1bnr/ppp2ppp/1k2p3/4P3/N2p4/4Q3/PPP1PPPP/R1B1KBNR w KQ - 0 1" };
+    Board b5{ "1n2k1n1/pppppppp/r1q1r1bb/3PB3/4K3/6R1/PPP1PPPP/1N1Q1BNR w - - 0 1" };
     std::cout << b5.ToString();
 
     b5.GetAllLegalMoves();
     std::cout << b5.AttackedFieldsToString();
-
     /*auto start = std::chrono::high_resolution_clock::now();
     Board b4("r1b1k3/p1p2ppp/1pnp1q1r/1Q2pn2/PbNP2B1/1P2NPR1/2PBPKPP/1R6 w q - 1 1");
     for (int i = 0; i < 1000000; i++) {

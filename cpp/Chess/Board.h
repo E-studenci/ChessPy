@@ -46,7 +46,9 @@ private:
 	std::vector<std::array<std::array<int, 8>, 8>> boardHistory; // all past positions for the threefold repetion rule TODO: make this a map
 	std::map<Coordinates, std::vector<Move>> allLegalMoves; // piece_position: moves
 	bool movesAreCalculated;
+
 	void CalculateLegalMoves();
+	std::vector<Move> CalculateLegalMovesForPiece(Coordinates from, int movingPiece);
 	void CalculateAttackFields(); // calculate attackfields for both sides
 	void Capture(Coordinates destination); // invoked inside Board::MakeMove if the move was a take
 	int GameStatus(); // 0-ongoing, 1-draw, 2-win

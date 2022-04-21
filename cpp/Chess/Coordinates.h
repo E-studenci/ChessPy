@@ -21,6 +21,9 @@ struct Coordinates
 	bool operator==(const Coordinates& other) {
 		return this->row == other.row && this->column == other.column;
 	}
+	bool operator<(const Coordinates& other) const {
+		return (this->row*8+this->column) < (other.row*8+other.column);
+	}
 	operator bool()const {
 		return (this->row != -1) && (this->column!=-1);
 	}
