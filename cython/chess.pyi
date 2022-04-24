@@ -22,3 +22,6 @@ class Board:
 
     def make_move(self, move: Move) -> None:
         ...
+
+    def get_all_legal_moves(self) -> map[Coordinates, list[Move]]:
+        ...

@@ -1,5 +1,6 @@
 from cython.operator cimport dereference as deref
 from libcpp.vector cimport vector
+from libcpp.map cimport map
 from libcpp.string cimport string
 
 from exposer cimport CppCoordinates, CppMove, CppBoard
@@ -46,7 +47,7 @@ cdef class Move:
     
     def __dealloc__(self):
         del self.instance
-    
+
     @property
     def origin(self):
         return Coordinates(self.instance.origin.row, self.instance.origin.column)
@@ -73,7 +74,7 @@ cdef class Move:
     
     def __str__(self) -> str:
         return f"Move(origin={self.origin},destination={self.destination},promotion={self.promotion})"
-
+    
 
 cdef class Board:
     cdef CppBoard*instance
@@ -89,3 +90,22 @@ cdef class Board:
 
     def make_move(self, Move move):
         self.instance.MakeMove(deref(move.instance))
+    
+    def get_all_legal_moves(self):
+        result = {}
+        mappings = self.instance.GetAllLegalMoves()
+        for pair in mappings:
+            cords = pair.first
+            moves = pair.second
+            converted_moves = []
+            for i in range(moves.size()):
+                x = moves[i].origin.row
+                py_move = Move(
+                    Coordinates(moves[i].origin.row, moves[i].origin.column),
+                    Coordinates(moves[i].destination.row, moves[i].destination.column),
+                    moves[i].promotion
+                ) 
+                converted_moves.append(py_move)
+            result[Coordinates(cords.row, cords.column)] = converted_moves
+        return result
+

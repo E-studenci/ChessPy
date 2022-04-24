@@ -1,4 +1,12 @@
 from libcpp.string cimport string
+from libcpp.vector cimport vector
+from libcpp.map cimport map
+
+
+cdef extern from "<array>" namespace "std" nogil:
+    cdef cppclass array8 "std::array<int, 8>":
+        array8() except+
+        int& operator[](size_t)
 
 
 cdef extern from "Coordinates.h":
@@ -22,4 +30,5 @@ cdef extern from "Board.h":
         CppBoard() except +
         CppBoard(char *fen) except +
         void MakeMove(const CppMove move)
+        map[CppCoordinates, vector[CppMove]] GetAllLegalMoves()
         string ToString()

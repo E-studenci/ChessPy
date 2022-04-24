@@ -22,3 +22,7 @@ print(move1)
 board.make_move(move1)
 
 print(board)
+
+legal_moves = board.get_all_legal_moves()
+
+print(legal_moves)
