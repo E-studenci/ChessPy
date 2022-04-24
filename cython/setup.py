@@ -6,11 +6,11 @@ import os
 CPP_PATH = os.path.join("..", "cpp", "Chess")
 
 
-def find_cpp_files(folder_path: str) -> list[str]:
+def find_cpp_files(folder_path: str, exceptions: list[str] = []) -> list[str]:
     files = []
-    for path in os.listdir(folder_path):
-        if path.endswith(".cpp"):
-            files.append(os.path.join(folder_path, path))
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith(".cpp") and file_name not in exceptions:
+            files.append(os.path.join(folder_path, file_name))
     return files
 
 
@@ -19,9 +19,10 @@ print(find_cpp_files(CPP_PATH))
 ext_modules = [
     Extension(
         name="chess",
-        sources=["wrapper.pyx", *find_cpp_files(CPP_PATH)],
+        sources=["wrapper.pyx", *find_cpp_files(CPP_PATH, ["Algorithms.cpp"])],
         include_dirs=[CPP_PATH],
-        language="c++"
+        language="c++",
+        language_level=3
     )
 ]
 
