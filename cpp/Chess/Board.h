@@ -9,6 +9,7 @@
 #include <array>
 #include <unordered_map>
 #include <map>
+#include<set>
 class Board
 {
 public:
@@ -29,6 +30,7 @@ public:
 	std::array<std::array<std::array<bool, 8>, 8>, 16> GetNeuralNetworkRepresentation(); // convert the board to its nn representation
 	std::string ToString();
 	std::string AttackedFieldsToString();
+	std::string LegalMovesToString();
 	static std::string ConvertPositionToStr(Coordinates pos);				// [0][0] to a8...
 	static Coordinates ConvertStrToPosition(const std::array<char, 2> pos); // a8 to [0][0]...
 
@@ -41,15 +43,20 @@ private:
 	std::array<std::array<std::array<bool, 8>, 8>, 2> attackedFields; // 0-white, 1-black, 8x8bool table
 	std::array<std::array<std::array<bool, 8>, 8>, 2> defendedFields; // 0-white, 1-black, 8x8bool table
 
-	std::array<std::vector<std::vector<Coordinates>>, 2> attackLines;		 // 0-white, 1-black
-	std::array<std::map<Coordinates, std::vector<Coordinates>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
+	std::array<std::vector<std::set<Coordinates>>, 2> attackLines;		 // 0-white, 1-black
+	std::array<std::map<Coordinates, std::set<Coordinates>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
 
 	std::vector<std::array<std::array<int, 8>, 8>> boardHistory; // all past positions for the threefold repetion rule TODO: make this a map
 	std::map<Coordinates, std::vector<Move>> allLegalMoves;		 // piece_position: moves
 	bool movesAreCalculated;
 
 	void CalculateLegalMoves();
-	std::vector<Move> CalculateLegalMovesForPiece(Coordinates from, int movingPiece);
+	std::vector<Move> CalculateLegalMovesForPiece(Coordinates from, int movingPiece, bool movingPieceColor);
+	bool MoveIsLegal(const Coordinates& origin, const Coordinates& destination, int movingPiece, bool movingPieceColor,
+		bool pinned, bool kingIsInCheck,
+		const std::set<Coordinates>& pinLine, const std::set<Coordinates>& attackLine);
+	void PushMove(std::vector<Move>& legalMoves, const Coordinates& origin, const Coordinates& destination,
+		bool promotion = false, bool movingPieceColor = false);
 	void CalculateAttackFields();		   // calculate attackfields for both sides
 	void Capture(Coordinates destination); // invoked inside Board::MakeMove if the move was a take
 	int GameStatus();					   // 0-ongoing, 1-draw, 2-win

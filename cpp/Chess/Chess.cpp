@@ -7,7 +7,9 @@
 
 #include <iostream>
 #include <chrono>
+#include <set>
 #include "Coordinates.h"
+
 int main()
 {
     Board b("1r2kbnr/pb1qpppp/Q1n5/1Np5/2P5/1K1B3N/PP1P2PP/R1B2q1R w kQ - 0 13");
@@ -72,10 +74,11 @@ int main()
     std::cout << b2.ToString();
     b2.Pop();
 
-    Board b5{ "1n2k1n1/pppppppp/r1q1r1bb/3PB3/4K3/6R1/PPP1PPPP/1N1Q1BNR w - - 0 1" };
+    Board b5{ "rnb1kbnr/p2pPppp/1p1P1q2/8/2p5/8/PPP1P1PP/RNBQKBNR w KQ - 1 8" };
     std::cout << b5.ToString();
 
     b5.GetAllLegalMoves();
+    std::cout << b5.LegalMovesToString();
     std::cout << b5.AttackedFieldsToString();
     /*auto start = std::chrono::high_resolution_clock::now();
     Board b4("r1b1k3/p1p2ppp/1pnp1q1r/1Q2pn2/PbNP2B1/1P2NPR1/2PBPKPP/1R6 w q - 1 1");
