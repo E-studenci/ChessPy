@@ -37,6 +37,14 @@ cdef class Coordinates:
     def __str__(self) -> str:
         return f"Coordinates(row={self.row},column={self.column})"
 
+    def __hash__(self):
+        return hash((self.row, self.column))
+
+    def __eq__(self, other):
+        return (self.row, self.column) == (other.row, other.column)
+
+    def __ne__(self, other):
+        return not self == other
 
 
 cdef class Move:
@@ -74,6 +82,13 @@ cdef class Move:
     
     def __str__(self) -> str:
         return f"Move(origin={self.origin},destination={self.destination},promotion={self.promotion})"
+
+
+class MoveDict(dict):
+    def __getitem__(self, val):
+        if isinstance(val, tuple):
+            val = Coordinates(*val)        
+        return super().__getitem__(val)
     
 
 cdef class Board:
@@ -92,7 +107,7 @@ cdef class Board:
         self.instance.MakeMove(deref(move.instance))
     
     def get_all_legal_moves(self):
-        result = {}
+        result = MoveDict()
         mappings = self.instance.GetAllLegalMoves()
         for pair in mappings:
             cords = pair.first
@@ -108,4 +123,3 @@ cdef class Board:
                 converted_moves.append(py_move)
             result[Coordinates(cords.row, cords.column)] = converted_moves
         return result
-
