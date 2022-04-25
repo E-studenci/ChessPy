@@ -10,6 +10,7 @@ class Algorithms
 public:
 	Algorithms(std::string fen);
 	int PerftStarter(int depth); // used for multithreading
+	int PerftStarterSingleThread(int depth);
 	std::tuple<Move, float> GetBestMove(int depth, bool currentTurn); // Returns the best move and score after the move
 	float EvaluatePosition(int depth, bool currentTurn); // Returns the position score
 	~Algorithms() { delete this->board; }

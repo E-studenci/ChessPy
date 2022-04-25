@@ -9,7 +9,7 @@
 #include <array>
 #include <unordered_map>
 #include <map>
-#include<set>
+#include <set>
 class Board
 {
 public:

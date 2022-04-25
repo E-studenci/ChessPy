@@ -319,6 +319,7 @@ std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves()
 {
     if (!movesAreCalculated)
     {
+        this->allLegalMoves.clear();
         this->CalculateAttackFields();
         this->CalculateLegalMoves();
         this->movesAreCalculated = true;

@@ -3,7 +3,7 @@
 
 #include "Board.h"
 #include "Coordinates.h"
-
+#include "Algorithms.h"
 
 #include <iostream>
 #include <chrono>
@@ -74,12 +74,20 @@ int main()
     std::cout << b2.ToString();
     b2.Pop();
 
-    Board b5{ "rnb1kbnr/p2pPppp/1p1P1q2/8/2p5/8/PPP1P1PP/RNBQKBNR w KQ - 1 8" };
+    Board b5{ "1n2k1b1/pppppppp/r1qnr2b/3PB3/4K3/6R1/PPP1PPPP/1N1Q1BNR w - - 0 1" };
     std::cout << b5.ToString();
 
     b5.GetAllLegalMoves();
     std::cout << b5.LegalMovesToString();
     std::cout << b5.AttackedFieldsToString();
+
+    std::cout << "\nperft, motherfuckers\n";
+    Algorithms alg{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 " };
+    std::cout<<alg.PerftStarterSingleThread(1) << "\n";
+    std::cout << alg.PerftStarterSingleThread(2) << "\n";
+    std::cout << alg.PerftStarterSingleThread(3) << "\n";
+    std::cout << alg.PerftStarterSingleThread(4) << "\n";
+
     /*auto start = std::chrono::high_resolution_clock::now();
     Board b4("r1b1k3/p1p2ppp/1pnp1q1r/1Q2pn2/PbNP2B1/1P2NPR1/2PBPKPP/1R6 w q - 1 1");
     for (int i = 0; i < 1000000; i++) {
