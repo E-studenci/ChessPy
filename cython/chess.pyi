@@ -25,3 +25,14 @@ class Board:
 
     def get_all_legal_moves(self) -> map[Coordinates, list[Move]]:
         ...
+
+
+class Algorithms:
+    def __init__(self) -> None:
+        ...
+
+    def perft_starter(self, board: Board, depth: int) -> int:
+        ...
+
+    def perft_starter_single_thread(self, board: Board, depth: int) -> int:
+        ...

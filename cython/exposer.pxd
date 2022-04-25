@@ -32,3 +32,9 @@ cdef extern from "Board.h":
         void MakeMove(const CppMove move)
         map[CppCoordinates, vector[CppMove]] GetAllLegalMoves()
         string ToString()
+
+
+cdef extern from "Algorithms.h":
+    cdef cppclass CppAlgorithms "Algorithms":
+        int PerftStarter(CppBoard* board, int depth)
+        int PerftStarterSingleThread(CppBoard* board, int depth)

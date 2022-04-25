@@ -14,12 +14,10 @@ def find_cpp_files(folder_path: str, exceptions: list[str] = []) -> list[str]:
     return files
 
 
-print(find_cpp_files(CPP_PATH))
-
 ext_modules = [
     Extension(
         name="chess",
-        sources=["wrapper.pyx", *find_cpp_files(CPP_PATH, ["Algorithms.cpp"])],
+        sources=["wrapper.pyx", *find_cpp_files(CPP_PATH)],
         include_dirs=[CPP_PATH],
         language="c++",
         language_level=3

@@ -3,13 +3,13 @@ from libcpp.vector cimport vector
 from libcpp.map cimport map
 from libcpp.string cimport string
 
-from exposer cimport CppCoordinates, CppMove, CppBoard
+from exposer cimport CppCoordinates, CppMove, CppBoard, CppAlgorithms
 
 
 cdef class Coordinates:
     cdef CppCoordinates*instance
 
-    def __cinit__(self, row=None, column=None):
+    def __init__(self, row=None, column=None):
         if row is not None and column is not None:
             self.instance = new CppCoordinates(row, column)
         else:
@@ -50,7 +50,7 @@ cdef class Coordinates:
 cdef class Move:
     cdef CppMove*instance
 
-    def __cinit__(self, Coordinates origin, Coordinates destination, int promotion = 0):
+    def __init__(self, Coordinates origin, Coordinates destination, int promotion = 0):
         self.instance = new CppMove(deref(origin.instance), deref(destination.instance), promotion)
     
     def __dealloc__(self):
@@ -123,3 +123,19 @@ cdef class Board:
                 converted_moves.append(py_move)
             result[Coordinates(cords.row, cords.column)] = converted_moves
         return result
+
+
+cdef class Algorithms:
+    cdef CppAlgorithms*instance
+
+    def __cinit__(self):
+        self.instance = new CppAlgorithms()
+
+    def __dealloc__(self):
+        del self.instance
+
+    def perft_starter(self, Board board, int depth) -> int:
+        return self.instance.PerftStarter(board.instance, depth)
+    
+    def perft_starter_single_thread(self, Board board, int depth) -> int:
+        return self.instance.PerftStarterSingleThread(board.instance, depth)
