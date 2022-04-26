@@ -139,6 +139,7 @@ void Board::MakeMove(const Move move)
     this->movesAreCalculated = false;
 
     int movingPiece = this->board[move.origin.row][move.origin.column];
+    int capturedPiece = this->board[move.destination.row][move.destination.column];
     bool resetEnPassant = true;
     bool resetMoveCounter = false;
 
@@ -247,7 +248,7 @@ void Board::MakeMove(const Move move)
     this->board[move.origin.row][move.origin.column] = 0;
     // /move the piece
     // save the move in move history
-    this->moveHistory.push_back(Move{move.origin, move.destination, move.promotion, movingPiece, castlingFlags, enPassant, seventyFiveMoveRule});
+    this->moveHistory.push_back(Move{move.origin, move.destination, move.promotion, movingPiece,capturedPiece, castlingFlags, enPassant, seventyFiveMoveRule});
     // /save the move in move history
     if (!sideToMove)
     {
@@ -279,13 +280,37 @@ void Board::Pop()
         // revert the changes made by the move
         int boardIndex = this->boardHistory.size() - 1;
         int moveIndex = this->moveHistory.size() - 1;
-        for (int i = 0; i < 8; i++)
+        /*for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
                 this->board[i][j] = this->boardHistory[boardIndex][i][j];
             }
+        }*/
+        // new
+        Move move = this->moveHistory[moveIndex];
+
+        if (move.enPassant &&
+            move.movingPiece == (!this->sideToMove ? 12 : 6) &&
+            move.destination == move.enPassant) { // move was an en passant
+        
         }
+        else {
+            if (move.capturedPiece != 0) { // there was a capture
+                this->board[move.destination.row][move.destination.column] = move.capturedPiece;
+            }
+            if ((move.movingPiece == 1 || move.movingPiece == 7) &&
+                ((move.destination.column - move.origin.column == 2) || (move.destination.column - move.origin.column == -2))) { // move was a castle
+                bool kingSideCastle = (move.origin.column - move.destination.column) == -2;
+                int castleFromCol = move.origin.column + (kingSideCastle ? 3 : -4);
+                int castleDestCol = move.origin.column + (kingSideCastle ? 1 : -1);
+                this->board[move.origin.row][castleFromCol] = this->board[move.origin.row][castleDestCol];
+                this->board[move.origin.row][castleDestCol] = 0;
+            }
+            this->board[move.origin.row][move.origin.column] = move.movingPiece;
+        }
+        // /new
+
         // update kingPos if the moving piece was a king
         if (this->moveHistory[moveIndex].movingPiece == 1 ||
             this->moveHistory[moveIndex].movingPiece == 7)

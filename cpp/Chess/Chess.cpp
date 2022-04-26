@@ -82,11 +82,14 @@ int main()
     std::cout << b5.AttackedFieldsToString();
 
     std::cout << "\nperft, motherfuckers\n";
-    Algorithms alg{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 " };
-    std::cout<<alg.PerftStarterSingleThread(1) << "\n";
-    std::cout << alg.PerftStarterSingleThread(2) << "\n";
-    std::cout << alg.PerftStarterSingleThread(3) << "\n";
-    std::cout << alg.PerftStarterSingleThread(4) << "\n";
+    Algorithms alg;
+    std::cout << alg.PerftStarterSingleThread(new Board{"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"}, 1) << "\n";
+    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 2) << "\n";
+    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 3) << "\n";
+    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 4) << "\n";
+    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 5) << "\n";
+    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 6) << "\n";
+
 
     /*auto start = std::chrono::high_resolution_clock::now();
     Board b4("r1b1k3/p1p2ppp/1pnp1q1r/1Q2pn2/PbNP2B1/1P2NPR1/2PBPKPP/1R6 w q - 1 1");
