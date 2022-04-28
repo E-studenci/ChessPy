@@ -64,6 +64,7 @@ private:
 	int GameStatus();					   // 0-ongoing, 1-draw, 2-win
 	bool PieceColor(int piece) { return piece < 7; }
 	void SetAttackedField(bool attackingPieceColor, Coordinates attackedField);
+	void Clear(); // clears attack fields etc
 	inline bool FieldIsInBounds(Coordinates field)
 	{
 		return (field.row < 8 && field.row >= 0) && (field.column < 8 && field.column >= 0);

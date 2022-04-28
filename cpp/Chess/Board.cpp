@@ -169,8 +169,8 @@ void Board::MakeMove(const Move move)
     bool resetMoveCounter = false;
 
     // append a copy of this->board to board history
-    std::array<std::array<int, 8>, 8> boardCopy = this->board;
-    this->boardHistory.push_back(boardCopy);
+    /*std::array<std::array<int, 8>, 8> boardCopy = this->board;
+    this->boardHistory.push_back(boardCopy);*/
     // /append a copy of this->board to board history
 
     // prepare variables for move history, probably temporary
@@ -199,6 +199,17 @@ void Board::MakeMove(const Move move)
         // first move
         if (((move.origin.row - move.destination.row) == 2) || ((move.origin.row - move.destination.row) == -2))
         {
+            bool setEnPassantFlag = true;
+            // TODO: check if the adjacent pawn is pinned by a rook on the 2nd or 5th row
+           /* Coordinates right = Coordinates{ move.destination.row, move.destination.column + 1 };
+            Coordinates left = Coordinates{ move.destination.row, move.destination.column - 1 };
+            if (this->FieldIsInBounds(left) && this->FieldIsInBounds(right) &&
+                (
+                    (this->board[left.row][left.column] == (movingPiece == 6 ? 12 : 6)) || 
+                    (this->board[right.row][right.column] == (movingPiece == 6 ? 12 : 6)))) {
+                if (this->pinLines[this->sideToMove].count(right) == 1 &&
+                    this->pinLines[this->sideToMove][left].== )
+            }*/
             this->enPassant.row = move.origin.row == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
             this->enPassant.column = move.origin.column;        // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
 
@@ -272,7 +283,7 @@ void Board::MakeMove(const Move move)
     this->board[move.origin.row][move.origin.column] = 0;
     // /move the piece
     // save the move in move history
-    this->moveHistory.push_back(Move{move.origin, move.destination, move.promotion, movingPiece,capturedPiece, castlingFlags, enPassant, seventyFiveMoveRule});
+    this->moveHistory.push_back(Move{move.origin, move.destination, move.promotion, movingPiece, capturedPiece, castlingFlags, enPassant, seventyFiveMoveRule});
     // /save the move in move history
     if (!sideToMove)
     {
@@ -319,11 +330,11 @@ bool Board::operator==(const Board& other)
 void Board::Pop()
 {
     // TODO: revert attacked fields?
-    if (this->boardHistory.size() > 0 && this->moveHistory.size() > 0)
+    if (this->moveHistory.size() > 0)
     {
         this->movesAreCalculated = false;
         // revert the changes made by the move
-        int boardIndex = this->boardHistory.size() - 1;
+        //int boardIndex = this->boardHistory.size() - 1;
         int moveIndex = this->moveHistory.size() - 1;
         /*for (int i = 0; i < 8; i++)
         {
@@ -378,7 +389,7 @@ void Board::Pop()
         this->sideToMove = !this->sideToMove;
         // /decrement turn
         // pop the move and board from move history
-        this->boardHistory.pop_back();
+        //this->boardHistory.pop_back();
         this->moveHistory.pop_back();
         // /pop the move and board from history
     }
@@ -388,7 +399,7 @@ std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves()
 {
     if (!movesAreCalculated)
     {
-        this->allLegalMoves.clear();
+        this->Clear();
         this->CalculateAttackFields();
         this->CalculateLegalMoves();
         this->movesAreCalculated = true;
@@ -744,6 +755,23 @@ void Board::SetAttackedField(bool attackingPieceColor, Coordinates attackedField
         defendedFields[attackingPieceColor][attackedField.row][attackedField.column] = true;
     else
         attackedFields[attackingPieceColor][attackedField.row][attackedField.column] = true;
+}
+void Board::Clear()
+{
+    this->allLegalMoves.clear();
+    this->attackLines[0].clear();
+    this->attackLines[1].clear();
+    this->pinLines[0].clear();
+    this->pinLines[1].clear();
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            this->attackedFields[0][row][column] = false;
+            this->attackedFields[1][row][column] = false;
+            this->defendedFields[0][row][column] = false;
+            this->defendedFields[1][row][column] = false;
+
+        }
+    }
 }
 std::string Board::ToString()
 {
