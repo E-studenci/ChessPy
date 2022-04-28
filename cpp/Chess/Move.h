@@ -1,6 +1,7 @@
 #pragma once
 #include "Coordinates.h"
 #include <array>
+#include <string>
 class Move
 {
 public:
@@ -16,4 +17,5 @@ public:
 	Move(Coordinates origin, Coordinates destination, int promotion, int movingPiece, int capturedPiece, std::array<bool, 4> castlingFlags, Coordinates enPassant, int seventyFiveMoveRule);
 	Move(Coordinates origin, Coordinates destination, int promotion = 0) : Move(origin, destination, promotion, 0,0, std::array<bool, 4>{}, Coordinates{}, 0){};
 	Move(const Move &other);
+	std::string ToString() const;
 };

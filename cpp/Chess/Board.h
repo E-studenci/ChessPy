@@ -22,11 +22,13 @@ public:
 	bool sideToMove;						 // false - white, true - black
 	std::vector<Move> moveHistory;			 // all past moves
 	Board(std::string fen);
+	Board(const Board& other);
 	Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 	~Board();
 	std::map<Coordinates, std::vector<Move>> GetAllLegalMoves();
 	void Pop();																			 // unmake the last move
 	void MakeMove(const Move move);														 // commit a move
+	bool operator==(const Board& other);
 	std::array<std::array<std::array<bool, 8>, 8>, 16> GetNeuralNetworkRepresentation(); // convert the board to its nn representation
 	std::string ToString();
 	std::string AttackedFieldsToString();

@@ -1,6 +1,7 @@
 #include "Move.h"
 #include "Coordinates.h"
 #include <array>
+#include <string>
 Move::Move(Coordinates from, Coordinates destination,
 	int promotion, int movingPiece, int capturedPiece,
 	std::array<bool,4> castlingFlags, Coordinates enPassant,
@@ -29,4 +30,16 @@ Move::Move(const Move& other) {
 	this->enPassant.column = other.enPassant.column;
 	this->promotion = other.promotion;
 	this->seventyFiveMoveRule = other.seventyFiveMoveRule;
+}
+std::string Move::ToString() const{
+	std::string retString;
+	retString += "\n";
+	retString += this->origin.ToString();
+	retString += "->";
+	retString += this->destination.ToString();
+	retString += "moving piece: ";
+	retString += this->movingPiece;
+	retString += "captured piece: ";
+	retString += this->capturedPiece;
+	return retString;
 }

@@ -6,6 +6,9 @@
 #include <thread>
 #include <functional>
 #include <atomic>
+#include <iostream>
+#include <string>
+
 
 int Algorithms::Perft(Board *board, int depth)
 {
@@ -22,9 +25,18 @@ int Algorithms::Perft(Board *board, int depth)
 			}
 			else
 			{
+				Board b{ *board };
+
 				board->MakeMove(move);
 				legalMoveCount += Perft(board, depth - 1);
 				board->Pop();
+				if (!(b == *board)) {
+					std::cout << board->ToString();
+					std::cout << b.ToString();
+					std::cout << move.ToString();
+					std::cout << (b == *board);
+					std::cout << "fuck";
+				}
 			}
 		}
 	}
@@ -57,7 +69,7 @@ int Algorithms::PerftStarter(Board *board, int depth)
 			board->Pop();
 		}
 	}
-	int threadCount = std::thread::hardware_concurrency();
+	int threadCount = std::thread::hardware_concurrency() -1;
 	std::vector<std::thread> threads;
 	for (int i = 0; i < threadCount; i++)
 	{

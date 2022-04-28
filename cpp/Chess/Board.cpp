@@ -5,8 +5,11 @@
 //#include <bits/stdc++.h>
 #include <iterator>
 #include <sstream>
+#include <iostream>
+
 #include <array>
 #include <map>
+
 
 Board::Board(std::string fen)
 {
@@ -103,7 +106,9 @@ Board::Board(std::string fen)
     // parse en passant destination
     if (splitFen[3] != "-")
     {
-        this->enPassant = ConvertStrToPosition(std::array<char, 2>{splitFen[3].c_str()[0], splitFen[3].c_str()[1]});
+        this->enPassant.row = Coordinates(splitFen[3]).row;
+        this->enPassant.column = Coordinates(splitFen[3]).column;
+
     }
     // /parse en passant destination
 
@@ -114,6 +119,26 @@ Board::Board(std::string fen)
     // parse turn counter
     this->turnCounter = atoi(splitFen[5].c_str());
     // /parse turn counter
+}
+
+Board::Board(const Board& other)
+{
+    for (int row = 0;row < 8;row++)
+        for (int column = 0; column < 8; column++)
+            this->board[row][column] = other.board[row][column];
+    for (int i = 0; i < 4; i++)
+        this->castlingFlags[i] = other.castlingFlags[i];
+    this->seventyFiveMoveRuleCounter = other.seventyFiveMoveRuleCounter;
+    this->turnCounter = other.turnCounter;
+    this->kingPos[0].row = other.kingPos[0].row;
+    this->kingPos[0].column = other.kingPos[0].column;
+    this->kingPos[1].row = other.kingPos[1].row;
+    this->kingPos[1].column = other.kingPos[1].column;
+    this->enPassant.row = other.enPassant.row;
+    this->enPassant.column = other.enPassant.column;
+
+    this->movesAreCalculated = false;
+    this->sideToMove = other.sideToMove;
 }
 
 void Board::Capture(Coordinates destination)
@@ -172,8 +197,7 @@ void Board::MakeMove(const Move move)
         }
         // /en passant
         // first move
-        if ((move.origin.row == 1 && movingPiece == 12) ||
-            (move.origin.row == 6 && movingPiece == 6))
+        if (((move.origin.row - move.destination.row) == 2) || ((move.origin.row - move.destination.row) == -2))
         {
             this->enPassant.row = move.origin.row == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
             this->enPassant.column = move.origin.column;        // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
@@ -271,6 +295,27 @@ void Board::MakeMove(const Move move)
     }
     // /reset en passant flag and 75 move rule counter
 }
+bool Board::operator==(const Board& other)
+{
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            if (this->board[row][column] != other.board[row][column])
+                return false;
+        }
+    }
+    for (int i = 0; i < 4; i++)
+        if (this->castlingFlags[i] != other.castlingFlags[i])
+            return false;
+    if (this->enPassant != other.enPassant)
+        return false;
+    if (this->seventyFiveMoveRuleCounter != other.seventyFiveMoveRuleCounter)
+        return false;
+    if (this->turnCounter != other.turnCounter)
+        return false;
+    if (this->sideToMove != other.sideToMove)
+        return false;
+    return true;
+}
 void Board::Pop()
 {
     // TODO: revert attacked fields?
@@ -293,12 +338,9 @@ void Board::Pop()
         if (move.enPassant &&
             move.movingPiece == (!this->sideToMove ? 12 : 6) &&
             move.destination == move.enPassant) { // move was an en passant
-        
+            this->board[move.enPassant.row + (!this->sideToMove ? -1 : 1)][move.enPassant.column] = (!this->sideToMove ? 6 : 12);
         }
         else {
-            if (move.capturedPiece != 0) { // there was a capture
-                this->board[move.destination.row][move.destination.column] = move.capturedPiece;
-            }
             if ((move.movingPiece == 1 || move.movingPiece == 7) &&
                 ((move.destination.column - move.origin.column == 2) || (move.destination.column - move.origin.column == -2))) { // move was a castle
                 bool kingSideCastle = (move.origin.column - move.destination.column) == -2;
@@ -307,8 +349,9 @@ void Board::Pop()
                 this->board[move.origin.row][castleFromCol] = this->board[move.origin.row][castleDestCol];
                 this->board[move.origin.row][castleDestCol] = 0;
             }
-            this->board[move.origin.row][move.origin.column] = move.movingPiece;
         }
+        this->board[move.destination.row][move.destination.column] = move.capturedPiece;
+        this->board[move.origin.row][move.origin.column] = move.movingPiece;
         // /new
 
         // update kingPos if the moving piece was a king
@@ -321,6 +364,7 @@ void Board::Pop()
         this->seventyFiveMoveRuleCounter = this->moveHistory[moveIndex].seventyFiveMoveRule;
         this->enPassant.row = this->moveHistory[moveIndex].enPassant.row;
         this->enPassant.column = this->moveHistory[moveIndex].enPassant.column;
+
         this->castlingFlags[0] = this->moveHistory[moveIndex].castlingFlags[0];
         this->castlingFlags[1] = this->moveHistory[moveIndex].castlingFlags[1];
         this->castlingFlags[2] = this->moveHistory[moveIndex].castlingFlags[2];
@@ -720,13 +764,13 @@ std::string Board::ToString()
     std::map<int, std::string> castlingMap{{2, "k"}, {0, "K"}, {3, "q"}, {1, "Q"}};
     std::string retString;
     retString += "\nking pos white: ";
-    retString += this->ConvertPositionToStr(this->kingPos[0]);
+    retString += this->kingPos[0].ToString();
     retString += ", king pos black: ";
-    retString += this->ConvertPositionToStr(this->kingPos[1]);
+    retString += this->kingPos[1].ToString();
     retString += ", 75 move rule counter: ";
     retString += std::to_string(this->seventyFiveMoveRuleCounter);
     retString += ", enPassant: ";
-    retString += this->ConvertPositionToStr(this->enPassant);
+    retString += this->enPassant.ToString();
     retString += ", castling flags: ";
     for (int i = 0; i < 4; i++)
     {
@@ -820,9 +864,9 @@ std::string Board::LegalMovesToString() {
         {6, "P"} };
     std::string retString = "\n";
     for (const std::pair<Coordinates, std::vector<Move>>& keyValuePair : this->allLegalMoves) {
-        retString += this->ConvertPositionToStr(keyValuePair.first) += ": ";
+        retString += Coordinates::ToString(keyValuePair.first) += ": ";
         for (const Move& move : keyValuePair.second) {
-            retString += this->ConvertPositionToStr(move.destination);
+            retString += Coordinates::ToString(move.destination);
             if (move.promotion != 0) {
                 retString += "=" + pieceMap[move.promotion];
             }
@@ -831,18 +875,6 @@ std::string Board::LegalMovesToString() {
         retString += "\n";
     }
     return retString;
-}
-Coordinates Board::ConvertStrToPosition(const std::array<char, 2> pos)
-{
-    std::map<char, int> columnMap{{'a', 0}, {'b', 1}, {'c', 2}, {'d', 3}, {'e', 4}, {'f', 5}, {'g', 6}, {'h', 7}};
-    std::map<char, int> rowMap{{'8', 0}, {'7', 1}, {'6', 2}, {'5', 3}, {'4', 4}, {'3', 5}, {'2', 6}, {'1', 7}};
-    return Coordinates(rowMap[pos[1]], columnMap[pos[0]]);
-}
-std::string Board::ConvertPositionToStr(Coordinates pos)
-{
-    std::map<int, std::string> columnMap{{-1, "-"}, {0, "a"}, {1, "b"}, {2, "c"}, {3, "d"}, {4, "e"}, {5, "f"}, {6, "g"}, {7, "h"}};
-    std::map<int, std::string> rowMap{{-1, "-"}, {0, "8"}, {1, "7"}, {2, "6"}, {3, "5"}, {4, "4"}, {5, "3"}, {6, "2"}, {7, "1"}};
-    return columnMap[pos.column] + rowMap[pos.row];
 }
 Board::~Board()
 {
