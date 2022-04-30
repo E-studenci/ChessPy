@@ -8,48 +8,56 @@
 #include <atomic>
 #include <iostream>
 #include <string>
+#include <tuple>
+#include <vector>
 
 
-int Algorithms::Perft(Board *board, int depth)
+
+
+std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *board, int depth, bool divide)
 {
-	int legalMoveCount = 0;
+	std::tuple<int, std::vector<std::tuple<Move, int>>> result; // result[0] - legalMoveCount, result[1] - legalMoveCount for move (used for divide)
 
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 	for (const std::pair<const Coordinates, std::vector<Move>> &keyValuePair : currentLegalMoves)
 	{
 		for (const Move &move : keyValuePair.second)
 		{
+			int res = 0;
 			if (depth == 1)
 			{
-				legalMoveCount += 1;
+				res = 1;
 			}
 			else
 			{
 				board->MakeMove(move);
-				legalMoveCount += Perft(board, depth - 1);
+				res = std::get<0>(Perft(board, depth - 1));
 				board->Pop();
+			}
+			std::get<0>(result) += res;
+			if (divide) {
+				std::get<1>(result).push_back(std::tuple{ move, res });
 			}
 		}
 	}
-
-	return legalMoveCount;
+	return result;
 }
 
 void Algorithms::Worker(SafeQueue<Board *> &queue, std::atomic<int> &result, int depth)
 {
-	while (!queue.isEmpty())
-	{
-		Board *currentTask = queue.dequeue();
-		result += Perft(currentTask, depth);
-	}
+	//while (!queue.isEmpty())
+	//{
+	//	Board *currentTask = queue.dequeue();
+	//	result += Perft(currentTask, depth);
+	//}
 }
 
-int Algorithms::PerftStarter(Board *board, int depth)
+std::string Algorithms::PerftStarter(Board *board, int depth, bool divide)
 {
-	SafeQueue<Board *> tasks;
-	std::atomic<int> result = 0;
+	/*SafeQueue<Board *> tasks;
+	std::atomic<int> result = 0;*/
 
-	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
+	/*std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 	for (const std::pair<const Coordinates, std::vector<Move>> &keyValuePair : currentLegalMoves)
 	{
 		for (const auto &move : keyValuePair.second)
@@ -70,8 +78,25 @@ int Algorithms::PerftStarter(Board *board, int depth)
 	for (int i = 0; i < threadCount; i++)
 	{
 		threads[i].join();
-	}
-	return result;
+	}*/
+	return "";
 }
 
-int Algorithms::PerftStarterSingleThread(Board *board, int depth) { return this->Perft(board, depth); }
+std::string Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
+	std::string retString;
+	std::tuple<int, std::vector<std::tuple<Move, int>>> result = this->Perft(board, depth, divide);
+	retString += "Result: " + std::to_string(std::get<0>(result));
+	if (divide) {
+		retString += "\nDivide: \n";
+		for (int moveIndex = 0; moveIndex < std::get<1>(result).size()-1; moveIndex++) {
+			retString += "\t";
+			retString += std::get<0>(std::get<1>(result)[moveIndex]).ToString() + ": ";
+			retString += std::to_string(std::get<1>(std::get<1>(result)[moveIndex]));
+			retString += "\n";
+		}
+		retString += "\t";
+		retString += std::get<0>(std::get<1>(result)[std::get<1>(result).size() - 1]).ToString() + ": ";
+		retString += std::to_string(std::get<1>(std::get<1>(result)[std::get<1>(result).size() - 1]));
+	}
+	return retString;
+}

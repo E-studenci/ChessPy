@@ -33,13 +33,35 @@ Move::Move(const Move& other) {
 }
 std::string Move::ToString() const{
 	std::string retString;
-	retString += "\n";
-	retString += this->origin.ToString();
-	retString += "->";
-	retString += this->destination.ToString();
-	retString += "moving piece: ";
-	retString += this->movingPiece;
-	retString += "captured piece: ";
-	retString += this->capturedPiece;
+	if ((this->movingPiece == 1 || this->movingPiece == 7) &&
+		(this->origin.column - this->destination.column == 2 || this->origin.column - this->destination.column == -2)) {
+		if (this->origin.column - this->destination.column == 2)
+			retString = "O-O-O";
+		else
+			retString = "O-O";
+	}
+	else {
+		std::map<int, std::string> pieceMap{
+			{0, " "},
+			{7, "K"},
+			{1, "K"},
+			{8, "Q"},
+			{2, "Q"},
+			{9, "N"},
+			{3, "N"},
+			{10, "B"},
+			{4, "B"},
+			{11, "R"},
+			{5, "R"},
+			{12, "P"},
+			{6, "P"} };
+		if (this->movingPiece != 6 && this->movingPiece != 12)
+			retString += pieceMap[this->movingPiece];
+		retString += this->origin.ToString();
+		retString += this->capturedPiece == 0 ? "-" : "x";
+		retString += this->destination.ToString();
+		if (this->promotion != 0)
+			retString += "=" + pieceMap[this->promotion];
+	}
 	return retString;
 }

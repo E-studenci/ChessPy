@@ -111,18 +111,32 @@ int main()
     std::cout << "\nperft, motherfuckers\n";
     Algorithms alg;
     auto start = std::chrono::high_resolution_clock::now();
-    std::cout << alg.PerftStarterSingleThread(new Board{"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"}, 1) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 2) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 3) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 4) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 5) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 6) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 7) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 8) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 9) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 10) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 11) << "\n";
-    std::cout << alg.PerftStarterSingleThread(new Board{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }, 12) << "\n";
+    Board* b = new Board{ "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1" };
+    b->GetAllLegalMoves();
+    std::cout << b->ToString();
+    b->MakeMove(Move{ Coordinates{"g2"}, Coordinates{"g4"} });
+    std::cout << b->ToString();
+    //b->MakeMove(Move{ Coordinates{"h8"}, Coordinates{"h7"} });
+    //std::cout << b->ToString();
+    //b->MakeMove(Move{ Coordinates{"g1"}, Coordinates{"h1"} });
+    //std::cout << b->ToString();
+
+
+    b->GetAllLegalMoves();
+    std::cout << alg.PerftStarterSingleThread(b, 2, true) << "\n";
+
+    //std::cout << alg.PerftStarterSingleThread(b, 1) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 2) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 4) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 5) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 7) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 8) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 9) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 10) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 11) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 12) << "\n";
 
 
 

@@ -479,35 +479,40 @@ std::vector<Move> Board::CalculateLegalMovesForPiece(Coordinates origin, int mov
                     if (!this->attackedFields[!movingPieceColor][currentlyCalculatedPosition.row][currentlyCalculatedPosition.column] &&
                         !this->defendedFields[!movingPieceColor][currentlyCalculatedPosition.row][currentlyCalculatedPosition.column])
                     { // the destination field is neither attacked nor defended by the opponent
-                        legalMoves.push_back(Move{origin, currentlyCalculatedPosition, 0});
+                        this->PushMove(legalMoves, origin, currentlyCalculatedPosition, false, movingPieceColor);
                     } // /the destination field is neither attacked nor defended by the opponent
                 }     // /the field is not occupied by allied piece
             }         // /normal moves
-            // castling
-            if ((this->castlingFlags[movingPieceColor] || this->castlingFlags[movingPieceColor + 1]) &&
-                !(this->attackLines[!movingPieceColor].size() > 0))
-            { // can't castle if the king is attacked
-                // king side castle
-                if ((!this->board[origin.row][origin.column + 1] && !this->attackedFields[!movingPieceColor][origin.row][origin.column + 1]) &&
-                    (!this->board[origin.row][origin.column + 2] && !this->attackedFields[!movingPieceColor][origin.row][origin.column + 2]))
-                { // the fields between the king and rook are unoccupied and not attacked
-                    legalMoves.push_back(Move{origin, Coordinates{origin.row, origin.column + 2}, 0});
-                }
-                // /king side castle
-                // queen side castle
-                if (((this->board[origin.row][origin.column - 1] == 0) && !this->attackedFields[!movingPieceColor][origin.row][origin.column - 1]) &&
-                    ((this->board[origin.row][origin.column - 2] == 0) && !this->attackedFields[!movingPieceColor][origin.row][origin.column - 2]) &&
-                    (this->board[origin.row][origin.column - 3] == 0))
-                { // the fields between the king and rook are unoccupied and not attacked
-                    legalMoves.push_back(Move{origin, Coordinates{origin.row, origin.column - 2}, 0});
-                }
-                // /queen side castle
-            }
-            // /castling
         }
+        // castling
+        bool canKingCastle = this->castlingFlags[movingPieceColor * 2];
+        bool canQueenCastle = this->castlingFlags[movingPieceColor * 2 + 1];
+        if ((canKingCastle || canQueenCastle) &&
+            !(this->attackLines[!movingPieceColor].size() > 0))
+        { // can't castle if the king is attacked
+            // king side castle
+            if (canKingCastle &&
+                (!this->board[origin.row][origin.column + 1] && !this->attackedFields[!movingPieceColor][origin.row][origin.column + 1]) &&
+                (!this->board[origin.row][origin.column + 2] && !this->attackedFields[!movingPieceColor][origin.row][origin.column + 2]))
+            { // the fields between the king and rook are unoccupied and not attacked
+                this->PushMove(legalMoves, origin, Coordinates{ origin.row, origin.column + 2 }, false, movingPieceColor);
+
+            }
+            // /king side castle
+            // queen side castle
+            if (canQueenCastle &&
+                ((this->board[origin.row][origin.column - 1] == 0) && !this->attackedFields[!movingPieceColor][origin.row][origin.column - 1]) &&
+                ((this->board[origin.row][origin.column - 2] == 0) && !this->attackedFields[!movingPieceColor][origin.row][origin.column - 2]) &&
+                (this->board[origin.row][origin.column - 3] == 0))
+            { // the fields between the king and rook are unoccupied and not attacked
+                this->PushMove(legalMoves, origin, Coordinates{ origin.row, origin.column - 2 }, false, movingPieceColor);
+            }
+            // /queen side castle
+        }
+        // /castling
     } // /king
     else if (movingPiece == 6 || movingPiece == 12)
-    { // pawn TODO: check pin and attack lines
+    { // pawn
         int attackedRow = origin.row + (movingPieceColor ? 1 : -1);
         int attackedCol1 = origin.column + 1;
         int attackedCol2 = origin.column - 1;
@@ -619,17 +624,16 @@ bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destinatio
 }
 
 void Board::PushMove(std::vector<Move>& legalMoves, const Coordinates& origin, const Coordinates& destination, bool promotion, bool movingPieceColor) {
-    legalMoves.push_back(Move{ origin, destination, 0 });
-    if (promotion) {
-        if (destination.row == 0 || destination.row == 7)
-        {
-            legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 8 : 2 });
-            legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 9 : 3 });
-            legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 10 : 4 });
-            legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 11 : 5 });
-        }
+    int movingPiece = this->board[origin.row][origin.column];
+    int attackedPiece = this->board[destination.row][destination.column];
+    if (promotion && (destination.row == 0 || destination.row == 7)) {
+        legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 8 : 2, movingPiece, attackedPiece });
+        legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 9 : 3, movingPiece, attackedPiece });
+        legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 10 : 4, movingPiece, attackedPiece });
+        legalMoves.push_back(Move{ origin, destination, movingPieceColor ? 11 : 5, movingPiece, attackedPiece });
     }
-    
+    else
+        legalMoves.push_back(Move{ origin, destination, 0, movingPiece, attackedPiece });
 }
 
 void Board::CalculateAttackFields()
@@ -646,16 +650,22 @@ void Board::CalculateAttackFields()
                 bool movingPieceColor = movingPiece > 6;
                 // pawn
                 if (movingPiece == 6 || movingPiece == 12)
-                { // TODO: enpassant
+                {
                     int attackedRow = row + (movingPieceColor ? 1 : -1);
                     int attackedCol1 = column + 1;
                     int attackedCol2 = column - 1;
                     if (attackedRow < 8 && attackedRow >= 0)
                     {
-                        if (attackedCol1 < 8)
+                        if (attackedCol1 < 8) {
                             this->SetAttackedField(movingPieceColor, Coordinates(attackedRow, attackedCol1));
-                        if (attackedCol2 >= 0)
+                            if (this->board[attackedRow][attackedCol1] == (movingPieceColor ? 1 : 7))
+                                this->attackLines[movingPieceColor].push_back(std::set<Coordinates>{ Coordinates{ row, column }});
+                        }
+                        if (attackedCol2 >= 0) {
                             this->SetAttackedField(movingPieceColor, Coordinates(attackedRow, attackedCol2));
+                            if (this->board[attackedRow][attackedCol2] == (movingPieceColor ? 1 : 7))
+                                this->attackLines[movingPieceColor].push_back(std::set<Coordinates>{ Coordinates{ row, column }});
+                        }
                     }
                 }
                 // /pawn
@@ -740,12 +750,9 @@ void Board::CalculateAttackFields()
                                     this->pinLines[movingPieceColor].insert({pinnedPiece, pinLine});
                                 else
                                 {
-                                    bool first = false;
                                     for (const Coordinates&field : pinLine)
                                     { // set attack fields along the attack line
-                                        if (first)
-                                            first = false;
-                                        else
+                                        if (field != Coordinates{row,column})
                                             this->SetAttackedField(movingPieceColor, field);
                                     }
                                     this->attackLines[movingPieceColor].push_back(pinLine);
