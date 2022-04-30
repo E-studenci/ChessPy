@@ -25,8 +25,10 @@ struct Coordinates
 		this->row = row;
 		this->column = column;
 	}
-	bool operator=(const Coordinates& other) {
-		return Coordinates(other);
+	void operator=(const Coordinates& other) {
+		this->row = other.row;
+		this->column = other.column;
+
 	}
 	void operator+=(const Coordinates& other) {
 		this->Update(other);

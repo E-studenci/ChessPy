@@ -25,18 +25,9 @@ int Algorithms::Perft(Board *board, int depth)
 			}
 			else
 			{
-				Board b{ *board };
-
 				board->MakeMove(move);
 				legalMoveCount += Perft(board, depth - 1);
 				board->Pop();
-				/*if (!(b == *board)) {
-					std::cout << board->ToString();
-					std::cout << b.ToString();
-					std::cout << move.ToString();
-					std::cout << (b == *board);
-					std::cout << "fuck";
-				}*/
 			}
 		}
 	}

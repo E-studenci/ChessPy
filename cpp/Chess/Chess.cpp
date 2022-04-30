@@ -96,6 +96,17 @@ int main()
     //
  /*   std::cout << b5.LegalMovesToString();
     std::cout << b5.AttackedFieldsToString();*/
+   /* Board b7{ "rnbq1bnr/pppp1ppp/8/8/1k2p1R1/8/PPPPPPPP/RNBQKB1N w Q - 0 7" };
+    b7.GetAllLegalMoves();
+    b7.MakeMove(Move{ Coordinates{6,3}, Coordinates{4,3} });
+
+    Board b8{ "rnbq1bnr/pp1ppppp/8/8/R1p3k1/8/PPPPPPPP/RNBQKB1N w Q - 0 7" };
+    b8.GetAllLegalMoves();
+    b8.MakeMove(Move{ Coordinates{6,3}, Coordinates{4,3} });
+
+    Board b9{ "rnbq1bnr/pp1ppppp/2R5/8/2p5/8/P1kPPPPP/RNB1KB1N w Q - 0 7" };
+    b9.GetAllLegalMoves();
+    b9.MakeMove(Move{ Coordinates{6,3}, Coordinates{4,3} });*/
 
     std::cout << "\nperft, motherfuckers\n";
     Algorithms alg;

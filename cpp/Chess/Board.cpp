@@ -199,21 +199,29 @@ void Board::MakeMove(const Move move)
         // first move
         if (((move.origin.row - move.destination.row) == 2) || ((move.origin.row - move.destination.row) == -2))
         {
-            bool setEnPassantFlag = true;
-            // TODO: check if the adjacent pawn is pinned by a rook on the 2nd or 5th row
-           /* Coordinates right = Coordinates{ move.destination.row, move.destination.column + 1 };
+            Coordinates right = Coordinates{ move.destination.row, move.destination.column + 1 };
             Coordinates left = Coordinates{ move.destination.row, move.destination.column - 1 };
-            if (this->FieldIsInBounds(left) && this->FieldIsInBounds(right) &&
-                (
-                    (this->board[left.row][left.column] == (movingPiece == 6 ? 12 : 6)) || 
-                    (this->board[right.row][right.column] == (movingPiece == 6 ? 12 : 6)))) {
-                if (this->pinLines[this->sideToMove].count(right) == 1 &&
-                    this->pinLines[this->sideToMove][left].== )
-            }*/
-            this->enPassant.row = move.origin.row == 1 ? 2 : 5; // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
-            this->enPassant.column = move.origin.column;        // TODO: this could potentially be dangerous, if so, check if there is an adjacent enemy pawn
+            bool enemyPawnLeft = this->FieldIsInBounds(left) && (this->board[left.row][left.column] == (movingPiece == 6 ? 12 : 6));
+            bool enemyPawnRight = this->FieldIsInBounds(right) && (this->board[right.row][right.column] == (movingPiece == 6 ? 12 : 6));
+            if (enemyPawnLeft || enemyPawnRight) { // there is at least one adjacent enemy pawn
+                this->enPassant.row = move.origin.row == 1 ? 2 : 5;
+                this->enPassant.column = move.origin.column;
+                resetEnPassant = false;
 
-            resetEnPassant = false;
+                // check if the adjacent pawn is pinned by a rook, example: "rnbq1bnr/pppp1ppp/8/8/1k2p1RP/4P2N/PPPP1PP1/RNBQKB2 w Q - 2 7" 7. d4
+                bool enemyPawnLeftPinned = enemyPawnLeft && this->pinLines[this->sideToMove].count(left) == 1;
+                bool enemyPawnRightPinned = enemyPawnRight && this->pinLines[this->sideToMove].count(right) == 1;
+                if (enemyPawnLeftPinned || enemyPawnRightPinned) {
+                    Coordinates pinningPiecePos1 = *(this->pinLines[this->sideToMove][enemyPawnLeftPinned? left: right].rbegin());
+                    Coordinates pinningPiecePos2 = *(this->pinLines[this->sideToMove][enemyPawnLeftPinned ? left : right].begin());
+
+                    if ((pinningPiecePos1.row == move.destination.row && this->board[pinningPiecePos1.row][pinningPiecePos1.column] == (movingPiece==6?5:11))||
+                        (pinningPiecePos2.row == move.destination.row && this->board[pinningPiecePos2.row][pinningPiecePos2.column] == (movingPiece == 6 ? 5 : 11))) {
+                        resetEnPassant = true;
+                    }
+                }
+                // /check if the adjacent pawn is pinned by a rook
+            }// /there is at least one adjacent enemy pawn
         }
         // /first move
         // promotion
@@ -711,8 +719,11 @@ void Board::CalculateAttackFields()
                                         { // the piece in way is any other enemy piece
                                             if (pieceInWay)
                                                 interrupted = true;
-                                            else
-                                                pinnedPiece = Coordinates(currentlyCalculatedPosition);
+                                            else {
+                                                pinnedPiece = currentlyCalculatedPosition;
+                                                /*pinnedPiece.row = currentlyCalculatedPosition.row;
+                                                pinnedPiece.column = currentlyCalculatedPosition.column;*/
+                                            }
                                             pieceInWay = true;
                                         }
                                     } // /there is a piece in way
