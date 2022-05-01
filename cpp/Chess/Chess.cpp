@@ -110,32 +110,71 @@ int main()
 
     std::cout << "\nperft, motherfuckers\n";
     Algorithms alg;
+    std::string perft1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    /// <summary>
+    /// 0 	1 	
+    /// 1 	20 
+    /// 2 	400 
+    /// 3 	8, 902 
+    /// 4 	197, 281
+    /// 5 	4, 865, 609 
+    /// 6 	119, 060, 324 
+    /// 7 	3, 195, 901, 860
+    /// </summary>
+    /// <returns></returns>
+    std::string perft2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    /// <summary>
+    /// 0 	48 	
+    /// 1 	2039 
+    /// 2 	97862 
+    /// 3 	4085603
+    /// 4 	193690690
+    /// 5 	8031647685
+    /// </summary>
+    /// <returns></returns>
+    std::string perft3 = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+    /// <summary>
+    /// 0 	14 	
+    /// 1 	191 
+    /// 2 	2812 
+    /// 3 	43238
+    /// 4 	674624
+    /// 5 	11030083
+    /// 6   178633661
+    /// </summary>
+    /// <returns></returns>
+    std::string perft4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+    std::string perft4b = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+    std::string perft5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    std::string perft6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+
     auto start = std::chrono::high_resolution_clock::now();
-    Board* b = new Board{ "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1" };
-    b->GetAllLegalMoves();
-    std::cout << b->ToString();
-    b->MakeMove(Move{ Coordinates{"g2"}, Coordinates{"g4"} });
-    std::cout << b->ToString();
-    //b->MakeMove(Move{ Coordinates{"h8"}, Coordinates{"h7"} });
+    Board* b = new Board{ perft6 };
     //std::cout << b->ToString();
     //b->MakeMove(Move{ Coordinates{"g1"}, Coordinates{"h1"} });
     //std::cout << b->ToString();
+    //std::cout << b->LegalMovesToString();
+    //b->MakeMove(Move{ Coordinates{"b2"}, Coordinates{"a1"}, 11 });
+    //std::cout << b->ToString();
+    //b->MakeMove(Move{ Coordinates{"d1"}, Coordinates{"a1"} });
+    //std::cout << b->ToString();
+    //b->GetAllLegalMoves();
 
 
-    b->GetAllLegalMoves();
-    std::cout << alg.PerftStarterSingleThread(b, 2, true) << "\n";
+    //b->GetAllLegalMoves();
+    //std::cout << alg.PerftStarterSingleThread(b,1, true) << "\n";
 
-    //std::cout << alg.PerftStarterSingleThread(b, 1) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 2) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 4) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 5) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 7) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 8) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 9) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 10) << "\n";
-    //std::cout << alg.PerftStarterSingleThread(b, 11) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 1) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 2) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 4) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 5) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 7) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 8) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 9) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 10) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 11) << "\n";
     //std::cout << alg.PerftStarterSingleThread(b, 12) << "\n";
 
 

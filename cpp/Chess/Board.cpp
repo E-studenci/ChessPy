@@ -154,8 +154,14 @@ void Board::Capture(Coordinates destination)
     if ((destination.column == 0 || destination.column == 7) &&
         (capturedPiece == 5 || capturedPiece == 11))
     { // check if the captured piece is a rook and is on the 1st or 8th column
-        int flagIndex = destination.column == 0 ? (capturedPiece == 5 ? 1 : 3) : (capturedPiece == 5 ? 0 : 2);
-        this->castlingFlags[flagIndex] = false;
+        if (this->castlingFlags[0] && capturedPiece == 5 && destination.row == 7 && destination.column == 7)
+            this->castlingFlags[0] = false; // reset wk castle flag
+        else if (this->castlingFlags[1] && capturedPiece == 5 && destination.row == 7 && destination.column == 0)
+            this->castlingFlags[1] = false; // reset wq castle flag
+        else if (this->castlingFlags[2] && capturedPiece == 11 && destination.row == 0 && destination.column == 7)
+            this->castlingFlags[2] = false; // reset bk castle flag
+        else if (this->castlingFlags[3] && capturedPiece == 11 && destination.row == 0 && destination.column == 0)
+            this->castlingFlags[3] = false; // reset bq castle flag
     }
     // /take care of castling flags
 }
@@ -207,20 +213,6 @@ void Board::MakeMove(const Move move)
                 this->enPassant.row = move.origin.row == 1 ? 2 : 5;
                 this->enPassant.column = move.origin.column;
                 resetEnPassant = false;
-
-                // check if the adjacent pawn is pinned by a rook, example: "rnbq1bnr/pppp1ppp/8/8/1k2p1RP/4P2N/PPPP1PP1/RNBQKB2 w Q - 2 7" 7. d4
-                bool enemyPawnLeftPinned = enemyPawnLeft && this->pinLines[this->sideToMove].count(left) == 1;
-                bool enemyPawnRightPinned = enemyPawnRight && this->pinLines[this->sideToMove].count(right) == 1;
-                if (enemyPawnLeftPinned || enemyPawnRightPinned) {
-                    Coordinates pinningPiecePos1 = *(this->pinLines[this->sideToMove][enemyPawnLeftPinned? left: right].rbegin());
-                    Coordinates pinningPiecePos2 = *(this->pinLines[this->sideToMove][enemyPawnLeftPinned ? left : right].begin());
-
-                    if ((pinningPiecePos1.row == move.destination.row && this->board[pinningPiecePos1.row][pinningPiecePos1.column] == (movingPiece==6?5:11))||
-                        (pinningPiecePos2.row == move.destination.row && this->board[pinningPiecePos2.row][pinningPiecePos2.column] == (movingPiece == 6 ? 5 : 11))) {
-                        resetEnPassant = true;
-                    }
-                }
-                // /check if the adjacent pawn is pinned by a rook
             }// /there is at least one adjacent enemy pawn
         }
         // /first move
@@ -268,22 +260,14 @@ void Board::MakeMove(const Move move)
     // move is made by a rook
     else if (movingPiece == 5 || movingPiece == 11)
     {
-        if (this->castlingFlags[0] && move.origin.row == 7 && move.origin.column == 7)
-        {
-            this->castlingFlags[0] = false;
-        } // reset wk castle flag
-        else if (this->castlingFlags[1] && move.origin.row == 7 && move.origin.column == 0)
-        {
-            this->castlingFlags[1] = false;
-        } // reset wq castle flag
-        else if (this->castlingFlags[2] && move.origin.row == 0 && move.origin.column == 7)
-        {
-            this->castlingFlags[2] = false;
-        } // reset bk castle flag
-        else if (this->castlingFlags[3] && move.origin.row == 0 && move.origin.column == 0)
-        {
-            this->castlingFlags[3] = false;
-        } // reset bq castle flag
+        if (this->castlingFlags[0] && movingPiece == 5 && move.origin.row == 7 && move.origin.column == 7)
+            this->castlingFlags[0] = false; // reset wk castle flag
+        else if (this->castlingFlags[1] && movingPiece == 5 && move.origin.row == 7 && move.origin.column == 0)
+            this->castlingFlags[1] = false; // reset wq castle flag
+        else if (this->castlingFlags[2] && movingPiece == 11 && move.origin.row == 0 && move.origin.column == 7)
+            this->castlingFlags[2] = false; // reset bk castle flag
+        else if (this->castlingFlags[3] && movingPiece == 11 && move.origin.row == 0 && move.origin.column == 0)
+            this->castlingFlags[3] = false; // reset bq castle flag
     }
     // /move is made by a rook
     // move the piece
@@ -585,9 +569,11 @@ std::vector<Move> Board::CalculateLegalMovesForPiece(Coordinates origin, int mov
 bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destination, int movingPiece, bool movingPieceColor,
     bool pinned, bool kingIsInCheck,
     const std::set<Coordinates> &pinLine, const std::set<Coordinates> &attackLine) {
-
     int attackedPiece = this->board[destination.row][destination.column];
     bool pieceInWay = attackedPiece != 0;
+    if ((movingPiece == 6 || movingPiece == 12) && destination == this->enPassant)
+        if (!this->EnPassantIsLegal(origin, destination, movingPieceColor)) // check if enpassant is legal (example: "rnbq1bnr/pppp1ppp/8/8/1k2p1RP/4P2N/PPPP1PP1/RNBQKB2 w Q - 2 7" 7. d4)
+            return false;
     if ((attackedPiece == 0) ||
         (attackedPiece != 0 && attackedPiece > 6 != movingPieceColor))
     {
@@ -602,7 +588,12 @@ bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destinatio
             }
             else if (kingIsInCheck)
             { // there is an attack line; the piece can only move to block the attack line
-                if (attackLine.find(destination) != attackLine.end())
+                if ((attackLine.find(destination) != attackLine.end()) ||
+                    ((movingPiece==6 || movingPiece==12) && // check if enpassant is legal (example: "8/8/3p4/1Pp4r/1KR2pk1/8/4P1P1/8 w - c6 0 3" 3. bxc6)
+                        (destination == this->enPassant) &&
+                        (attackLine.find(movingPieceColor ?
+                            Coordinates{destination.row -1, destination.column} :
+                            Coordinates{ destination.row + 1, destination.column}) != attackLine.end())))
                 {
                     return true;
                 }
@@ -621,6 +612,38 @@ bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destinatio
         }
     }
     return false;
+}
+
+bool Board::EnPassantIsLegal(const Coordinates& origin, const Coordinates& destination, bool movingPieceColor) {
+    // check if the pawn is pinned by a rook or a queen, example: "rnbq1bnr/pppp1ppp/8/8/1k2p1RP/4P2N/PPPP1PP1/RNBQKB2 w Q - 2 7" 7. d4
+    if (origin.column == 0 || origin.column == 7 || (origin.column == 1 && destination.column == 0) || (origin.column == 6 && destination.column == 7))
+        return true;
+    bool interrupted = false;
+    int currentPiece = this->board[origin.row][0];
+    int pieceBeforePawn = currentPiece;
+    int pieceAfterPawn = 0;
+    int column = 1;
+    
+    while (column < 8 && !interrupted) {
+        if (column != origin.column && column != destination.column) {
+            currentPiece = this->board[origin.row][column];
+            if (column < origin.column && currentPiece != 0)
+                pieceBeforePawn = currentPiece;
+            if (column > origin.column && currentPiece != 0) {
+                pieceAfterPawn = currentPiece;
+                interrupted = true;
+            }
+        }
+        column++;
+    }
+    if (pieceBeforePawn == 0 || pieceAfterPawn == 0)
+        return true;
+    if (((pieceBeforePawn > 6) == movingPieceColor && (pieceBeforePawn == 1 || pieceBeforePawn == 7))
+        || ((pieceAfterPawn > 6) == movingPieceColor && (pieceAfterPawn == 1 || pieceAfterPawn == 7))) // piece before or after moving pawn is an allied king
+        if ((pieceBeforePawn > 6 != movingPieceColor) && (pieceBeforePawn == 2 || pieceBeforePawn == 5 || pieceBeforePawn == 8 || pieceBeforePawn == 11) || // piece before or after moving pawn is an enemy rook or queen
+            (pieceAfterPawn > 6 != movingPieceColor) && (pieceAfterPawn == 2 || pieceAfterPawn == 5 || pieceAfterPawn == 8 || pieceAfterPawn == 11))
+            return false;
+    return true;
 }
 
 void Board::PushMove(std::vector<Move>& legalMoves, const Coordinates& origin, const Coordinates& destination, bool promotion, bool movingPieceColor) {

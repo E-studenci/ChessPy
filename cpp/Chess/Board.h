@@ -57,6 +57,7 @@ private:
 	bool MoveIsLegal(const Coordinates& origin, const Coordinates& destination, int movingPiece, bool movingPieceColor,
 		bool pinned, bool kingIsInCheck,
 		const std::set<Coordinates>& pinLine, const std::set<Coordinates>& attackLine);
+	bool EnPassantIsLegal(const Coordinates& origin, const Coordinates& destination, bool movingPieceColor);
 	void PushMove(std::vector<Move>& legalMoves, const Coordinates& origin, const Coordinates& destination,
 		bool promotion = false, bool movingPieceColor = false);
 	void CalculateAttackFields();		   // calculate attackfields for both sides

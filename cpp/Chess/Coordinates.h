@@ -28,19 +28,18 @@ struct Coordinates
 	void operator=(const Coordinates& other) {
 		this->row = other.row;
 		this->column = other.column;
-
 	}
 	void operator+=(const Coordinates& other) {
 		this->Update(other);
 	}
-	bool operator==(const Coordinates& other) {
-		return this->row == other.row && this->column == other.column;
+	friend bool operator==(const Coordinates& lhs, const Coordinates& rhs) {
+		return lhs.row == rhs.row && lhs.column == rhs.column;
 	}
-	bool operator!=(const Coordinates& other) {
-		return this->row != other.row || this->column != other.column;
+	friend bool operator!=(const Coordinates& lhs, const Coordinates& rhs) {
+		return !(lhs == rhs);
 	}
-	bool operator<(const Coordinates& other) const {
-		return (this->row*8+this->column) < (other.row*8+other.column);
+	friend bool operator<(const Coordinates& lhs, const Coordinates& rhs) {
+		return (lhs.row*8+ lhs.column) < (rhs.row*8+rhs.column);
 	}
 	operator bool()const {
 		return (this->row != -1) && (this->column!=-1);
