@@ -154,9 +154,6 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="PieceCharacteristics.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="x.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

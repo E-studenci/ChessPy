@@ -10,10 +10,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
-
-
-
-
+#include <limits>
 std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *board, int depth, bool divide)
 {
 	std::tuple<int, std::vector<std::tuple<Move, int>>> result; // result[0] - legalMoveCount, result[1] - legalMoveCount for move (used for divide)
@@ -51,6 +48,7 @@ void Algorithms::Worker(SafeQueue<Board *> &queue, std::atomic<int> &result, int
 	//	result += Perft(currentTask, depth);
 	//}
 }
+
 
 std::string Algorithms::PerftStarter(Board *board, int depth, bool divide)
 {
@@ -99,4 +97,90 @@ std::string Algorithms::PerftStarterSingleThread(Board *board, int depth, bool d
 		retString += std::to_string(std::get<1>(std::get<1>(result)[std::get<1>(result).size() - 1]));
 	}
 	return retString;
+}
+
+std::pair<Move, double> Algorithms::GetBestMove(Board& board, int depth)
+{
+	std::pair<Move, double> bestMove{ Move{Coordinates{-1,-1}, Coordinates{-1,-1}}, std::numeric_limits<double>::infinity() * (board.sideToMove? 1:-1)};
+	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board.GetAllLegalMoves();
+	for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
+	{
+		for (const Move& move : keyValuePair.second)
+		{
+			board.MakeMove(move);
+			double moveScore = this->AlphaBeta(board, -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), depth);
+			board.Pop();
+			if ((!board.sideToMove && (moveScore > bestMove.second)) || (board.sideToMove && (moveScore < bestMove.second))) {
+				bestMove.first = move; // TODO: this probably doesn't work
+				bestMove.second = moveScore;
+			}
+		}
+	}
+	return bestMove;
+}
+
+double Algorithms::EvaluatePosition(Board& board)
+{
+	if (board.GetAllLegalMoves().size() == 0) {
+		if (board.KingInCheck())
+			return -MATE_SCORE;
+		else
+			return 0;
+	}
+	double score = this->EvalPieces(board);
+	//int doubledPawns = this->CountDoubledPawns(board);
+	//int isolatedPawns = this->CountIsolatedPawns(board);
+	//int blockedPawns = this->CountBlockedPawns(board);
+
+	return score * (board.sideToMove? -1.0 : 1.0);
+}
+
+double Algorithms::AlphaBeta(Board& board, double alpha, double beta, int depthLeft)
+{
+	if (depthLeft <= 0) 
+		return this->EvaluatePosition(board);
+	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board.GetAllLegalMoves();
+	for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
+	{
+		for (const Move& move : keyValuePair.second)
+		{
+			board.MakeMove(move);
+			double score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
+			board.Pop();
+			if (score >= beta)
+				return beta;
+			if (score > alpha)
+				alpha = score;
+		}
+	}
+	return alpha;
+}
+
+double Algorithms::EvalPieces(const Board& board)
+{
+	int score = 0;
+	int endGameScore = 0;
+	int gamePhase = 0;
+	for (int row = 0; row < 8;row++) {
+		for (int column = 0; column < 8; column++) {
+			int piece = board.board[row][column];
+			if (piece > 0) {
+				// evaluating piece and piece position
+				piece -= 1;
+				bool pieceColor = piece > 6;
+				int pieceScore = 
+					POSITION_TABLE[piece][pieceColor? (7-row): row][pieceColor ? (7 - column): column] + PIECE_VALUE[piece];
+				int EndGamePieceScore = 
+					END_GAME_POSITION_TABLE[piece][pieceColor ? (7 - row) : row][pieceColor ? (7 - column) : column] + END_GAME_PIECE_VALUE[piece];
+				gamePhase += GAME_PHASE_SHIFT[piece];
+				score += pieceScore * (pieceColor ? -1 : 1);
+				endGameScore += EndGamePieceScore * (pieceColor ? -1 : 1);
+				// /evaluating piece and piece position
+
+			}
+		}
+	}
+	if (gamePhase > 24)
+		gamePhase = 24;
+	return (score * gamePhase + endGameScore * (24-gamePhase))/24.0;
 }

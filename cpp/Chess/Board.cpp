@@ -165,7 +165,7 @@ void Board::Capture(Coordinates destination)
     }
     // /take care of castling flags
 }
-void Board::MakeMove(const Move move)
+void Board::MakeMove(const Move& move)
 {
     this->movesAreCalculated = false;
 
@@ -429,7 +429,7 @@ void Board::CalculateLegalMoves()
         }
     }
 }
-std::vector<Move> Board::CalculateLegalMovesForPiece(Coordinates origin, int movingPiece, bool movingPieceColor)
+std::vector<Move> Board::CalculateLegalMovesForPiece(const Coordinates& origin, int movingPiece, bool movingPieceColor)
 {
     std::vector<Move> legalMoves;
     PieceCharacteristics pieceCharacteristics = this->GetPieceMovement(movingPiece);
@@ -788,7 +788,7 @@ void Board::CalculateAttackFields()
         }
     }
 }
-void Board::SetAttackedField(bool attackingPieceColor, Coordinates attackedField)
+void Board::SetAttackedField(bool attackingPieceColor, const Coordinates& attackedField)
 {
     // if attacked field is empty or attacked piece is opponent's -> the field is attacked, else the field is defended
     if ((this->board[attackedField.row][attackedField.column] > 0) &&

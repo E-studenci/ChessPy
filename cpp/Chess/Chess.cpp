@@ -148,8 +148,8 @@ int main()
     std::string perft5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
     std::string perft6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
+    Board* b = new Board{ perft1 };
     auto start = std::chrono::high_resolution_clock::now();
-    Board* b = new Board{ perft6 };
     //std::cout << b->ToString();
     //b->MakeMove(Move{ Coordinates{"g1"}, Coordinates{"h1"} });
     //std::cout << b->ToString();
@@ -164,17 +164,17 @@ int main()
     //b->GetAllLegalMoves();
     //std::cout << alg.PerftStarterSingleThread(b,1, true) << "\n";
 
-    std::cout << alg.PerftStarterSingleThread(b, 1) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 2) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 4) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 5) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 1) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 2) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 4) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 5) << "\n";
+   /* std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 7) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 8) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 9) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 10) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 11) << "\n";
+    std::cout << alg.PerftStarterSingleThread(b, 11) << "\n";*/
     //std::cout << alg.PerftStarterSingleThread(b, 12) << "\n";
 
 
@@ -200,5 +200,11 @@ int main()
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     std::cout << duration.count() << std::endl;*/
+    std::cout << "ALPHA BETA";
+
+    Board bb{ "1rbqkbnr/p1pp1ppp/4p3/3Q4/p7/4PN2/1PP2PPP/RNB1KB1R b KQk - 0 7" };
+    Algorithms algg;
+    std::cout<<algg.GetBestMove(bb, 4).first.ToString();
+
     return 0;
 }
