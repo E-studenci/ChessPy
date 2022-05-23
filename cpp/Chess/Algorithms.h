@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <array>
+#include <set>
 
 class Algorithms
 {
@@ -16,10 +17,14 @@ public:
 	std::pair<Move, double> GetBestMove(Board& board, int depth); // Returns the best move and score after the move
 	double EvaluatePosition(Board& board);	// Returns the position score
 	double AlphaBeta(Board& board, double alpha, double beta, int depthLeft);
+	inline static int count=0;
+
 
 private:
+	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves);
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	static void Worker(SafeQueue<Board*>& queue, std::atomic<int>& result, int depth);
+	double MoveValue(const Board& board, const Move& move);
 	double EvalPieces(const Board& board);
 
 	const std::array<std::array<int, 8>, 8> PAWN{ {

@@ -30,6 +30,7 @@ Move::Move(const Move& other) {
 	this->enPassant.column = other.enPassant.column;
 	this->promotion = other.promotion;
 	this->seventyFiveMoveRule = other.seventyFiveMoveRule;
+	this->score = other.score;
 }
 std::string Move::ToString() const{
 	std::string retString;

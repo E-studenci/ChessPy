@@ -169,8 +169,8 @@ int main()
     //std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
     //std::cout << alg.PerftStarterSingleThread(b, 4) << "\n";
     //std::cout << alg.PerftStarterSingleThread(b, 5) << "\n";
-   /* std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
-    std::cout << alg.PerftStarterSingleThread(b, 7) << "\n";
+    //std::cout << alg.PerftStarterSingleThread(b, 6) << "\n";
+    /*std::cout << alg.PerftStarterSingleThread(b, 7) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 8) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 9) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 10) << "\n";
@@ -200,11 +200,20 @@ int main()
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     std::cout << duration.count() << std::endl;*/
-    std::cout << "ALPHA BETA";
+    std::cout << "ALPHA BETA\n";
 
     Board bb{ "1rbqkbnr/p1pp1ppp/4p3/3Q4/p7/4PN2/1PP2PPP/RNB1KB1R b KQk - 0 7" };
     Algorithms algg;
+    start = std::chrono::high_resolution_clock::now();
+
     std::cout<<algg.GetBestMove(bb, 4).first.ToString();
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << "\ntime: " << duration.count() << std::endl;
+    std::cout << algg.count;
+    std::cout << "\n";
+    std::cout<< algg.PerftStarterSingleThread(&bb, 5) << "\n";
+    std::cout << algg.count;
 
     return 0;
 }

@@ -11,6 +11,9 @@
 #include <tuple>
 #include <vector>
 #include <limits>
+#include <set>
+
+
 std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *board, int depth, bool divide)
 {
 	std::tuple<int, std::vector<std::tuple<Move, int>>> result; // result[0] - legalMoveCount, result[1] - legalMoveCount for move (used for divide)
@@ -50,6 +53,8 @@ void Algorithms::Worker(SafeQueue<Board *> &queue, std::atomic<int> &result, int
 }
 
 
+
+
 std::string Algorithms::PerftStarter(Board *board, int depth, bool divide)
 {
 	/*SafeQueue<Board *> tasks;
@@ -81,6 +86,7 @@ std::string Algorithms::PerftStarter(Board *board, int depth, bool divide)
 }
 
 std::string Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
+	this->count = 0;
 	std::string retString;
 	std::tuple<int, std::vector<std::tuple<Move, int>>> result = this->Perft(board, depth, divide);
 	retString += "Result: " + std::to_string(std::get<0>(result));
@@ -101,6 +107,7 @@ std::string Algorithms::PerftStarterSingleThread(Board *board, int depth, bool d
 
 std::pair<Move, double> Algorithms::GetBestMove(Board& board, int depth)
 {
+	this->count = 0;
 	std::pair<Move, double> bestMove{ Move{Coordinates{-1,-1}, Coordinates{-1,-1}}, std::numeric_limits<double>::infinity() * (board.sideToMove? 1:-1)};
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board.GetAllLegalMoves();
 	for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
@@ -135,24 +142,89 @@ double Algorithms::EvaluatePosition(Board& board)
 	return score * (board.sideToMove? -1.0 : 1.0);
 }
 
+std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves) {
+
+	std::multiset<Move> result;
+	for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : moves)
+	{
+		for (Move& move : keyValuePair.second)
+		{
+			move.score = this->MoveValue(board, move);
+			result.insert(move);
+		}
+	}
+	return result;
+}
+
+double Algorithms::MoveValue(const Board& board, const Move& move)
+{
+	double score = 0;
+	int movingPiece = board.board[move.origin.row][move.origin.column];
+	bool movingPieceColor = movingPiece > 6;
+	movingPiece -= 1;
+	int pieceScoreBefore =
+		POSITION_TABLE[movingPiece]
+		[movingPieceColor ? (7 - move.origin.row) : move.origin.row][movingPieceColor ? (7 - move.origin.column) : move.origin.column]
+		+ PIECE_VALUE[movingPiece];
+	if (move.promotion != 0) {
+		if (move.promotion == 2 || move.promotion == 8)
+			score = 1000000003;
+		else if (move.promotion == 3 || move.promotion == 9)
+			score = 1000000002;
+		else if (move.promotion == 5 || move.promotion == 11)
+			score = 1000000001;
+		else if (move.promotion == 4 || move.promotion == 10)
+			score = 1000000000;
+	}
+	else {
+		int pieceScoreAfter =
+			POSITION_TABLE[movingPiece]
+			[movingPieceColor ? (7 - move.destination.row) : move.destination.row][movingPieceColor ? (7 - move.destination.column) : move.destination.column]
+			+ PIECE_VALUE[movingPiece];
+
+		score = pieceScoreAfter - pieceScoreBefore;
+	}
+
+	int capturedPiece = board.board[move.destination.row][move.destination.column];
+	if (capturedPiece != 0) {
+		//score += 1000;
+		if (board.moveHistory.size() > 0)
+		{
+			if (board.moveHistory[board.moveHistory.size() - 1].destination == move.destination)
+				score += 1000;
+		}
+		capturedPiece -= 1;
+		int capturedPieceValue = POSITION_TABLE[capturedPiece]
+			[(!movingPieceColor) ? (7 - move.destination.row) : move.destination.row][(!movingPieceColor) ? (7 - move.destination.column) : move.destination.column]
+			+ PIECE_VALUE[capturedPiece];
+
+		score += capturedPieceValue - pieceScoreBefore;
+	}
+	/*double ran = (((double)rand() * (0 - 0.05) / RAND_MAX) + 0);
+	return score+ ran;*/
+	return score;
+}
+
 double Algorithms::AlphaBeta(Board& board, double alpha, double beta, int depthLeft)
 {
 	if (depthLeft <= 0) 
 		return this->EvaluatePosition(board);
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board.GetAllLegalMoves();
-	for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
-	{
-		for (const Move& move : keyValuePair.second)
-		{
-			board.MakeMove(move);
-			double score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
-			board.Pop();
-			if (score >= beta)
-				return beta;
-			if (score > alpha)
-				alpha = score;
-		}
+	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(board, currentLegalMoves);
+	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
+	//{
+	//	for (Move& move : keyValuePair.second)
+	for (const Move& move : currentLegalMovesSorted){
+		this->count++;
+		board.MakeMove(move);
+		double score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
+		board.Pop();
+		if (score >= beta)
+			return beta;
+		if (score > alpha)
+			alpha = score;
 	}
+	//}
 	return alpha;
 }
 

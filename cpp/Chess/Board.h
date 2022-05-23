@@ -59,7 +59,7 @@ private:
 	bool EnPassantIsLegal(const Coordinates& origin, const Coordinates& destination, bool movingPieceColor);
 	void PushMove(std::vector<Move>& legalMoves, const Coordinates& origin, const Coordinates& destination,
 		bool promotion = false, bool movingPieceColor = false);
-	void CalculateAttackFields();		   // calculate attackfields for both sides
+	void CalculateAttackFields(bool bothSides=false);		   // calculate attackfields
 	void Capture(Coordinates destination); // invoked inside Board::MakeMove if the move was a take
 	int GameStatus();					   // 0-ongoing, 1-draw, 2-win
 	bool PieceColor(int piece) { return piece < 7; }
