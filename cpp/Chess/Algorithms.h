@@ -14,18 +14,21 @@ class Algorithms
 public:
 	std::string PerftStarter(Board* board, int depth, bool divide = false); // used for multithreading
 	std::string PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	std::pair<Move, double> GetBestMove(Board& board, int depth); // Returns the best move and score after the move
-	double EvaluatePosition(Board& board);	// Returns the position score
-	double AlphaBeta(Board& board, double alpha, double beta, int depthLeft);
-	inline static int count=0;
+	std::pair<Move, double> GetBestMove(Board* board, int depth); // Returns the best move and score after the move
+	double EvaluatePosition(Board* board);	// Returns the position score
+	double AlphaBeta(Board* board, double alpha, double beta, int depthLeft);
+	int count=0;
+	int max_depth = 0;
 
 
 private:
-	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves);
+	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool only_captures = false);
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	static void Worker(SafeQueue<Board*>& queue, std::atomic<int>& result, int depth);
 	double MoveValue(const Board& board, const Move& move);
 	double EvalPieces(const Board& board);
+	double Quiescence(Board* board, double alpha, double beta, int depth=0);
+
 
 	const std::array<std::array<int, 8>, 8> PAWN{ {
 		{ 0,   0,    0,   0,   0,   0,  0,   0},
@@ -140,5 +143,5 @@ private:
 	const std::array<int, 12> GAME_PHASE_SHIFT{0, 4, 1, 1, 2, 0, 0, 4, 1, 1, 2, 0 };
 	const std::array<std::array<std::array<int, 8>, 8>, 12> POSITION_TABLE{ KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN,KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN };
 	const std::array<std::array<std::array<int, 8>, 8>, 12> END_GAME_POSITION_TABLE{ END_GAME_KING, END_GAME_QUEEN, END_GAME_KNIGHT, END_GAME_BISHOP, END_GAME_ROOK, END_GAME_PAWN,END_GAME_KING, END_GAME_QUEEN, END_GAME_KNIGHT, END_GAME_BISHOP, END_GAME_ROOK, END_GAME_PAWN };
-	const int MATE_SCORE = 200000;
+	const int MATE_SCORE = 2000000;
 };

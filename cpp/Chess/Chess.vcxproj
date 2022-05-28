@@ -146,6 +146,7 @@
     <ClCompile Include="Chess.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="SafeQueue.cpp" />
+    <ClCompile Include="Zobrist.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algorithms.h" />
@@ -153,6 +154,11 @@
     <ClInclude Include="Coordinates.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="PieceCharacteristics.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Zobrist.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Chess.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

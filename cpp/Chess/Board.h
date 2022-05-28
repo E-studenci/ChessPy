@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <map>
 #include <set>
+#include "Zobrist.h"
 class Board
 {
 public:
@@ -34,12 +35,12 @@ public:
 	std::string ToString();
 	std::string AttackedFieldsToString();
 	std::string LegalMovesToString();
-
-	PieceCharacteristics GetPieceMovement(int piece);
+	Zobrist hash;
 
 private:
 	std::array<PieceCharacteristics, 12> pieceMovement;
 	void InitPieceMovement();
+	PieceCharacteristics GetPieceMovement(int piece);
 
 	std::array<std::array<std::array<bool, 8>, 8>, 2> attackedFields; // 0-white, 1-black, 8x8bool table
 	std::array<std::array<std::array<bool, 8>, 8>, 2> defendedFields; // 0-white, 1-black, 8x8bool table

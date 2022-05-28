@@ -21,7 +21,7 @@ struct Coordinates
 		this->row = other.row;
 		this->column = other.column;
 	}
-	inline Coordinates(int row, int column) {
+	Coordinates(int row, int column) {
 		this->row = row;
 		this->column = column;
 	}
