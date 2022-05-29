@@ -7,31 +7,38 @@
 #include <string>
 #include <unordered_map>
 #include <array>
+
 #include <set>
+#include "TranspositionTable.h"
 
 class Algorithms
 {
 public:
+	Algorithms() {
+		this->table = TranspositionTable{};
+		this->table.init();
+	}
+
 	std::string PerftStarter(Board* board, int depth, bool divide = false); // used for multithreading
 	std::string PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	std::pair<Move, double> GetBestMove(Board* board, int depth); // Returns the best move and score after the move
-	std::pair<Move, double> Root(Board* board, int depth); // Returns the best move and score after the move
+	std::pair<Move, int> GetBestMove(Board* board, int depth); // Returns the best move and score after the move
+	std::pair<Move, int> Root(Board* board, int depth); // Returns the best move and score after the move
 
-	double EvaluatePosition(Board* board);	// Returns the position score
-	double AlphaBeta(Board* board, double alpha, double beta, int depthLeft);
+	int EvaluatePosition(Board* board);	// Returns the position score
+	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count=0;
 	int max_depth = 0;
-
+	TranspositionTable table;
 
 private:
-	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool only_captures = false);
+	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures = false);
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	static void Worker(SafeQueue<Board*>& queue, std::atomic<int>& result, int depth);
-	double MoveValue(const Board& board, const Move& move);
-	double EvalPieces(const Board& board);
-	double Quiescence(Board* board, double alpha, double beta, int depth=0);
-
-
+	double MoveValue(const Board& board, const Move& move, bool hashedMove, uint16_t bestMoveHash);
+	int EvalPieces(const Board& board);
+	int Quiescence(Board* board, int alpha, int beta, int ply=0);
+	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
+	int MAX_PLY = 30;
 	const std::array<std::array<int, 8>, 8> PAWN{ {
 		{ 0,   0,    0,   0,   0,   0,  0,   0},
 		{98, 134,   61,  95,  68, 126, 34, -11},

@@ -2,6 +2,7 @@
 #include "Coordinates.h"
 #include <array>
 #include <string>
+
 class Move
 {
 public:
@@ -17,6 +18,20 @@ public:
 
 	friend bool operator<(Move const& lhs, Move const& rhs) {
 		return lhs.score > rhs.score;
+	}
+	uint16_t Hash() const {
+		uint16_t res = 0;
+		if (this->promotion != 0) {
+			uint8_t prom = (this->promotion == 2 || this->promotion == 8) ? 1 :
+				(this->promotion == 3 || this->promotion == 9) ? 2 :
+				(this->promotion == 4 || this->promotion == 10) ? 3 : 4;
+			res |= (prom << uint8_t{ 12 });
+		}
+		res|= (this->origin.row << uint8_t{ 9 });
+		res |= (this->origin.column << uint8_t{ 6 });
+		res |= (this->destination.row << uint8_t{ 3 });
+		res |= (this->destination.column);
+		return res;
 	}
 	Move(Coordinates origin, Coordinates destination, int promotion, int movingPiece, int capturedPiece, std::array<bool, 4> castlingFlags, Coordinates enPassant, int seventyFiveMoveRule);
 	Move(Coordinates origin, Coordinates destination, int promotion = 0, int movingPiece = 0, int capturedPiece = 0) : Move(origin, destination, promotion, movingPiece,capturedPiece, std::array<bool, 4>{}, Coordinates{}, 0){};

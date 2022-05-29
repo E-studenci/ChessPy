@@ -105,11 +105,11 @@ std::string Algorithms::PerftStarterSingleThread(Board *board, int depth, bool d
 	return retString;
 }
 
-std::pair<Move, double> Algorithms::GetBestMove(Board* board, int depth)
+std::pair<Move, int> Algorithms::GetBestMove(Board* board, int depth)
 {
 	this->count = 0;
 	//std::pair<Move, double> bestMove{ Move{Coordinates{-1,-1}, Coordinates{-1,-1}}, std::numeric_limits<double>::infinity() * (board->sideToMove? -1:1)};
-	std::pair<Move, double> bestMove{ Move{Coordinates{-1,-1}, Coordinates{-1,-1}}, -std::numeric_limits<double>::infinity() };
+	std::pair<Move, int> bestMove{ Move{Coordinates{-1,-1}, Coordinates{-1,-1}}, -std::numeric_limits<double>::infinity() };
 
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 	for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
@@ -117,7 +117,7 @@ std::pair<Move, double> Algorithms::GetBestMove(Board* board, int depth)
 		for (const Move& move : keyValuePair.second)
 		{
 			board->MakeMove(move);
-			double moveScore = this->AlphaBeta(board, -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), depth);
+			int moveScore = this->AlphaBeta(board, -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), depth);
 			board->Pop();
 			//if (!board->sideToMove)
 			//	moveScore *= -1;
@@ -131,14 +131,14 @@ std::pair<Move, double> Algorithms::GetBestMove(Board* board, int depth)
 	return bestMove;
 }
 
-std::pair<Move, double> Algorithms::Root(Board* board, int max_depth)
+std::pair<Move, int> Algorithms::Root(Board* board, int max_depth)
 {
-	double best_score = 0;
+	int best_score = 0;
 	Move best_move;
 	for (int depth = 1; depth < max_depth; ++depth) {
-		double score;
-		double alpha = -std::numeric_limits<double>::infinity();
-		double beta = std::numeric_limits<double>::infinity();
+		int score;
+		int alpha = -std::numeric_limits<double>::infinity();
+		int beta = std::numeric_limits<double>::infinity();
 		std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 		for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 		{
@@ -156,10 +156,10 @@ std::pair<Move, double> Algorithms::Root(Board* board, int max_depth)
 			}
 		}
 	}
-	return std::pair<Move, double>{ best_move, best_score };
+	return std::pair<Move, int>{ best_move, best_score };
 }
 
-double Algorithms::EvaluatePosition(Board* board)
+int Algorithms::EvaluatePosition(Board* board)
 {
 	if (board->GetAllLegalMoves().size() == 0) {
 		if (board->KingInCheck())
@@ -167,16 +167,15 @@ double Algorithms::EvaluatePosition(Board* board)
 		else
 			return 0;
 	}
-	double score = this->EvalPieces(*board);
+	int score = this->EvalPieces(*board);
 	//int doubledPawns = this->CountDoubledPawns(board);
 	//int isolatedPawns = this->CountIsolatedPawns(board);
 	//int blockedPawns = this->CountBlockedPawns(board);
 
-	return score * (board->sideToMove? -1.0 : 1.0);
+	return score * (board->sideToMove? -1 : 1);
 }
 
-std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool only_captures) {
-
+std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures) {
 	std::multiset<Move> result;
 	for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : moves)
 	{
@@ -187,7 +186,7 @@ std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordina
 					(move.destination == board.enPassant &&
 						(board.board[move.destination.row][move.destination.column] == 6 ||
 							board.board[move.destination.row][move.destination.column] == 12)))) { // any move is accepted or the move is a capture
-				move.score = this->MoveValue(board, move);
+				move.score = this->MoveValue(board, move, hashedMove, bestMoveHash);
 				result.insert(move);
 			}
 		}
@@ -195,8 +194,10 @@ std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordina
 	return result;
 }
 
-double Algorithms::MoveValue(const Board& board, const Move& move)
+double Algorithms::MoveValue(const Board& board, const Move& move,bool hashedMove, uint16_t bestMoveHash)
 {
+	if (hashedMove && (move.Hash() == bestMoveHash))
+		return 1000000000;
 	double score = 0;
 	int movingPiece = board.board[move.origin.row][move.origin.column];
 	bool movingPieceColor = movingPiece > 6;
@@ -207,13 +208,13 @@ double Algorithms::MoveValue(const Board& board, const Move& move)
 		+ PIECE_VALUE[movingPiece];
 	if (move.promotion != 0) {
 		if (move.promotion == 2 || move.promotion == 8)
-			score = 1000000003;
+			score = 10000003;
 		else if (move.promotion == 3 || move.promotion == 9)
-			score = 1000000002;
+			score = 10000002;
 		else if (move.promotion == 5 || move.promotion == 11)
-			score = 1000000001;
+			score = 10000001;
 		else if (move.promotion == 4 || move.promotion == 10)
-			score = 1000000000;
+			score = 10000000;
 	}
 	else {
 		int pieceScoreAfter =
@@ -245,37 +246,82 @@ double Algorithms::MoveValue(const Board& board, const Move& move)
 	return score;
 }
 
-double Algorithms::AlphaBeta(Board* board, double alpha, double beta, int depthLeft)
+int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 {
+	Entry entry;
+	bool found = false;
+	uint16_t bestMoveHash = 0;
+	Entry en = this->table.GetEntry(*board, &found);
+	if (found) {
+		entry = en;
+		if (entry.depth >= depthLeft)
+			return entry.score;
+		bestMoveHash = entry.move_hash;
+	}
 	if (depthLeft <= 0)
 		//return this->EvaluatePosition(board);
 		return this->Quiescence(board, alpha, beta);
-	double bestScore = -std::numeric_limits<double>::infinity();
+	int origAlpha = alpha;
+	int bestScore = -std::numeric_limits<double>::infinity();
+	Move bestMove = Move{};
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves);
+	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, found, bestMoveHash);
 	for (const Move& move : currentLegalMovesSorted){
+		//bool pre = board->hash.Verify(*board);
+		//auto prehash = board->hash.Key();
+
 		this->count++;
+		//if (board->hash.Key() == 13389866327522013437 && move.origin == Coordinates{ 4,0 } && move.destination == Coordinates{5,1})
+		//	std::cout << board->ToString();
+		//board->MakeMove(move);
+		//auto inter = board->hash.Key();
+		//board->Pop();
+		//bool post = board->hash.Verify(*board);
+		//if (pre && !post) {
+		//	std::cout << board->hash.Verify(*board);
+		//	board->MakeMove(move);
+		//	board->Pop();
+		//	board->MakeMove(move);
+		//	bool essa = board->hash.Key() == inter;
+		//	board->Pop();
+		//	std::cout << board->hash.Verify(*board);
+		//}
 		board->MakeMove(move);
-		double score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
+		int score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
 		board->Pop();
 
 		if (score >= beta)
 			return score;
 		if (score > bestScore) {
 			bestScore = score;
+			bestMove = move;
 			if (score > alpha)
 				alpha = score;
 		}
 	}
 	//}
+	if (bestMove.origin)
+		this->AddScoreToTable(*board, origAlpha, beta, bestScore, depthLeft, bestMove);
 	return bestScore;
 }
 
-double Algorithms::Quiescence(Board* board, double alpha, double beta, int depth)
+void Algorithms::AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove)
 {
-	if (depth > this->max_depth)
-		this->max_depth = depth;
-	double stand_pat = (board->sideToMove ? -1 : 1) * this->EvaluatePosition(board);
+	if (score <= alphaOriginal)
+		this->table.AddEntry(board, EntryType::UPPERBOUND, score, depth, bestMove);
+	else if (score >= beta) 
+		this->table.AddEntry(board, EntryType::LOWERBOUND, score, depth, bestMove);
+	else 
+		this->table.AddEntry(board, EntryType::EXACT, score, depth, bestMove);
+}
+int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
+{
+	if (ply > this->max_depth)
+		this->max_depth = ply;
+	int stand_pat = (board->sideToMove ? -1 : 1) * this->EvaluatePosition(board);
+	if (ply > MAX_PLY) {
+		return stand_pat;
+	}
 	if (stand_pat >= beta)
 		//return beta;
 		return stand_pat;
@@ -287,14 +333,14 @@ double Algorithms::Quiescence(Board* board, double alpha, double beta, int depth
 		alpha = stand_pat;
 
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, true);
+	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, false, 0, true);
 	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 	//{
 	//	for (Move& move : keyValuePair.second)
 	for (const Move& move : currentLegalMovesSorted) {
 		this->count++;
 		board->MakeMove(move);
-		double score = -this->Quiescence(board, -beta, -alpha, depth+1);
+		int score = -this->Quiescence(board, -beta, -alpha, ply +1);
 		board->Pop();
 		if (score >= beta)
 			//return beta;
@@ -306,7 +352,7 @@ double Algorithms::Quiescence(Board* board, double alpha, double beta, int depth
 }
 
 
-double Algorithms::EvalPieces(const Board& board)
+int Algorithms::EvalPieces(const Board& board)
 {
 	int scores[2] = { 0 , 0};
 	int endGameScores[2] = {0,0};
@@ -336,5 +382,5 @@ double Algorithms::EvalPieces(const Board& board)
 	//std::cout << board.ToString();
 	if (gamePhase > 24)
 		gamePhase = 24;
-	return (score * gamePhase + endScore * (24-gamePhase))/24.0;
+	return (score * gamePhase + endScore * (24-gamePhase))/24;
 }

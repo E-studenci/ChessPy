@@ -17,6 +17,7 @@ Move::Move(Coordinates from, Coordinates destination,
 	this->enPassant.column = enPassant.column;
 	this->promotion = promotion;
 	this->seventyFiveMoveRule = seventyFiveMoveRule;
+	this->score = 0;
 }
 Move::Move(const Move& other) {
 	this->origin.row = other.origin.row;

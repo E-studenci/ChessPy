@@ -160,20 +160,28 @@ void Board::Capture(Coordinates destination)
         (capturedPiece == 5 || capturedPiece == 11))
     { // check if the captured piece is a rook and is on the 1st or 8th column
         if (this->castlingFlags[0] && capturedPiece == 5 && destination.row == 7 && destination.column == 7) {
-            this->castlingFlags[0] = false; // reset wk castle flag
-            this->hash.ToggleCastle(0);
+            if (this->castlingFlags[0]) {
+                this->hash.ToggleCastle(0);
+                this->castlingFlags[0] = false;
+            }
         }
         else if (this->castlingFlags[1] && capturedPiece == 5 && destination.row == 7 && destination.column == 0) {
-            this->castlingFlags[1] = false; // reset wq castle flag
-            this->hash.ToggleCastle(1);
+            if (this->castlingFlags[1]) {
+                this->hash.ToggleCastle(1);
+                this->castlingFlags[1] = false;
+            }
         }
         else if (this->castlingFlags[2] && capturedPiece == 11 && destination.row == 0 && destination.column == 7) {
-            this->castlingFlags[2] = false; // reset bk castle flag
-            this->hash.ToggleCastle(2);
+            if (this->castlingFlags[2]) {
+                this->hash.ToggleCastle(2);
+                this->castlingFlags[2] = false;
+            }
         }
         else if (this->castlingFlags[3] && capturedPiece == 11 && destination.row == 0 && destination.column == 0) {
-            this->castlingFlags[3] = false; // reset bq castle flag
-            this->hash.ToggleCastle(3);
+            if (this->castlingFlags[3]) {
+                this->hash.ToggleCastle(3);
+                this->castlingFlags[3] = false;
+            }
         }
     }
     // /take care of castling flags
@@ -215,20 +223,20 @@ void Board::MakeMove(const Move& move)
         // en passant
         if (move.destination.row == this->enPassant.row && move.destination.column == this->enPassant.column)
         {
-            this->hash.TogglePieceSquare(movingPiece == 6 ? 12 : 6, Coordinates(move.destination.row + (movingPiece == 6 ? 1 : -1), move.destination.column));
+            //this->hash.TogglePieceSquare(movingPiece == 6 ? 12 : 6, Coordinates(move.destination.row + (movingPiece == 6 ? 1 : -1), move.destination.column));
             this->Capture(Coordinates(move.destination.row + (movingPiece == 6 ? 1 : -1), move.destination.column)); // capture the en passant victim
         }
         // /en passant
         // first move
         if (((move.origin.row - move.destination.row) == 2) || ((move.origin.row - move.destination.row) == -2))
         {
-            if (this->enPassant.column != -1)
-                this->hash.ToggleEnpassant(this->enPassant.column);
             Coordinates right = Coordinates{ move.destination.row, move.destination.column + 1 };
             Coordinates left = Coordinates{ move.destination.row, move.destination.column - 1 };
             bool enemyPawnLeft = this->FieldIsInBounds(left) && (this->board[left.row][left.column] == (movingPiece == 6 ? 12 : 6));
             bool enemyPawnRight = this->FieldIsInBounds(right) && (this->board[right.row][right.column] == (movingPiece == 6 ? 12 : 6));
             if (enemyPawnLeft || enemyPawnRight) { // there is at least one adjacent enemy pawn
+                if (this->enPassant.column != -1)
+                    this->hash.ToggleEnpassant(this->enPassant.column);
                 this->enPassant.row = move.origin.row == 1 ? 2 : 5;
                 this->enPassant.column = move.origin.column;
                 resetEnPassant = false;

@@ -146,6 +146,7 @@
     <ClCompile Include="Chess.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="SafeQueue.cpp" />
+    <ClCompile Include="TranspositionTable.cpp" />
     <ClCompile Include="Zobrist.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +156,7 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="PieceCharacteristics.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="TranspositionTable.h" />
     <ClInclude Include="Zobrist.h" />
   </ItemGroup>
   <ItemGroup>

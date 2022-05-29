@@ -202,31 +202,48 @@ int main()
     std::cout << duration.count() << std::endl;*/
     std::cout << "ALPHA BETA\n";
 
-    //Board bb3{ "Q2qkbnr/p2p1ppp/b3p3/3Q4/p1p5/4PN2/R1P2PPP/1NB1KB1R b Kk - 0 1" };
+    //Board bb3{ "1rbqk2r/p2p1p1p/3p2p1/4p3/pP2P1nP/2P2N2/3B1PP1/RN2KB1R b KQk b3 0 1" };
     //std::cout << "\n hash: " << bb3.hash.Verify(bb3);
-    //bb3.MakeMove(Move{ Coordinates{0,4}, Coordinates{1,4} });
+    //bb3.MakeMove(Move{ Coordinates{4,0}, Coordinates{5,1} });
+    //auto inter1 = bb3.hash.Key();
     //bb3.Pop();
     //std::cout << "\n hash: " << bb3.hash.Verify(bb3);
-    //bb3.MakeMove(Move{ Coordinates{0,4}, Coordinates{1,4} });
+    //bb3.MakeMove(Move{ Coordinates{4,0}, Coordinates{5,1} });
+    //Board bb4{ "1rbqk2r/p2p1p1p/3p2p1/4p3/4P1nP/1pP2N2/3B1PP1/RN2KB1R w KQk - 0 2" };
+    //auto inter2 = bb3.hash.Key();
     //bb3.Pop();
     //std::cout << "\n hash: " << bb3.hash.Verify(bb3);
-    //bb3.MakeMove(Move{ Coordinates{0,4}, Coordinates{1,4} });
+    //bb3.MakeMove(Move{ Coordinates{4,0}, Coordinates{5,1} });
+    //auto inter3 = bb3.hash.Key();
     //bb3.Pop();
     //std::cout << "\n hash: " << bb3.hash.Verify(bb3);
+    //std::cout << "\n inter12: " << (inter1 == inter2);
+    //std::cout << "\n inter23: " << (inter2 == inter3);
+    //std::cout << "\n inter13: " << (inter1 == inter3);
+    //std::cout << "\n inter1: " << (inter1 == bb4.hash.Key());
+    //std::cout << "\n inter2: " << (inter2 == bb4.hash.Key());
+    //std::cout << "\n inter3: " << (inter3 == bb4.hash.Key());
 
-    Board bb{ "1rbqkbnr/p1pp1ppp/4p3/3Q4/p7/4PN2/1PP2PPP/RNB1KB1R w KQk - 0 7" };
+    //Move es{ Coordinates{2,1}, Coordinates{2,3} };
+    //auto ses = es.Hash();
+    //Move ess{ Coordinates{2,1}, Coordinates{2,3}, 11 };
+    //ses = ess.Hash();
+    //bool s = ses == ess.Hash();
+    Board bb{ "1rbqk2r/p1pp1p1p/6p1/2b1p3/p3P1nP/2PQ1N2/1P1B1PP1/RN2KB1R w KQk - 2 12" };
     //Board bb{ "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10" };
     Algorithms algg;
     start = std::chrono::high_resolution_clock::now();
-    std::cout << algg.Root(&bb, 5).first.ToString();
+    std::cout << algg.Root(&bb, 7).first.ToString();
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     std::cout << "\ntime: " << duration.count() << std::endl;
     std::cout << algg.count;
     std::cout << "\n quiesce depth: " << algg.max_depth;
 
-    Board bb4{ "1rbqkbnr/p1pp1ppp/4p3/3Q4/p7/4PN2/1PP2PPP/RNB1KB1R b KQk - 0 7" };
-    std::cout << "\n hash: " << bb.hash.Verify(bb4);
+    Board bb5{ "1rbqk2r/p1pp1p1p/6p1/2b1p3/p3P1nP/2PQ1N2/1P1B1PP1/RN2KB1R w KQk - 2 12" };
+
+    
+    std::cout << "\n hash: " << bb.hash.Verify(bb5);
 
     std::cout<< algg.PerftStarterSingleThread(&bb, 5) << "\n";
     std::cout << algg.count;
