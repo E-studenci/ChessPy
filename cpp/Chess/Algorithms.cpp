@@ -64,12 +64,14 @@ int Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
 	//return retString;
 }
 
-std::pair<Move, int> Algorithms::Root(Board* board, int max_depth, long timeInMillis)
+std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_depth, long timeInMillis)
 {
 	this->timer.Start(timeInMillis);
 	int best_score = 0;
 	Move best_move;
+	int reachedDepth = 1;
 	for (int depth = 1; depth < max_depth; depth++) {
+		reachedDepth++;
 		int score;
 		int alpha = -std::numeric_limits<double>::infinity();
 		int beta = std::numeric_limits<double>::infinity();
@@ -99,13 +101,14 @@ std::pair<Move, int> Algorithms::Root(Board* board, int max_depth, long timeInMi
 			}
 		}
 		if (this->timer.Poll(this->count)) {
+			reachedDepth--;
 			break; // Discard
 		}
 		best_score = best_score_current_depth;
 		best_move = best_move_current_depth;
 		this->table.AddEntry(*board, EntryType::EXACT, score, depth, best_move);
 	}
-	return std::pair<Move, int>{ best_move, best_score };
+	return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
 int Algorithms::EvaluatePosition(Board* board)

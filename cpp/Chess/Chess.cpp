@@ -229,28 +229,31 @@ int main()
     //Move ess{ Coordinates{2,1}, Coordinates{2,3}, 11 };
     //ses = ess.Hash();
     //bool s = ses == ess.Hash();
-    Board bb{ "1rbqk2r/p1pp1p1p/6p1/2b1p3/p3P1nP/2PQ1N2/1P1B1PP1/RN2KB1R w KQk - 2 12" };
+    //Board bb{ "1rbqk2r/p1pp1p1p/6p1/2b1p3/p3P1nP/2PQ1N2/1P1B1PP1/RN2KB1R w KQk - 2 12" };
     //Board bb{ "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10" };
+    Board bb{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" };
     Algorithms algg;
     start = std::chrono::high_resolution_clock::now();
-    std::cout << algg.Root(&bb, 7, 100000).first.ToString();
+    auto res = algg.Root(&bb, 99, 5000);
+    std::cout << res.first.ToString();
+    std::cout <<"\nreached depth: " << res.second.second;
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     std::cout << "\ntime: " << duration.count() << std::endl;
     std::cout << algg.count;
     std::cout << "\n quiesce depth: " << algg.max_depth;
-
-    std::cout << bb.ToString();
-
+    std::cout << "\nsecond";
     start = std::chrono::high_resolution_clock::now();
-    std::cout << algg.Root(&bb, 8, 20000).first.ToString();
+    auto res2 = algg.Root(&bb, 99, 600000);
+    std::cout << res2.first.ToString();
+    std::cout << "\nreached depth: " << res2.second.second;
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     std::cout << "\ntime: " << duration.count() << std::endl;
     std::cout << algg.count;
     std::cout << "\n quiesce depth: " << algg.max_depth;
 
-    Board bb5{ "1rbqk2r/p1pp1p1p/6p1/2b1p3/p3P1nP/2PQ1N2/1P1B1PP1/RN2KB1R w KQk - 2 12" };
+    Board bb5{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" };
 
     
     std::cout << "\n hash: " << bb.hash.Verify(bb5);

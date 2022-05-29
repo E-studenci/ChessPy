@@ -20,7 +20,7 @@ public:
 		this->table.init();
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	std::pair<Move, int> Root(Board* board, int depth, long timeInMillis); // Returns the best move and score after the move
+	std::pair<Move, std::pair<int, int>> Root(Board* board, int depth, long timeInMillis); // Returns the best move and score after the move
 
 	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count=0;
