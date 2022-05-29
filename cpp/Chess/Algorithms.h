@@ -22,7 +22,6 @@ public:
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	std::pair<Move, int> Root(Board* board, int depth, long timeInMillis); // Returns the best move and score after the move
 
-	int EvaluatePosition(Board* board);	// Returns the position score
 	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count=0;
 	int max_depth = 0;
@@ -31,6 +30,7 @@ public:
 private:
 	Timer timer;
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
+	int EvaluatePosition(Board* board);	// Returns the position score
 	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures = false);
 	double MoveValue(const Board& board, const Move& move, bool hashedMove, uint16_t bestMoveHash);
 	int EvalPieces(const Board& board);
