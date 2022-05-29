@@ -19,10 +19,7 @@ public:
 		this->table = TranspositionTable{};
 		this->table.init();
 	}
-
-	std::string PerftStarter(Board* board, int depth, bool divide = false); // used for multithreading
-	std::string PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	std::pair<Move, int> GetBestMove(Board* board, int depth); // Returns the best move and score after the move
+	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	std::pair<Move, int> Root(Board* board, int depth, long timeInMillis); // Returns the best move and score after the move
 
 	int EvaluatePosition(Board* board);	// Returns the position score
@@ -33,9 +30,8 @@ public:
 
 private:
 	Timer timer;
-	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures = false);
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
-	static void Worker(SafeQueue<Board*>& queue, std::atomic<int>& result, int depth);
+	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures = false);
 	double MoveValue(const Board& board, const Move& move, bool hashedMove, uint16_t bestMoveHash);
 	int EvalPieces(const Board& board);
 	int Quiescence(Board* board, int alpha, int beta, int ply=0);

@@ -233,7 +233,7 @@ int main()
     //Board bb{ "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10" };
     Algorithms algg;
     start = std::chrono::high_resolution_clock::now();
-    std::cout << algg.Root(&bb, 7, 100000).first.ToString();
+    std::cout << algg.Root(&bb, 7, 10000).first.ToString();
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     std::cout << "\ntime: " << duration.count() << std::endl;
