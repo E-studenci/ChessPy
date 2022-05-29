@@ -21,5 +21,7 @@ public:
 	Move(Coordinates origin, Coordinates destination, int promotion, int movingPiece, int capturedPiece, std::array<bool, 4> castlingFlags, Coordinates enPassant, int seventyFiveMoveRule);
 	Move(Coordinates origin, Coordinates destination, int promotion = 0, int movingPiece = 0, int capturedPiece = 0) : Move(origin, destination, promotion, movingPiece,capturedPiece, std::array<bool, 4>{}, Coordinates{}, 0){};
 	Move(const Move &other);
+	Move() : Move(Coordinates{-1,-1}, Coordinates{ -1,-1 }, 0, movingPiece, capturedPiece, std::array<bool, 4>{}, Coordinates{}, 0) {};
+
 	std::string ToString() const;
 };

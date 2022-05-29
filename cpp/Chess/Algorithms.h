@@ -15,6 +15,8 @@ public:
 	std::string PerftStarter(Board* board, int depth, bool divide = false); // used for multithreading
 	std::string PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	std::pair<Move, double> GetBestMove(Board* board, int depth); // Returns the best move and score after the move
+	std::pair<Move, double> Root(Board* board, int depth); // Returns the best move and score after the move
+
 	double EvaluatePosition(Board* board);	// Returns the position score
 	double AlphaBeta(Board* board, double alpha, double beta, int depthLeft);
 	int count=0;

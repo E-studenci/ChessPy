@@ -878,7 +878,7 @@ void Board::Clear()
         }
     }
 }
-std::string Board::ToString()
+std::string Board::ToString() const
 {
     std::map<int, std::string> pieceMap{
         {0, " "},
