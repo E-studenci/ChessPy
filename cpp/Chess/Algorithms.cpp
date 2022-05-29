@@ -131,14 +131,22 @@ std::pair<Move, int> Algorithms::GetBestMove(Board* board, int depth)
 	return bestMove;
 }
 
-std::pair<Move, int> Algorithms::Root(Board* board, int max_depth)
+std::pair<Move, int> Algorithms::Root(Board* board, int max_depth, long timeInMillis)
 {
+	this->timer.Start(timeInMillis);
 	int best_score = 0;
 	Move best_move;
-	for (int depth = 1; depth < max_depth; ++depth) {
+	for (int depth = 1; depth < max_depth; depth++) {
 		int score;
 		int alpha = -std::numeric_limits<double>::infinity();
 		int beta = std::numeric_limits<double>::infinity();
+
+		int best_score_current_depth = 0;
+		Move best_move_current_depth;
+		if (this->timer.Poll(this->count)) {
+			break; // Do not start a new ply
+		}
+
 		std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 		for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 		{
@@ -147,14 +155,22 @@ std::pair<Move, int> Algorithms::Root(Board* board, int max_depth)
 				board->MakeMove(move);
 				score = -this->AlphaBeta(board, -beta, -alpha, depth - 1);
 				board->Pop();
-
+				if (this->timer.Poll(this->count)) {
+					break; // Discard
+				}
 				if (score > alpha) {
 					alpha = score;
-					best_score = score;
-					best_move = move;
+					best_score_current_depth = score;
+					best_move_current_depth = move;
 				}
 			}
 		}
+		if (this->timer.Poll(this->count)) {
+			break; // Discard
+		}
+		best_score = best_score_current_depth;
+		best_move = best_move_current_depth;
+		this->table.AddEntry(*board, EntryType::EXACT, score, depth, best_move);
 	}
 	return std::pair<Move, int>{ best_move, best_score };
 }
@@ -248,15 +264,36 @@ double Algorithms::MoveValue(const Board& board, const Move& move,bool hashedMov
 
 int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 {
+	if (this->timer.Poll(this->count)) {
+		return 0;
+	}
+	if (board->ThreeFoldRepetition() || board->FifyMoveRuleDraw())
+		return 0;
 	Entry entry;
 	bool found = false;
+	bool foundHashedMove = false;
+
 	uint16_t bestMoveHash = 0;
 	Entry en = this->table.GetEntry(*board, &found);
-	if (found) {
-		entry = en;
-		if (entry.depth >= depthLeft)
-			return entry.score;
+	if (found && !(en.cutoff == EntryType::EMPTY_ENTRY)) {
+		foundHashedMove = true;
 		bestMoveHash = entry.move_hash;
+		switch (en.cutoff) {
+		case EntryType::LOWERBOUND:
+			if (en.score > alpha) {
+				alpha = en.score;
+			}
+			break;
+		case EntryType::UPPERBOUND:
+			if (en.score < beta) {
+				beta = en.score;
+				foundHashedMove = false;
+			}
+			break;
+		case EntryType::EXACT:
+			if (alpha >= beta)
+				return en.score;
+		}
 	}
 	if (depthLeft <= 0)
 		//return this->EvaluatePosition(board);
@@ -265,7 +302,11 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	int bestScore = -std::numeric_limits<double>::infinity();
 	Move bestMove = Move{};
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, found, bestMoveHash);
+
+	if (board->KingInCheck())
+		depthLeft++;
+
+	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
 	for (const Move& move : currentLegalMovesSorted){
 		//bool pre = board->hash.Verify(*board);
 		//auto prehash = board->hash.Key();
@@ -289,7 +330,9 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 		board->MakeMove(move);
 		int score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
 		board->Pop();
-
+		if (this->timer.Poll(this->count)) {
+			return 0;
+		}
 		if (score >= beta)
 			return score;
 		if (score > bestScore) {
@@ -300,6 +343,9 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 		}
 	}
 	//}
+	if (this->timer.Poll(this->count)) {
+		return 0;
+	}
 	if (bestMove.origin)
 		this->AddScoreToTable(*board, origAlpha, beta, bestScore, depthLeft, bestMove);
 	return bestScore;
@@ -316,6 +362,9 @@ void Algorithms::AddScoreToTable(Board& board, int alphaOriginal, int beta, int 
 }
 int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 {
+	if (this->timer.Poll(this->count)) {
+		return 0;
+	}
 	if (ply > this->max_depth)
 		this->max_depth = ply;
 	int stand_pat = (board->sideToMove ? -1 : 1) * this->EvaluatePosition(board);
@@ -342,11 +391,17 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 		board->MakeMove(move);
 		int score = -this->Quiescence(board, -beta, -alpha, ply +1);
 		board->Pop();
+		if (this->timer.Poll(this->count)) {
+			return 0;
+		}
 		if (score >= beta)
 			//return beta;
 			return score;
 		if (score > alpha)
 			alpha = score;
+	}
+	if (this->timer.Poll(this->count)) {
+		return 0;
 	}
 	return alpha;
 }

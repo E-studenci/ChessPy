@@ -4,6 +4,7 @@
 #include "AttackedLine.h"
 #include "PieceCharacteristics.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <array>
@@ -35,6 +36,13 @@ public:
 	std::string ToString() const;
 	std::string AttackedFieldsToString();
 	std::string LegalMovesToString();
+	bool ThreeFoldRepetition() {
+		return std::count_if(this->boardHistory.begin(), this->boardHistory.end(),
+			[&](uint64_t key) { return this->hash.Key() == key; }) >= 3;
+	}
+	bool FifyMoveRuleDraw() {
+		return this->seventyFiveMoveRuleCounter > 99;
+	}
 	Zobrist hash;
 
 private:
@@ -48,7 +56,7 @@ private:
 	std::array<std::vector<std::set<Coordinates>>, 2> attackLines;		 // 0-white, 1-black
 	std::array<std::map<Coordinates, std::set<Coordinates>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
 
-	std::vector<std::array<std::array<int, 8>, 8>> boardHistory; // all past positions for the threefold repetion rule TODO: make this a map
+	std::vector<uint64_t> boardHistory; // all past positions for the threefold repetion rule
 	std::map<Coordinates, std::vector<Move>> allLegalMoves;		 // piece_position: moves
 	bool movesAreCalculated;
 

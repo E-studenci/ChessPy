@@ -355,10 +355,10 @@ void Board::MakeMove(const Move& move)
     {
         this->seventyFiveMoveRuleCounter++;
     }
+    // /reset en passant flag and 75 move rule counter
     if (!promotion)
         this->hash.TogglePieceSquare(movingPiece, move.destination);
-
-    // /reset en passant flag and 75 move rule counter
+    this->boardHistory.push_back(this->hash.Key());
 }
 bool Board::operator==(const Board& other)
 {
@@ -454,6 +454,7 @@ void Board::Pop()
         this->moveHistory.pop_back();
         this->hash.ToggleSTM();
         // /pop the move and board from history
+        this->boardHistory.pop_back();
     }
 }
 

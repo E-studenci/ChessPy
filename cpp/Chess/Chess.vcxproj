@@ -156,6 +156,7 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="PieceCharacteristics.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="TranspositionTable.h" />
     <ClInclude Include="Zobrist.h" />
   </ItemGroup>

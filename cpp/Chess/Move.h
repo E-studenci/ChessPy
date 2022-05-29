@@ -33,6 +33,20 @@ public:
 		res |= (this->destination.column);
 		return res;
 	}
+	void operator=(const Move& other) {
+		this->origin.row = other.origin.row;
+		this->origin.column = other.origin.column;
+		this->destination.row = other.destination.row;
+		this->destination.column = other.destination.column;
+		this->movingPiece = other.movingPiece;
+		this->capturedPiece = other.capturedPiece;
+		this->castlingFlags = other.castlingFlags;
+		this->enPassant.row = other.enPassant.row;
+		this->enPassant.column = other.enPassant.column;
+		this->promotion = other.promotion;
+		this->seventyFiveMoveRule = other.seventyFiveMoveRule;
+		this->score = other.score;
+	}
 	Move(Coordinates origin, Coordinates destination, int promotion, int movingPiece, int capturedPiece, std::array<bool, 4> castlingFlags, Coordinates enPassant, int seventyFiveMoveRule);
 	Move(Coordinates origin, Coordinates destination, int promotion = 0, int movingPiece = 0, int capturedPiece = 0) : Move(origin, destination, promotion, movingPiece,capturedPiece, std::array<bool, 4>{}, Coordinates{}, 0){};
 	Move(const Move &other);
