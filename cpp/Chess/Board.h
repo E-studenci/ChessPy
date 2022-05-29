@@ -58,7 +58,7 @@ private:
 
 	std::vector<uint64_t> boardHistory; // all past positions for the threefold repetion rule
 	std::map<Coordinates, std::vector<Move>> allLegalMoves;		 // piece_position: moves
-	bool movesAreCalculated;
+	bool movesAreCalculated = false;
 
 	void CalculateLegalMoves();
 	std::vector<Move> CalculateLegalMovesForPiece(const Coordinates& origin, int movingPiece, bool movingPieceColor);

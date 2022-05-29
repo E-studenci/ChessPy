@@ -1,3 +1,4 @@
+import typing
 
 class Coordinates:
     row: int
@@ -31,8 +32,8 @@ class Algorithms:
     def __init__(self) -> None:
         ...
 
-    def perft_starter(self, board: Board, depth: int) -> int:
+    def perft(self, board: Board, depth: int) -> int:
         ...
-
-    def perft_starter_single_thread(self, board: Board, depth: int) -> int:
+    
+    def root(self, board: Board, depth: int, time_in_milliseconds: int) -> typing.Tuple[Move, int, int]:
         ...

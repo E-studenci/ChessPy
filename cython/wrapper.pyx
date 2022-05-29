@@ -1,7 +1,8 @@
 from cython.operator cimport dereference as deref
 from libcpp.vector cimport vector
-from libcpp.map cimport map
 from libcpp.string cimport string
+from libcpp.pair cimport pair
+from libcpp.map cimport map
 
 from exposer cimport CppCoordinates, CppMove, CppBoard, CppAlgorithms
 
@@ -50,12 +51,13 @@ cdef class Coordinates:
 cdef class Move:
     cdef CppMove*instance
 
-    def __init__(self, Coordinates origin, Coordinates destination, int promotion = 0):
-        self.instance = new CppMove(deref(origin.instance), deref(destination.instance), promotion)
+    def __init__(self, Coordinates origin = None, Coordinates destination = None, int promotion = 0):
+        if origin is not None and destination is not None:
+            self.instance = new CppMove(deref(origin.instance), deref(destination.instance), promotion)
     
     def __dealloc__(self):
         del self.instance
-
+    
     @property
     def origin(self):
         return Coordinates(self.instance.origin.row, self.instance.origin.column)
@@ -134,8 +136,11 @@ cdef class Algorithms:
     def __dealloc__(self):
         del self.instance
 
-    def perft_starter(self, Board board, int depth) -> int:
-        return self.instance.PerftStarter(board.instance, depth)
-    
-    def perft_starter_single_thread(self, Board board, int depth) -> int:
+    def perft(self, Board board, int depth) -> int:
         return self.instance.PerftStarterSingleThread(board.instance, depth)
+    
+    def root(self, Board board, int depth, long timeInMillis):
+        result = self.instance.Root(board.instance, depth, timeInMillis)
+        move = Move()
+        move.instance = result.first.Clone()
+        return (move, result.second.first, result.second.second)

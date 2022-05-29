@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "tuple": "cpp",
+        "array": "cpp"
+    },
+    "editor.formatOnSave": false
+}

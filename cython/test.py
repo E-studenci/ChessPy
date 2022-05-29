@@ -3,28 +3,14 @@ import chess
 board = chess.Board(
     b"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
-print(board)
-
-cords1 = chess.Coordinates(4, 4)
-cords2 = chess.Coordinates(4, 3)
-
-print(cords1)
-print(cords2)
-
-move1 = chess.Move(cords1, cords2, 0)
-
-# board.make_move(move1)
-
-print(board)
-
-legal_moves = board.get_all_legal_moves()
-
-# print(legal_moves)
-
 alg = chess.Algorithms()
 
-amount = alg.perft_starter_single_thread(board, 3)
+print(f"Perft 5: {alg.perft(board, 5)}")
+print(f"Number of possible moves: {len(board.get_all_legal_moves())}")
 
-print(amount)
-
-# print(alg_board.get_all_legal_moves())
+print(board)
+for _ in range(5):
+    move, score, max_depth = alg.root(board, 10, 5000)
+    board.make_move(move)
+    print(board)
+    print(f"Score: {score} | Max depth: {max_depth}")

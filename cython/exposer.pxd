@@ -1,5 +1,6 @@
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from libcpp.pair cimport pair
 from libcpp.map cimport map
 
 
@@ -20,6 +21,7 @@ cdef extern from "Coordinates.h":
 cdef extern from "Move.h":
     cdef cppclass CppMove "Move":
         CppMove(CppCoordinates origin, CppCoordinates destination, int promotion) except +
+        CppMove* Clone()
         CppCoordinates origin
         CppCoordinates destination
         int promotion
@@ -29,12 +31,17 @@ cdef extern from "Board.h":
     cdef cppclass CppBoard "Board":
         CppBoard() except +
         CppBoard(char *fen) except +
-        void MakeMove(const CppMove move)
+        bint KingInCheck()
+        bint ThreeFoldRepetition()
+        bint FifyMoveRuleDraw()
+        void MakeMove(const CppMove &move)
         map[CppCoordinates, vector[CppMove]] GetAllLegalMoves()
         string ToString()
 
 
 cdef extern from "Algorithms.h":
     cdef cppclass CppAlgorithms "Algorithms":
-        int PerftStarter(CppBoard* board, int depth)
+        CppAlgorithms() except +
         int PerftStarterSingleThread(CppBoard* board, int depth)
+        pair[CppMove, pair[int, int]] Root(CppBoard* board, int depth, long timeInMillis)
+        int AlphaBeta(CppBoard* board, int alpha, int beta, int depthLeft)

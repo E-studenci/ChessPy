@@ -67,3 +67,7 @@ std::string Move::ToString() const{
 	}
 	return retString;
 }
+
+Move* Move::Clone() {
+	return new Move(*this);
+}

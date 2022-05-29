@@ -488,7 +488,7 @@ void Board::CalculateLegalMoves()
                 int movingPiece = this->board[row][column];
                 if (movingPiece != 0)
                 {
-                    int movingPieceColor = movingPiece > 6;
+                    bool movingPieceColor = movingPiece > 6;
                     if (movingPieceColor == this->sideToMove)
                     {
                         std::vector<Move> pieceMoves = CalculateLegalMovesForPiece(Coordinates(row, column), movingPiece, movingPieceColor);

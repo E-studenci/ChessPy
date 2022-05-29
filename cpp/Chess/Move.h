@@ -52,5 +52,6 @@ public:
 	Move(const Move &other);
 	Move() : Move(Coordinates{-1,-1}, Coordinates{ -1,-1 }, 0, movingPiece, capturedPiece, std::array<bool, 4>{}, Coordinates{}, 0) {};
 
+	Move* Clone();
 	std::string ToString() const;
 };

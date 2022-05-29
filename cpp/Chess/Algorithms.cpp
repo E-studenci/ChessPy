@@ -36,7 +36,7 @@ std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *boa
 			}
 			std::get<0>(result) += res;
 			if (divide) {
-				std::get<1>(result).push_back(std::tuple{ move, res });
+				std::get<1>(result).push_back(std::tuple<Move, int>{ move, res });
 			}
 		}
 	}

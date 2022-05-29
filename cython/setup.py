@@ -17,7 +17,7 @@ def find_cpp_files(folder_path: str, exceptions: list[str] = []) -> list[str]:
 ext_modules = [
     Extension(
         name="chess",
-        sources=["wrapper.pyx", *find_cpp_files(CPP_PATH)],
+        sources=["wrapper.pyx", *find_cpp_files(CPP_PATH, "Chess.cpp")],
         include_dirs=[CPP_PATH],
         language="c++",
         language_level=3
