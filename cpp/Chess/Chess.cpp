@@ -244,7 +244,7 @@ int main()
     std::cout << "\n quiesce depth: " << algg.max_depth;
     std::cout << "\nsecond";
     start = std::chrono::high_resolution_clock::now();
-    auto res2 = algg.Root(&bb, 99, 600000);
+    auto res2 = algg.Root(&bb, 99, 500);
     std::cout << res2.first.ToString();
     std::cout << "\nreached depth: " << res2.second.second;
     stop = std::chrono::high_resolution_clock::now();
