@@ -32,6 +32,7 @@ Move::Move(const Move& other) {
 	this->promotion = other.promotion;
 	this->seventyFiveMoveRule = other.seventyFiveMoveRule;
 	this->score = other.score;
+	this->goodCapture = other.goodCapture;
 }
 std::string Move::ToString() const{
 	std::string retString;

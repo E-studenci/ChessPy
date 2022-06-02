@@ -15,7 +15,7 @@ public:
 	Coordinates enPassant;			   // en passant flag pre move
 	int seventyFiveMoveRule;		   // sfmr counter premove
 	double score;
-
+	bool goodCapture = false;
 	friend bool operator<(Move const& lhs, Move const& rhs) {
 		return lhs.score > rhs.score;
 	}

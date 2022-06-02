@@ -69,12 +69,12 @@ std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_dept
 	this->timer.Start(timeInMillis);
 	int best_score = 0;
 	Move best_move;
-	int reachedDepth = 1;
-	for (int depth = 1; depth < max_depth; ++depth) {
+	int reachedDepth = 0;
+	for (int depth = 1; depth <= max_depth;depth++) {
 		reachedDepth++;
 		int score;
-		int alpha = INT_MIN;
-		int beta = INT_MAX;
+		int alpha = MIN;
+		int beta = MAX;
 
 		int best_score_current_depth = 0;
 		Move best_move_current_depth;
@@ -87,8 +87,8 @@ std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_dept
 		{
 			for (const Move& move : keyValuePair.second)
 			{
-				//alpha = INT_MIN;
-				//beta = INT_MAX;
+				//alpha = MIN;
+				//beta = MAX;
 				board->MakeMove(move);
 				//score = -this->AlphaBeta(board, alpha, beta, depth);
 				score = -this->AlphaBeta(board, -beta, -alpha, depth - 1);
@@ -110,6 +110,8 @@ std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_dept
 		best_score = best_score_current_depth;
 		best_move = best_move_current_depth;
 		this->table.AddEntry(*board, EntryType::EXACT, score, depth, best_move);
+		if (best_score == MATE_SCORE)
+			break;
 	}
 	return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
@@ -118,6 +120,7 @@ int Algorithms::EvaluatePosition(Board* board)
 {
 	if (board->GetAllLegalMoves().size() == 0) {
 		if (board->KingInCheck())
+			//return -MATE_SCORE * (board->sideToMove ? -1 : 1);
 			return -MATE_SCORE;
 		else
 			return 0;
@@ -149,7 +152,7 @@ std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordina
 	return result;
 }
 
-double Algorithms::MoveValue(const Board& board, const Move& move,bool hashedMove, uint16_t bestMoveHash)
+double Algorithms::MoveValue(const Board& board, Move& move,bool hashedMove, uint16_t bestMoveHash)
 {
 	if (hashedMove && (move.Hash() == bestMoveHash))
 		return 1000000000;
@@ -194,6 +197,8 @@ double Algorithms::MoveValue(const Board& board, const Move& move,bool hashedMov
 			+ PIECE_VALUE[capturedPiece];
 		//double capture_value =fmin(0.0, capturedPieceValue - pieceScoreBefore);
 		score += capturedPieceValue - pieceScoreBefore;
+		if (capturedPieceValue > pieceScoreBefore)
+			move.goodCapture = true;
 		//score += capture_value;
 	}
 	/*double ran = (((double)rand() * (0 - 0.05) / RAND_MAX) + 0);
@@ -242,7 +247,7 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 		//return this->EvaluatePosition(board);
 		return this->Quiescence(board, alpha, beta);
 	int origAlpha = alpha;
-	int bestScore = -std::numeric_limits<double>::infinity();
+	int bestScore = MIN;
 	Move bestMove = Move{};
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 
@@ -251,25 +256,7 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 
 	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
 	for (const Move& move : currentLegalMovesSorted){
-		//bool pre = board->hash.Verify(*board);
-		//auto prehash = board->hash.Key();
-
 		this->count++;
-		//if (board->hash.Key() == 13389866327522013437 && move.origin == Coordinates{ 4,0 } && move.destination == Coordinates{5,1})
-		//	std::cout << board->ToString();
-		//board->MakeMove(move);
-		//auto inter = board->hash.Key();
-		//board->Pop();
-		//bool post = board->hash.Verify(*board);
-		//if (pre && !post) {
-		//	std::cout << board->hash.Verify(*board);
-		//	board->MakeMove(move);
-		//	board->Pop();
-		//	board->MakeMove(move);
-		//	bool essa = board->hash.Key() == inter;
-		//	board->Pop();
-		//	std::cout << board->hash.Verify(*board);
-		//}
 		board->MakeMove(move);
 		int score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
 		board->Pop();
@@ -285,9 +272,13 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 				alpha = score;
 		}
 	}
-	//}
 	if (this->timer.Poll(this->count)) {
 		return 0;
+	}
+	if (currentLegalMovesSorted.size() == 0) {
+		if (board->KingInCheck())
+			return -MATE_SCORE;
+		else return 0;
 	}
 	if (bestMove.origin)
 		this->AddScoreToTable(*board, origAlpha, beta, bestScore, depthLeft, bestMove);
@@ -310,7 +301,7 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 	}
 	if (ply > this->max_depth)
 		this->max_depth = ply;
-	int stand_pat = (board->sideToMove ? -1 : 1) * this->EvaluatePosition(board);
+	int stand_pat = this->EvaluatePosition(board);
 	if (ply > MAX_PLY) {
 		return stand_pat;
 	}
@@ -321,6 +312,7 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 	if (stand_pat < alpha - delta) {
 		return alpha;
 	}
+	
 	if (alpha < stand_pat)
 		alpha = stand_pat;
 
@@ -330,6 +322,8 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 	//{
 	//	for (Move& move : keyValuePair.second)
 	for (const Move& move : currentLegalMovesSorted) {
+		if (!move.goodCapture)
+			continue;
 		this->count++;
 		board->MakeMove(move);
 		int score = -this->Quiescence(board, -beta, -alpha, ply +1);

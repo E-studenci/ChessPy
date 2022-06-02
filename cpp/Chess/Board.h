@@ -28,7 +28,10 @@ public:
 	Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 	~Board();
 	std::map<Coordinates, std::vector<Move>> GetAllLegalMoves();
-	bool KingInCheck() { return this->attackLines[!this->sideToMove].size()>0; }
+	bool KingInCheck(bool opponent=false) {
+		if (opponent)
+			return this->attackLines[this->sideToMove].size() > 0;
+		return this->attackLines[!this->sideToMove].size()>0; }
 	void Pop();																			 // unmake the last move
 	void MakeMove(const Move& move);														 // commit a move
 	bool operator==(const Board& other);

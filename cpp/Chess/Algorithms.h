@@ -32,11 +32,11 @@ private:
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	int EvaluatePosition(Board* board);	// Returns the position score
 	std::multiset<Move> OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures = false);
-	double MoveValue(const Board& board, const Move& move, bool hashedMove, uint16_t bestMoveHash);
+	double MoveValue(const Board& board, Move& move, bool hashedMove, uint16_t bestMoveHash);
 	int EvalPieces(const Board& board);
 	int Quiescence(Board* board, int alpha, int beta, int ply=0);
 	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
-	int MAX_PLY = 30;
+	int MAX_PLY = 20;
 	const std::array<std::array<int, 8>, 8> PAWN{ {
 		{ 0,   0,    0,   0,   0,   0,  0,   0},
 		{98, 134,   61,  95,  68, 126, 34, -11},
@@ -150,5 +150,8 @@ private:
 	const std::array<int, 12> GAME_PHASE_SHIFT{0, 4, 1, 1, 2, 0, 0, 4, 1, 1, 2, 0 };
 	const std::array<std::array<std::array<int, 8>, 8>, 12> POSITION_TABLE{ KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN,KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN };
 	const std::array<std::array<std::array<int, 8>, 8>, 12> END_GAME_POSITION_TABLE{ END_GAME_KING, END_GAME_QUEEN, END_GAME_KNIGHT, END_GAME_BISHOP, END_GAME_ROOK, END_GAME_PAWN,END_GAME_KING, END_GAME_QUEEN, END_GAME_KNIGHT, END_GAME_BISHOP, END_GAME_ROOK, END_GAME_PAWN };
-	const int MATE_SCORE = 2000000;
+	const int MATE_SCORE = 20000;
+	const int MIN = -2 * MATE_SCORE;
+	const int MAX = 2 * MATE_SCORE;
+
 };
