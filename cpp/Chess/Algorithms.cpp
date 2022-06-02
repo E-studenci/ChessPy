@@ -36,7 +36,7 @@ std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *boa
 			}
 			std::get<0>(result) += res;
 			if (divide) {
-				std::get<1>(result).push_back(std::tuple{ move, res });
+				std::get<1>(result).push_back(std::tuple<Move, int>{ move, res });
 			}
 		}
 	}
@@ -70,6 +70,7 @@ std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_dept
 	int best_score = 0;
 	Move best_move;
 	int reachedDepth = 0;
+	this->count = 0;
 	for (int depth = 1; depth <= max_depth;depth++) {
 		reachedDepth++;
 		int score;
@@ -130,7 +131,7 @@ int Algorithms::EvaluatePosition(Board* board)
 	//int isolatedPawns = this->CountIsolatedPawns(board);
 	//int blockedPawns = this->CountBlockedPawns(board);
 
-	return score * (board->sideToMove? -1 : 1);
+	return score;// * (board->sideToMove? -1 : 1);
 }
 
 std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures) {
@@ -213,7 +214,6 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	}
 	if (board->ThreeFoldRepetition() || board->FifyMoveRuleDraw())
 		return 0;
-	Entry entry;
 	bool found = false;
 	bool foundHashedMove = false;
 
@@ -221,7 +221,7 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	Entry en = this->table.GetEntry(*board, &found);
 	if (found && !(en.cutoff == EntryType::EMPTY_ENTRY)) {
 		foundHashedMove = true;
-		bestMoveHash = entry.move_hash;
+		bestMoveHash = en.move_hash;
 		switch (en.cutoff) {
 		case EntryType::LOWERBOUND:
 			if (en.score > alpha) {
@@ -237,7 +237,7 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 		case EntryType::EXACT:
 			if (en.depth >= depthLeft)
 				return en.score;
-			beta = en.score;
+			//beta = en.score;
 			break;
 		if (alpha >= beta)
 			return en.score;
@@ -346,7 +346,7 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 
 int Algorithms::EvalPieces(const Board& board)
 {
-	int scores[2] = { 0 , 0};
+	int scores[2] = { 0, 0 };
 	int endGameScores[2] = {0,0};
 	int gamePhase = 0;
 	for (int row = 0; row < 8;row++) {

@@ -919,6 +919,11 @@ std::string Board::ToString() const
         if (this->castlingFlags[i])
             retString += castlingMap[i];
     }
+    if(!this->moveHistory.empty()){
+        retString += ", last move: ";
+        retString += this->moveHistory.back().ToString();
+    }
+
     retString += "\n";
     retString += "\n-------------------------------\n";
     std::map<int, char> rowMap{{0, '8'}, {1, '7'}, {2, '6'}, {3, '5'}, {4, '4'}, {5, '3'}, {6, '2'}, {7, '1'}};

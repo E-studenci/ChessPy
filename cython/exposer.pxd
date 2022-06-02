@@ -45,3 +45,4 @@ cdef extern from "Algorithms.h":
         int PerftStarterSingleThread(CppBoard* board, int depth)
         pair[CppMove, pair[int, int]] Root(CppBoard* board, int depth, long timeInMillis)
         int AlphaBeta(CppBoard* board, int alpha, int beta, int depthLeft)
+        int count

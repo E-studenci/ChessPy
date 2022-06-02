@@ -29,6 +29,8 @@ class Board:
 
 
 class Algorithms:
+    count: int
+    
     def __init__(self) -> None:
         ...
 

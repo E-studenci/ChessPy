@@ -135,7 +135,11 @@ cdef class Algorithms:
 
     def __dealloc__(self):
         del self.instance
-
+        
+    @property
+    def count(self):
+        return self.instance.count
+    
     def perft(self, Board board, int depth) -> int:
         return self.instance.PerftStarterSingleThread(board.instance, depth)
     

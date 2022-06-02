@@ -23,7 +23,7 @@ public:
 	std::pair<Move, std::pair<int, int>> Root(Board* board, int depth, long timeInMillis); // Returns the best move and score after the move
 
 	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
-	int count=0;
+	int count = 0;
 	int max_depth = 0;
 	TranspositionTable table;
 
@@ -36,7 +36,7 @@ private:
 	int EvalPieces(const Board& board);
 	int Quiescence(Board* board, int alpha, int beta, int ply=0);
 	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
-	int MAX_PLY = 20;
+	int MAX_PLY = 100;
 	const std::array<std::array<int, 8>, 8> PAWN{ {
 		{ 0,   0,    0,   0,   0,   0,  0,   0},
 		{98, 134,   61,  95,  68, 126, 34, -11},
