@@ -2,6 +2,7 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 from libcpp.map cimport map
+from libcpp cimport bool
 
 
 cdef extern from "<array>" namespace "std" nogil:
@@ -31,11 +32,12 @@ cdef extern from "Board.h":
     cdef cppclass CppBoard "Board":
         CppBoard() except +
         CppBoard(char *fen) except +
-        bint KingInCheck()
-        bint ThreeFoldRepetition()
-        bint FifyMoveRuleDraw()
+        bool KingInCheck(bool opponent)
+        bool ThreeFoldRepetition()
+        bool FifyMoveRuleDraw()
         void MakeMove(const CppMove &move)
         map[CppCoordinates, vector[CppMove]] GetAllLegalMoves()
+        string ToFen()
         string ToString()
 
 

@@ -18,6 +18,11 @@ class Move:
 
 
 class Board:
+    check: bool
+    three_fold_repetition: bool
+    fifty_move_rule_draw: bool
+    fen: str
+    
     def __init__(self, fen: bytes) -> None:
         ...
 
@@ -26,6 +31,7 @@ class Board:
 
     def get_all_legal_moves(self) -> map[Coordinates, list[Move]]:
         ...
+        
 
 
 class Algorithms:

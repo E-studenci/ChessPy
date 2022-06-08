@@ -1,7 +1,11 @@
 import chess
 
-board = chess.Board(
-    b"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+board = chess.Board("rnb1kbnr/1p1p1ppp/pKp5/4p3/4P3/1q4P1/PPPP3P/RNB1QBNR w kq - 6 20")
+
+print(board.fen)
+print(board.check)
+print(board.fifty_move_rule_draw)
+print(board.three_fold_repetition)
 
 alg = chess.Algorithms()
 

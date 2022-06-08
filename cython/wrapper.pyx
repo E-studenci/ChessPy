@@ -1,8 +1,5 @@
+# cython: c_string_type=unicode, c_string_encoding=utf8
 from cython.operator cimport dereference as deref
-from libcpp.vector cimport vector
-from libcpp.string cimport string
-from libcpp.pair cimport pair
-from libcpp.map cimport map
 
 from exposer cimport CppCoordinates, CppMove, CppBoard, CppAlgorithms
 
@@ -103,8 +100,24 @@ cdef class Board:
         del self.instance
 
     def __str__(self):
-        return self.instance.ToString().decode("utf-8")
+        return self.instance.ToString()
+    
+    @property
+    def check(self):
+        return self.instance.KingInCheck(False)
+    
+    @property
+    def three_fold_repetition(self):
+        return self.instance.ThreeFoldRepetition()
 
+    @property
+    def fifty_move_rule_draw(self):
+        return self.instance.FifyMoveRuleDraw()
+
+    @property
+    def fen(self):
+        return self.instance.ToFen()
+    
     def make_move(self, Move move):
         self.instance.MakeMove(deref(move.instance))
     
