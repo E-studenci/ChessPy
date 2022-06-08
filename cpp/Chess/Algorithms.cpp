@@ -222,25 +222,25 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	if (found && !(en.cutoff == EntryType::EMPTY_ENTRY)) {
 		foundHashedMove = true;
 		bestMoveHash = en.move_hash;
-		switch (en.cutoff) {
-		case EntryType::LOWERBOUND:
-			if (en.score > alpha) {
-				alpha = en.score;
-			}
-			break;
-		case EntryType::UPPERBOUND:
-			if (en.score < beta) {
-				beta = en.score;
-				foundHashedMove = false;
-			}
-			break;
-		case EntryType::EXACT:
-			if (en.depth >= depthLeft)
+		if (en.depth >= depthLeft) {
+			switch (en.cutoff) {
+			case EntryType::LOWERBOUND:
+				if (en.score > alpha) {
+					alpha = en.score;
+				}
+				break;
+			case EntryType::UPPERBOUND:
+				if (en.score < beta) {
+					beta = en.score;
+					foundHashedMove = false;
+				}
+				break;
+			case EntryType::EXACT:
 				return en.score;
-			//beta = en.score;
-			break;
-		if (alpha >= beta)
-			return en.score;
+				break;
+			}
+			if (alpha >= beta)
+				return en.score;
 		}
 	}
 	if (depthLeft <= 0)
@@ -251,8 +251,8 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	Move bestMove = Move{};
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 
-	if (board->KingInCheck())
-		depthLeft++;
+	//if (board->KingInCheck())
+	//	depthLeft++;
 
 	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
 	for (const Move& move : currentLegalMovesSorted){

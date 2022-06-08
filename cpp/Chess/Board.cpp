@@ -942,6 +942,74 @@ std::string Board::ToString() const
     retString += "  a   b   c   d   e   f   g   h";
     return retString;
 }
+
+std::string Board::ToFen() const
+{
+    std::map<int, std::string> pieceMap{
+        {0, " "},
+        {7, "k"},
+        {1, "K"},
+        {8, "q"},
+        {2, "Q"},
+        {9, "n"},
+        {3, "N"},
+        {10, "b"},
+        {4, "B"},
+        {11, "r"},
+        {5, "R"},
+        {12, "p"},
+        {6, "P"} };
+    std::map<int, std::string> castlingMap{ {2, "k"}, {0, "K"}, {3, "q"}, {1, "Q"} };
+    std::string retString;
+    // board
+    for (int row = 0; row < 8; row++) {
+        int emptyFields = 0;
+        for (int column = 0; column < 8; column++) {
+            if (this->board[row][column] != 0) {
+                if (emptyFields != 0)
+                    retString += std::to_string(emptyFields);
+                emptyFields = 0;
+                retString += pieceMap[this->board[row][column]];
+            }
+            else {
+                if (column + 1 == 8)
+                    retString += std::to_string(emptyFields + 1);
+                else
+                    emptyFields++;
+            }
+        }
+        if (row != 7)
+            retString += "/";
+    }
+    // /board
+    // turn
+    retString += " ";
+    retString += this->sideToMove ? "b" : "w";
+    // /turn
+    // castling
+    bool canCastle = false;
+    retString += " ";
+    for (int i = 0; i < 4; i++)
+        if (this->castlingFlags[i]) {
+            canCastle = true;
+            retString += castlingMap[i];
+        }
+    if (!canCastle)
+        retString += "-";
+    // /castling
+    // en passant
+    retString += " ";
+    retString += this->enPassant ? this->enPassant.ToString() : "-";
+    // /enpassant
+    // counters
+    retString += " ";
+    retString += std::to_string(this->seventyFiveMoveRuleCounter);
+    retString += " ";
+    retString += std::to_string(this->turnCounter);
+    // /counters
+    return retString;
+}
+
 std::string Board::AttackedFieldsToString()
 {
     std::string retString;

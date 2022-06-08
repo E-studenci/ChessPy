@@ -258,18 +258,26 @@ int main()
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
 
 
-    Board bb{ "5QK1/1r1RB2p/1n2k2p/2Pbb1n1/B2P3N/4P3/8/4q3 b - - 0 7" };
+    Board bb{ "8/1P3k2/4n3/8/4K3/8/8/8 w - - 3 4" };
     Algorithms algg;
-    start = std::chrono::high_resolution_clock::now();
-    auto res = algg.Root(&bb, 99, 20000);
-    std::cout << res.first.ToString();
-    std::cout <<"\nreached depth: " << res.second.second;
-    stop = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cout << "\ntime: " << duration.count() << std::endl;
-    std::cout << algg.count;
-    std::cout << "\n quiesce depth: " << algg.max_depth;
-    std::cout << "\nsecond";
+    for (int i = 0; i < 50;i++) {
+        auto res = algg.Root(&bb, 99, 1000);
+        bb.MakeMove(res.first);
+        std::cout << bb.ToString();
+        std::cout << "\nreached depth: " << res.second.second << "\n";
+        std::cout << "\nhalf turn: " << i;
+
+    }
+    //start = std::chrono::high_resolution_clock::now();
+    //auto res = algg.Root(&bb, 99, 2000);
+    //std::cout << res.first.ToString();
+    //std::cout <<"\nreached depth: " << res.second.second;
+    //stop = std::chrono::high_resolution_clock::now();
+    //duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    //std::cout << "\ntime: " << duration.count() << std::endl;
+    //std::cout << algg.count;
+    //std::cout << "\n quiesce depth: " << algg.max_depth;
+    //std::cout << "\nsecond";
 
     
     std::cout<< algg.PerftStarterSingleThread(&bb, 2) << "\n";

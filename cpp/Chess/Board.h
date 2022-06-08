@@ -37,6 +37,7 @@ public:
 	bool operator==(const Board& other);
 	std::array<std::array<std::array<bool, 8>, 8>, 16> GetNeuralNetworkRepresentation(); // convert the board to its nn representation
 	std::string ToString() const;
+	std::string ToFen() const;
 	std::string AttackedFieldsToString();
 	std::string LegalMovesToString();
 	bool ThreeFoldRepetition() {
