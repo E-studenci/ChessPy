@@ -64,25 +64,30 @@ int Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
 	//return retString;
 }
 
-std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_depth, long timeInMillis)
+EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
 {
 	this->timer.Start(timeInMillis);
-	int best_score = 0;
-	Move best_move;
+	int bestScore = 0;
+	Move bestMove;
+	int bestScoreOpponent = 0;
+	Move bestMoveOpponent;
+	int evaluation = 0;
+
 	int reachedDepth = 0;
 	this->count = 0;
+	Board boardOpponent(*board);
 	for (int depth = 1; depth <= max_depth;depth++) {
 		reachedDepth++;
+
+		// side to move best move
 		int score;
 		int alpha = MIN;
 		int beta = MAX;
-
-		int best_score_current_depth = 0;
-		Move best_move_current_depth;
+		int bestScoreCurrentDepth = 0;
+		Move bestMoveCurrentDepth;
 		if (this->timer.Poll(this->count)) {
 			break; // Do not start a new ply
 		}
-
 		std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 		for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 		{
@@ -99,8 +104,8 @@ std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_dept
 				}
 				if (score > alpha) {
 					alpha = score;
-					best_score_current_depth = score;
-					best_move_current_depth = move;
+					bestScoreCurrentDepth = score;
+					bestMoveCurrentDepth = move;
 				}
 			}
 		}
@@ -108,13 +113,69 @@ std::pair<Move, std::pair<int, int>> Algorithms::Root(Board* board, int max_dept
 			reachedDepth--;
 			break; // Discard
 		}
-		best_score = best_score_current_depth;
-		best_move = best_move_current_depth;
-		this->table.AddEntry(*board, EntryType::EXACT, score, depth, best_move);
-		if (best_score == MATE_SCORE)
+		bestScore = bestScoreCurrentDepth;
+		bestMove = bestMoveCurrentDepth;
+		this->table.AddEntry(*board, EntryType::EXACT, bestScore, depth, bestMove);
+		if (bestScore == MATE_SCORE)
 			break;
+		// /side to move best move
+		// side to move evaluation
+		if (evaluatePosition) {
+			int evaluationScore = -this->AlphaBeta(board, -beta, -alpha, depth);
+			if (this->timer.Poll(this->count)) {
+				reachedDepth--;
+				break; // Discard
+			}
+			evaluation = evaluationScore;
+		}
+		// /side to move evaluation
+		// opponent best move
+		if (getOpponentBestMove) {
+			int scoreOpponent;
+			int alphaOpponent = MIN;
+			int betaOpponent = MAX;
+			int bestScoreCurrentDepthOpponent = 0;
+			Move bestMoveCurrentDepthOpponent;
+			if (this->timer.Poll(this->count)) {
+				break; // Do not start a new ply
+			}
+			std::map<Coordinates, std::vector<Move>> currentLegalMovesOpponent = boardOpponent.GetAllLegalMoves();
+			for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMovesOpponent)
+			{
+				for (const Move& move : keyValuePair.second)
+				{
+					//alpha = MIN;
+					//beta = MAX;
+					boardOpponent.MakeMove(move);
+					//score = -this->AlphaBeta(board, alpha, beta, depth);
+					scoreOpponent = -this->AlphaBeta(&boardOpponent, -betaOpponent, -alphaOpponent, depth - 1);
+					boardOpponent.Pop();
+					if (this->timer.Poll(this->count)) {
+						break; // Discard
+					}
+					if (scoreOpponent > alphaOpponent) {
+						alphaOpponent = scoreOpponent;
+						bestScoreCurrentDepthOpponent = scoreOpponent;
+						bestMoveCurrentDepthOpponent = move;
+					}
+				}
+			}
+			if (this->timer.Poll(this->count)) {
+				reachedDepth--;
+				break; // Discard
+			}
+			bestScoreOpponent = bestScoreCurrentDepthOpponent;
+			bestMoveOpponent = bestMoveCurrentDepthOpponent;
+			this->table.AddEntry(boardOpponent, EntryType::EXACT, bestScoreOpponent, depth, bestMoveOpponent);
+		}
+		// /opponent best move
+		if (this->timer.Poll(this->count)) {
+			reachedDepth--;
+			break; // Discard
+		}
 	}
-	return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
+	return EvaluationResult(bestMove, bestScore, evaluation, bestMoveOpponent);
+	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
 int Algorithms::EvaluatePosition(Board* board)

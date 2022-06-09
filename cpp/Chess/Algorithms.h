@@ -12,6 +12,23 @@
 #include "TranspositionTable.h"
 #include "Timer.h"
 
+struct EvaluationResult
+{
+public:
+	int evaluation = 0;
+	
+	int scoreAfterBestMove = 0;
+	Move bestMove = Move();
+
+	Move bestOpponentMove = Move();
+
+	EvaluationResult(Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move()) {
+		this->bestMove = bestMove;
+		this->scoreAfterBestMove = scoreAfterBestMove;
+		this->evaluation = evaluation;
+		this->bestOpponentMove = bestOpponentMove;
+	}
+};
 class Algorithms
 {
 public:
@@ -20,7 +37,7 @@ public:
 		this->table.init();
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	std::pair<Move, std::pair<int, int>> Root(Board* board, int depth, long timeInMillis); // Returns the best move and score after the move
+	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
 
 	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count = 0;

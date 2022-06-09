@@ -5,6 +5,11 @@
 class Zobrist
 {
 public:
+    Zobrist(const Zobrist& other) {
+        this->key = other.key;
+         
+    }
+
     void Recalculate(class Board* board) { key = Generate(*board); }
     uint64_t Key() const { return key; }
 
