@@ -37,7 +37,7 @@ public:
 		this->table.init();
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
+	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false, Board* opponentBoard=nullptr); // Returns the best move and score after the move
 
 	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count = 0;

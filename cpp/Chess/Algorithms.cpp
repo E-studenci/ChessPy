@@ -64,7 +64,7 @@ int Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
 	//return retString;
 }
 
-EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
+EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove, Board* opponentBoard = nullptr)
 {
 	this->timer.Start(timeInMillis);
 	int bestScore = 0;
@@ -75,7 +75,6 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 
 	int reachedDepth = 0;
 	this->count = 0;
-	Board boardOpponent(*board);
 	for (int depth = 1; depth <= max_depth;depth++) {
 		reachedDepth++;
 
@@ -139,17 +138,17 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 			if (this->timer.Poll(this->count)) {
 				break; // Do not start a new ply
 			}
-			std::map<Coordinates, std::vector<Move>> currentLegalMovesOpponent = boardOpponent.GetAllLegalMoves();
+			std::map<Coordinates, std::vector<Move>> currentLegalMovesOpponent = opponentBoard->GetAllLegalMoves();
 			for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMovesOpponent)
 			{
 				for (const Move& move : keyValuePair.second)
 				{
 					//alpha = MIN;
 					//beta = MAX;
-					boardOpponent.MakeMove(move);
+					opponentBoard->MakeMove(move);
 					//score = -this->AlphaBeta(board, alpha, beta, depth);
-					scoreOpponent = -this->AlphaBeta(&boardOpponent, -betaOpponent, -alphaOpponent, depth - 1);
-					boardOpponent.Pop();
+					scoreOpponent = -this->AlphaBeta(opponentBoard, -betaOpponent, -alphaOpponent, depth - 1);
+					opponentBoard->Pop();
 					if (this->timer.Poll(this->count)) {
 						break; // Discard
 					}
@@ -166,7 +165,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 			}
 			bestScoreOpponent = bestScoreCurrentDepthOpponent;
 			bestMoveOpponent = bestMoveCurrentDepthOpponent;
-			this->table.AddEntry(boardOpponent, EntryType::EXACT, bestScoreOpponent, depth, bestMoveOpponent);
+			this->table.AddEntry(*opponentBoard, EntryType::EXACT, bestScoreOpponent, depth, bestMoveOpponent);
 		}
 		// /opponent best move
 		if (this->timer.Poll(this->count)) {
