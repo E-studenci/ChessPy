@@ -29,8 +29,15 @@ public:
 	~Board();
 	std::map<Coordinates, std::vector<Move>> GetAllLegalMoves();
 	bool KingInCheck(bool opponent=false) {
-		if (opponent)
+		if (opponent) {
+			this->Clear();
+			this->CalculateAttackFields(true);
 			return this->attackLines[this->sideToMove].size() > 0;
+		}
+		if (!this->movesAreCalculated) {
+			this->Clear();
+			this->CalculateAttackFields();
+		}
 		return this->attackLines[!this->sideToMove].size()>0; }
 	void Pop();																			 // unmake the last move
 	void MakeMove(const Move& move);														 // commit a move
