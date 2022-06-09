@@ -257,15 +257,17 @@ int main()
     //
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
 
+    Board bb{ "rnbqkbnr/ppp1pppp/8/8/3P4/4P3/PP1P1PPP/RNBQKBNR b KQkq - 0 3" };
 
-    Board bb{ "8/1P3k2/4n3/8/4K3/8/8/8 w - - 3 4" };
     Algorithms algg;
     for (int i = 0; i < 50;i++) {
-        auto res = algg.Root(&bb, 99, 1000);
-        bb.MakeMove(res.first);
+        auto res = algg.Root(&bb, 99, 1000, true, true);
+        bb.MakeMove(res.bestMove);
         std::cout << bb.ToString();
-        std::cout << "\nreached depth: " << res.second.second << "\n";
+        std::cout << "\nreached depth: " << res.reachedDepth << "\n";
         std::cout << "\nhalf turn: " << i;
+        std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
+        std::cout << "\neval: " << std::to_string(res.evaluation);
 
     }
     //start = std::chrono::high_resolution_clock::now();

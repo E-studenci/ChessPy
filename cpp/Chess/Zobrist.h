@@ -5,6 +5,7 @@
 class Zobrist
 {
 public:
+    Zobrist() {}
     Zobrist(const Zobrist& other) {
         this->key = other.key;
          

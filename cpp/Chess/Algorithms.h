@@ -21,12 +21,14 @@ public:
 	Move bestMove = Move();
 
 	Move bestOpponentMove = Move();
+	int reachedDepth = 0;
 
-	EvaluationResult(Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move()) {
+	EvaluationResult(int reachedDepth,Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move()) {
 		this->bestMove = bestMove;
 		this->scoreAfterBestMove = scoreAfterBestMove;
 		this->evaluation = evaluation;
 		this->bestOpponentMove = bestOpponentMove;
+		this->reachedDepth = reachedDepth;
 	}
 };
 class Algorithms
@@ -37,7 +39,7 @@ public:
 		this->table.init();
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false, Board* opponentBoard=nullptr); // Returns the best move and score after the move
+	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
 
 	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count = 0;
