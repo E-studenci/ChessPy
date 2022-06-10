@@ -33,6 +33,13 @@ class Board:
         ...
         
 
+class EvaluationResult:
+    evaluation: int
+    score_after_best_move: int
+    reached_depth: int
+    best_move: Move
+    best_opponent_move: Move
+
 
 class Algorithms:
     count: int
@@ -43,5 +50,5 @@ class Algorithms:
     def perft(self, board: Board, depth: int) -> int:
         ...
     
-    def root(self, board: Board, depth: int, time_in_milliseconds: int) -> typing.Tuple[Move, int, int]:
+    def root(self, board: Board, depth: int, time_in_milliseconds: int, evaluatePosition = False, getOpponentBestMove = False) -> EvaluationResult:
         ...

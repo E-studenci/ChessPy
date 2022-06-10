@@ -1,6 +1,6 @@
 import chess
 
-board = chess.Board("rnb1kbnr/1p1p1ppp/pKp5/4p3/4P3/1q4P1/PPPP3P/RNB1QBNR w kq - 6 20")
+board = chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 print(board.fen)
 print(board.check)
@@ -14,7 +14,7 @@ print(f"Number of possible moves: {len(board.get_all_legal_moves())}")
 
 print(board)
 for _ in range(10):
-    move, score, max_depth = alg.root(board, 99, 500)
-    board.make_move(move)
+    result = alg.root(board, 99, 500, True, True)
+    board.make_move(result.best_move)
     print(board)
-    print(f"Score: {score} | Max depth: {max_depth} | Nodes {alg.count}")
+    print(f"Score: {result.score_after_best_move} | Max depth: {result.reached_depth} | Nodes {alg.count}")

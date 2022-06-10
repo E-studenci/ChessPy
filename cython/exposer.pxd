@@ -42,9 +42,18 @@ cdef extern from "Board.h":
 
 
 cdef extern from "Algorithms.h":
+    cdef cppclass CppEvaluationResult "EvaluationResult":
+        CppEvaluationResult() except +
+        CppEvaluationResult(int reachedDepth, CppMove bestMove, int scoreAfterBestMove, int evaluation, CppMove bestOpponentMove) except +
+        int evaluation
+        int scoreAfterBestMove
+        int reachedDepth
+        CppMove bestMove
+        CppMove bestOpponentMove
+
     cdef cppclass CppAlgorithms "Algorithms":
         CppAlgorithms() except +
         int PerftStarterSingleThread(CppBoard* board, int depth)
-        pair[CppMove, pair[int, int]] Root(CppBoard* board, int depth, long timeInMillis)
+        CppEvaluationResult Root(CppBoard* board, int depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
         int AlphaBeta(CppBoard* board, int alpha, int beta, int depthLeft)
         int count

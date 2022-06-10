@@ -1,7 +1,7 @@
 # cython: c_string_type=unicode, c_string_encoding=utf8
 from cython.operator cimport dereference as deref
 
-from exposer cimport CppCoordinates, CppMove, CppBoard, CppAlgorithms
+from exposer cimport CppCoordinates, CppMove, CppBoard, CppEvaluationResult, CppAlgorithms
 
 
 cdef class Coordinates:
@@ -140,6 +140,22 @@ cdef class Board:
         return result
 
 
+class EvaluationResult:
+    evaluation: int
+    score_after_best_move: int
+    reached_depth: int
+    best_move: Move
+    best_opponent_move: Move
+
+
+    def __init__(self, evaluation, score_after_best_move, reached_depth, best_move, best_opponent_move):
+        self.evaluation = evaluation
+        self.score_after_best_move = score_after_best_move
+        self.reached_depth = reached_depth
+        self.best_move = best_move
+        self.best_opponent_move = best_opponent_move
+
+
 cdef class Algorithms:
     cdef CppAlgorithms*instance
 
@@ -156,8 +172,10 @@ cdef class Algorithms:
     def perft(self, Board board, int depth) -> int:
         return self.instance.PerftStarterSingleThread(board.instance, depth)
     
-    def root(self, Board board, int depth, long timeInMillis):
-        result = self.instance.Root(board.instance, depth, timeInMillis)
-        move = Move()
-        move.instance = result.first.Clone()
-        return (move, result.second.first, result.second.second)
+    def root(self, Board board, int depth, long timeInMillis, evaluatePosition = False, getOpponentBestMove = False):
+        result = self.instance.Root(board.instance, depth, timeInMillis, evaluatePosition, getOpponentBestMove)
+        bestMove = Move()
+        bestOpponentMove = Move()
+        bestMove.instance = result.bestMove.Clone()
+        bestOpponentMove.instance = result.bestOpponentMove.Clone()
+        return EvaluationResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove)

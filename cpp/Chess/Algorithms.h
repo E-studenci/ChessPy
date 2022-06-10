@@ -14,16 +14,21 @@
 
 struct EvaluationResult
 {
-public:
 	int evaluation = 0;
-	
 	int scoreAfterBestMove = 0;
 	Move bestMove = Move();
-
 	Move bestOpponentMove = Move();
 	int reachedDepth = 0;
 
-	EvaluationResult(int reachedDepth,Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move()) {
+	EvaluationResult() {
+		this->bestMove = Move();
+		this->scoreAfterBestMove = 0;
+		this->evaluation = 0;
+		this->bestOpponentMove = Move();
+		this->reachedDepth = 0;
+	}
+
+	EvaluationResult(int reachedDepth, Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move()) {
 		this->bestMove = bestMove;
 		this->scoreAfterBestMove = scoreAfterBestMove;
 		this->evaluation = evaluation;
