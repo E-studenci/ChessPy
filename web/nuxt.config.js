@@ -42,7 +42,11 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     'nuxt-socket-io',
+    '@nuxtjs/axios'
   ],
+
+  axios: {
+  },
 
   io: {
     // module options
