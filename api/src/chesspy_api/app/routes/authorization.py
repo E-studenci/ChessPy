@@ -6,7 +6,7 @@ import chesspy_api.app.response_parser as rp
 import chesspy_api.utils.environment as env
 import chesspy_api.utils.errors as errors
 import chesspy_api.app.auth as auth
-from chesspy_api import APP
+from chesspy_api import APP, REDIS
 
 
 @APP.route("/login", methods=["GET"])
@@ -25,7 +25,7 @@ def login():
             description="Password or username is missing."
         )
     
-    user = get_user(auth.username)
+    user = get_user(auth.username) # ADD QUERY
     
     if not user:
         raise errors.UnauthorizedError(
@@ -33,7 +33,7 @@ def login():
             description="User with provided username does not exist."
         )
 
-    if not user.password == auth.password: # TODO use user's method
+    if user.verify_password(auth.password):
         raise errors.UnauthorizedError(
             name="Unauthorized",
             description="Incorrect password."
@@ -57,24 +57,9 @@ def login():
 def logout():
     response = rp.ResponseData()
     
+    jti = jwt.get_jwt()["jti"]
+    REDIS.set(jti, "", ex=env.ENV.JWT_ACCESS_TOKEN_EXPIRES)
+    
     jwt.unset_jwt_cookies(response)
     return response
 
-
-
-class User:
-    def __init__(self, id, username, password, roles) -> None:
-        self.id = id
-        self.username = username
-        self.password = password
-        self.roles = roles
-
-USERS = [
-    User("348964984", "login1", "password1", ["admin"]),
-    User("812738743", "login2", "password2", ["client"])
-]
-
-def get_user(username: str):
-    for user in USERS:
-        if username == user.username:
-            return user

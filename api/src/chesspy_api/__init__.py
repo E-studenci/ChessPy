@@ -1,10 +1,11 @@
 import flask_jwt_extended as jwt
 import flask_cors
 import logging
+import redis
 import flask
 
 import chesspy_api.utils.environment as config
-import chesspy_api.database.db as database
+import chesspy_api.database as database
 import chesspy_api.app.roomhub.room_hub as room_hub
 logging.basicConfig(
     level=config.ENV.LOGGING_LEVEL, 
@@ -20,6 +21,14 @@ APP = flask.Flask("chesspy_api")
 APP.config.from_object(config.ENV)
 
 JWT = jwt.JWTManager(APP)
+
+REDIS = redis.StrictRedis(
+    host=config.ENV.REDIS_HOST,
+    port=config.ENV.REDIS_PORT,
+    db=config.ENV.REDIS_DB,
+    password=config.ENV.REDIS_PASS,
+    decode_responses=True
+)
 
 DB = database.Database()
 
