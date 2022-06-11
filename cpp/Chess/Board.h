@@ -27,20 +27,11 @@ public:
 	Board(const Board& other);
 	Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 	~Board();
+	std::vector<std::vector<int>> GetBoard();
 	std::map<Coordinates, std::vector<Move>> GetAllLegalMoves();
-	bool KingInCheck(bool opponent=false) {
-		if (opponent) {
-			this->Clear();
-			this->CalculateAttackFields(true);
-			return this->attackLines[this->sideToMove].size() > 0;
-		}
-		if (!this->movesAreCalculated) {
-			this->Clear();
-			this->CalculateAttackFields();
-		}
-		return this->attackLines[!this->sideToMove].size()>0; }
-	void Pop();																			 // unmake the last move
-	void MakeMove(const Move& move);														 // commit a move
+	bool KingInCheck(bool opponent = false);
+	void Pop(bool saveBoard=false);																			 // unmake the last move
+	void MakeMove(const Move& move, bool saveBoard=false);														 // commit a move
 	bool operator==(const Board& other);
 	std::array<std::array<std::array<bool, 8>, 8>, 16> GetNeuralNetworkRepresentation(); // convert the board to its nn representation
 	std::string ToString() const;
@@ -55,6 +46,7 @@ public:
 		return this->seventyFiveMoveRuleCounter > 99;
 	}
 	Zobrist hash;
+	std::vector<std::string> fenHistory;
 
 private:
 	std::array<PieceCharacteristics, 12> pieceMovement;

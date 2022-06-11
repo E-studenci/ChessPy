@@ -186,7 +186,7 @@ void Board::Capture(Coordinates destination)
     }
     // /take care of castling flags
 }
-void Board::MakeMove(const Move& move)
+void Board::MakeMove(const Move& move, bool saveBoard)
 {
     this->movesAreCalculated = false;
 
@@ -359,6 +359,8 @@ void Board::MakeMove(const Move& move)
     if (!promotion)
         this->hash.TogglePieceSquare(movingPiece, move.destination);
     this->boardHistory.push_back(this->hash.Key());
+    if (saveBoard)
+        this->fenHistory.push_back(this->ToFen());
 }
 bool Board::operator==(const Board& other)
 {
@@ -381,7 +383,7 @@ bool Board::operator==(const Board& other)
         return false;
     return true;
 }
-void Board::Pop()
+void Board::Pop(bool saveBoard)
 {
     // TODO: revert attacked fields?
     if (this->moveHistory.size() > 0)
@@ -455,6 +457,8 @@ void Board::Pop()
         this->hash.ToggleSTM();
         // /pop the move and board from history
         this->boardHistory.pop_back();
+        if (saveBoard)
+            this->fenHistory.pop_back();
     }
 }
 
@@ -468,6 +472,19 @@ std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves()
         this->movesAreCalculated = true;
     }
     return this->allLegalMoves;
+}
+bool Board::KingInCheck(bool opponent)
+{
+    if (opponent) {
+        this->Clear();
+        this->CalculateAttackFields(true);
+        return this->attackLines[this->sideToMove].size() > 0;
+    }
+    if (!this->movesAreCalculated) {
+        this->Clear();
+        this->CalculateAttackFields();
+    }
+    return this->attackLines[!this->sideToMove].size() > 0;
 }
 void Board::CalculateLegalMoves()
 {
@@ -1095,6 +1112,16 @@ Board::~Board()
 {
     this->moveHistory.clear();
     this->boardHistory.clear();
+}
+std::vector<std::vector<int>> Board::GetBoard()
+{
+    std::vector<std::vector<int>> board;
+    for (int row = 0; row < 8; row++) {
+        board.push_back(std::vector<int>());
+        for (int column = 0; column < 8; column++)
+            board[row].push_back(this->board[row][column]);
+    }
+    return board;
 }
 std::array<std::array<std::array<bool, 8>, 8>, 16> Board::GetNeuralNetworkRepresentation()
 {
