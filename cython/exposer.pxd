@@ -29,10 +29,13 @@ cdef extern from "Board.h":
         bool KingInCheck(bool opponent)
         bool ThreeFoldRepetition()
         bool FifyMoveRuleDraw()
-        void MakeMove(const CppMove &move)
+        void MakeMove(const CppMove &move, bool saveBoard)
+        void Pop(bool saveBoard)
         map[CppCoordinates, vector[CppMove]] GetAllLegalMoves()
         string ToFen()
         string ToString()
+        vector[vector[int]] GetBoard()
+        vector[string] fenHistory
 
 
 cdef extern from "Algorithms.h":

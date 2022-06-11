@@ -7,13 +7,14 @@ from chesspy_api import APP
 @rp.response_wrapper()
 def index():
     return rp.ResponseData(
-        response = 'OK'
+        payload = 'OK'
     )
+
 
 @APP.route("/admin")
 @auth.restricted_access(["admin"])
 @rp.response_wrapper()
 def admin():
     return rp.ResponseData(
-        response = 'OK'
+        payload = 'OK'
     )

@@ -103,6 +103,14 @@ cdef class Board:
         return self.instance.ToString()
     
     @property
+    def board(self):
+        return self.instance.GetBoard()
+
+    @property
+    def fen_history(self):
+        return self.instance.fenHistory
+
+    @property
     def check(self):
         return self.instance.KingInCheck(False)
     
@@ -119,7 +127,10 @@ cdef class Board:
         return self.instance.ToFen()
     
     def make_move(self, Move move):
-        self.instance.MakeMove(deref(move.instance))
+        self.instance.MakeMove(deref(move.instance), True)
+
+    def pop_move(self):
+        self.instance.Pop(True)
     
     def get_all_legal_moves(self):
         result = MoveDict()

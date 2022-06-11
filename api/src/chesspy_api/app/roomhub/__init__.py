@@ -143,10 +143,10 @@ class Room:
         else:
             self.timer = RepeatTimer(1, self.timer_fun)
             self.timer.start()
-            return (True, {"board": self.board.get_board,
+            return (True, {"board": self.board.board,
                            "turn": self.turn,
-                           "legal_moves": self.board.get_legal_moves,
-                           "king_in_check": self.board.KingInCheck})
+                           "legal_moves": self.board.get_all_legal_moves(),
+                           "king_in_check": self.board.check})
 
     def check_game_ending_conditions(self):
         """

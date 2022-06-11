@@ -18,6 +18,8 @@ class Move:
 
 
 class Board:
+    board: list[list[int]]
+    fen_history: list[str]
     check: bool
     three_fold_repetition: bool
     fifty_move_rule_draw: bool
@@ -28,7 +30,10 @@ class Board:
 
     def make_move(self, move: Move) -> None:
         ...
-
+        
+    def pop_move(self) -> None:
+        ...
+    
     def get_all_legal_moves(self) -> dict[Coordinates, list[Move]]:
         ...
         
