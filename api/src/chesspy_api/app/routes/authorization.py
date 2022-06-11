@@ -25,7 +25,7 @@ def login():
             description="Password or username is missing."
         )
     
-    user = get_user(auth.username) # ADD QUERY
+    user = None #get_user(auth.username) # ADD QUERY
     
     if not user:
         raise errors.UnauthorizedError(

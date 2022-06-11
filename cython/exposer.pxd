@@ -5,12 +5,6 @@ from libcpp.map cimport map
 from libcpp cimport bool
 
 
-cdef extern from "<array>" namespace "std" nogil:
-    cdef cppclass array8 "std::array<int, 8>":
-        array8() except+
-        int& operator[](size_t)
-
-
 cdef extern from "Coordinates.h":
     cdef cppclass CppCoordinates "Coordinates":
         CppCoordinates() except +
