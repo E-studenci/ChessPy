@@ -122,6 +122,8 @@ Board::Board(std::string fen)
     this->turnCounter = atoi(splitFen[5].c_str());
     // /parse turn counter
     this->hash.Recalculate(this);
+
+    this->fenHistory.push_back(fen);
 }
 
 Board::Board(const Board& other)
