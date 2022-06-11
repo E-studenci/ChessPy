@@ -4,7 +4,7 @@ import random
 import threading
 
 import flask
-import chess
+import chesspy
 import flask_socketio as fs
 
 
@@ -25,9 +25,14 @@ class RoomHub:
     rooms: dict[uuid.UUID, "Room"] = {}
     socket = fs.SocketIO()
 
-    def __init__(self, flask_app: flask.Flask) -> None:
+    def __init__(
+        self, flask_app: flask.Flask, logger, cors_allowed_origins="*"
+    ) -> None:
         self.socket = fs.SocketIO(
-            flask_app, logger=True, engineio_logger=True, cors_allowed_origins="*"
+            flask_app,
+            logger=True,
+            engineio_logger=True,
+            cors_allowed_origins=cors_allowed_origins,
         )  # TODO: TEMP
 
     @socket.on("find_game")
@@ -128,7 +133,7 @@ class Room:
     ):
         self.id = id
         self.players = [player_one]
-        self.board = chess.Board(fen)
+        self.board = chesspy.Board(fen)
         self.socket = socket
         self.time_after_turn = 0
 
@@ -143,7 +148,7 @@ class Room:
         self.timer.start()
         return (self.players, self.board.get_all_legal_moves())
 
-    def make_move_check(self, player_id, chosen_move: chess.Move):
+    def make_move_check(self, player_id, chosen_move: chesspy.Move):
         if not any(player == player_id for player in self.players):
             return (False, "It's not your game")
         if self.players[self.turn] != player_id:

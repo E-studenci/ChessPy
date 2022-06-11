@@ -1,5 +1,7 @@
-from os import getenv
+import os
+import typing
 import datetime as dt
+
 import dotenv
 
 dotenv.load_dotenv()
@@ -27,6 +29,8 @@ class Environment:
     JWT_TOKEN_LOCATION = ["cookies"]
     LOGGING_LEVEL = 20
     SECRET_KEY = "secret"
+    SEPARATOR = ","
+    ORIGINS_RAW = "http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:5500"
 
     @property
     def DB_URI(self) -> str:
@@ -40,6 +44,10 @@ class Environment:
     def JWT_ACCESS_TOKEN_EXPIRES(self) -> dt.timedelta:
         return dt.timedelta(minutes=self.JWT_ACCESS_TOKEN_EXPIRES_MINUTES)
 
+    @property
+    def ORIGINS(self) -> typing.List[str]:
+        return self.ORIGINS_RAW.split(self.SEPARATOR)
+
     def __init__(self) -> None:
         self._get_all_static_fields()
 
@@ -47,7 +55,7 @@ class Environment:
     def _get_all_static_fields(cls) -> None:
         for name in cls.__dict__:
             if "__" not in name:
-                new = getenv(name, None)
+                new = os.getenv(name, None)
                 if new:
                     old = getattr(cls, name)
                     setattr(cls, name, type(old)(new))

@@ -1,5 +1,5 @@
 import flask
-import chess
+import chesspy
 
 import chesspy_api.app.response_parser as rp
 import chesspy_api.app.auth as auth
@@ -7,7 +7,7 @@ from chesspy_api import APP
 
 anal_route = "/analysis"
 
-alg = chess.Algorithms()
+alg = chesspy.Algorithms()
 
 
 @APP.route(f"{anal_route}", methods=["GET"])
@@ -16,7 +16,7 @@ def eval():
     fen = flask.request.args.get(
         "fen", default="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     )
-    board = chess.Board(fen)
+    board = chesspy.Board(fen)
     time = flask.request.args.get("time", default=1000, type=int)
     if time > 4000:
         time = 4000
