@@ -80,7 +80,7 @@ cdef class Move:
         self.instance.promotion = promotion
     
     def __str__(self) -> str:
-        return f"Move(origin={self.origin},destination={self.destination},promotion={self.promotion})"
+        return self.instance.ToString()
 
 
 class MoveDict(dict):

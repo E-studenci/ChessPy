@@ -1,4 +1,5 @@
 import flask_jwt_extended as jwt
+import flask_socketio as fs
 import flask_cors
 import logging
 import redis
@@ -11,11 +12,9 @@ import chesspy_api.app.roomhub as room_hub
 logging.basicConfig(
     level=config.ENV.LOGGING_LEVEL,
     datefmt="%Y-%m-%d %H:%M:%S",
-    format='{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}'
+    format='{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}',
 )
-logging.getLogger('werkzeug').setLevel(
-    level=config.ENV.LOGGING_LEVEL
-)
+logging.getLogger("werkzeug").setLevel(level=config.ENV.LOGGING_LEVEL)
 
 APP = flask.Flask("chesspy_api")
 
@@ -23,12 +22,12 @@ APP.config.from_object(config.ENV)
 
 JWT = jwt.JWTManager(APP)
 
-REDIS = redis.StrictRedis(
+REDIS = redis.Redis(
     host=config.ENV.REDIS_HOST,
     port=config.ENV.REDIS_PORT,
     db=config.ENV.REDIS_DB,
     password=config.ENV.REDIS_PASS,
-    decode_responses=True
+    decode_responses=True,
 )
 
 DB = database.Database()
@@ -39,7 +38,10 @@ ROOM_HUB = room_hub.RoomHub(APP)
 
 import chesspy_api.initialize_modules
 
-def run_app(host: str = '127.0.0.1', port: int = 5000):
-    log = logging.getLogger('werkzeug')
+
+def run_app(host: str = "127.0.0.1", port: int = 5000):
+    log = logging.getLogger("werkzeug")
     log.setLevel(logging.ERROR)
-    APP.run(host=host, port=port, use_reloader=False, debug=True)
+    # APP.run(host=host, port=port, use_reloader=False, debug=True)
+    socketio = fs.SocketIO(APP)
+    socketio.run(APP, host=host, port=port, use_reloader=False, debug=True)

@@ -20,6 +20,7 @@ cdef extern from "Move.h":
         CppCoordinates origin
         CppCoordinates destination
         int promotion
+        string ToString()
 
 
 cdef extern from "Board.h":

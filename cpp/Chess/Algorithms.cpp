@@ -176,7 +176,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 			break; // Discard
 		}
 	}
-	return EvaluationResult(reachedDepth, bestMove, bestScore, evaluation * (board->sideToMove ? -1 : 1), bestMoveOpponent);
+	return EvaluationResult(reachedDepth, bestMove, bestScore, evaluation * (board->sideToMove ? 1 : -1), bestMoveOpponent);
 	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
