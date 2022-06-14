@@ -1,0 +1,13 @@
+$boards:
+(
+  "brown-board": "/boards/brown_board.svg", 
+);
+
+@each $name, $path in $boards {
+  .#{$name} {
+    position: relative;
+    background-image: url($path);
+    background-size: 100%;
+    width: 100%;
+  }
+};

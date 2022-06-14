@@ -1,0 +1,30 @@
+$pieces: 
+(
+  "black-pawn": "/pieces/black_pawn.svg", 
+  "white-pawn": "/pieces/white_pawn.svg",
+  "black-bishop": "/pieces/black_bishop.svg", 
+  "white-bishop": "/pieces/white_bishop.svg",
+  "black-knight": "/pieces/black_knight.svg", 
+  "white-knight": "/pieces/white_knight.svg",
+  "black-rook": "/pieces/black_rook.svg", 
+  "white-rook": "/pieces/white_rook.svg",
+  "black-queen": "/pieces/black_queen.svg", 
+  "white-queen": "/pieces/white_queen.svg",
+  "black-king": "/pieces/black_king.svg", 
+  "white-king": "/pieces/white_king.svg",
+);
+
+.piece {
+  position: absolute;
+  background-size: 100%;
+  width: 12.5%;
+  height: 12.5%;
+  top: 0;
+  left: 0;
+}
+
+@each $name, $path in $pieces {
+  .#{$name} {
+    background-image: url($path);
+  }
+};
