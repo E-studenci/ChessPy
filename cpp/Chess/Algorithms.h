@@ -79,7 +79,7 @@ private:
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	int EvaluatePosition(Board* board);	// Returns the position score
 	int EvalPieces(const Board& board);
-	int Quiescence(Board* board, int alpha, int beta, int ply=0);
+	AlphaBetaResult Quiescence(Board* board, int alpha, int beta, int ply=0);
 	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
 	int MAX_PLY = 100;
 };

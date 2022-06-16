@@ -238,9 +238,11 @@ AlphaBetaResult Algorithms::AlphaBeta(Board* board, int alpha, int beta, int dep
 				return AlphaBetaResult(en.score, nodeCount);
 		}
 	}
-	if (depthLeft <= 0)
+	if (depthLeft <= 0) {
 		//return AlphaBetaResult(this->EvaluatePosition(board), nodeCount);
-		return AlphaBetaResult(this->Quiescence(board, alpha, beta), nodeCount);
+		auto result = this->Quiescence(board, alpha, beta);
+		return AlphaBetaResult(result.score, nodeCount);
+	}
 	int origAlpha = alpha;
 	int bestScore = AlgorithmsConsts::MIN;
 	Move bestMove = Move{};
@@ -291,23 +293,23 @@ void Algorithms::AddScoreToTable(Board& board, int alphaOriginal, int beta, int 
 	else 
 		this->table.AddEntry(board, EntryType::EXACT, score, depth, bestMove);
 }
-int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
-{
+AlphaBetaResult Algorithms::Quiescence(Board* board, int alpha, int beta, int ply){
+	int nodeCount = 1;
 	if (this->timer.Poll(this->count)) {
-		return 0;
+		return AlphaBetaResult(0, nodeCount);
 	}
 	if (ply > this->max_depth)
 		this->max_depth = ply;
 	int stand_pat = this->EvaluatePosition(board);
 	if (ply > MAX_PLY) {
-		return stand_pat;
+		return AlphaBetaResult(stand_pat, nodeCount);
 	}
 	if (stand_pat >= beta)
 		//return beta;
-		return stand_pat;
+		return AlphaBetaResult(stand_pat, nodeCount);
 	const int delta = AlgorithmsConsts::PIECE_VALUE[1];
 	if (stand_pat < alpha - delta) {
-		return alpha;
+		return AlphaBetaResult(alpha, nodeCount);
 	}
 	
 	if (alpha < stand_pat)
@@ -323,21 +325,23 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 			continue;
 		this->count++;
 		board->MakeMove(move);
-		int score = -this->Quiescence(board, -beta, -alpha, ply +1);
+		auto result = this->Quiescence(board, -beta, -alpha, ply + 1);
+		int score = -result.score;
+		nodeCount += result.nodeCount;
 		board->Pop();
 		if (this->timer.Poll(this->count)) {
-			return 0;
+			return AlphaBetaResult(0, nodeCount);
 		}
 		if (score >= beta)
 			//return beta;
-			return score;
+			return AlphaBetaResult(score, nodeCount);
 		if (score > alpha)
 			alpha = score;
 	}
 	if (this->timer.Poll(this->count)) {
-		return 0;
+		return AlphaBetaResult(0,nodeCount);
 	}
-	return alpha;
+	return AlphaBetaResult(alpha,nodeCount);
 }
 
 
