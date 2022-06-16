@@ -111,45 +111,45 @@ int main()
      //std::cout << "\nperft, motherfuckers\n";
      //Algorithms alg;
      //std::string perft1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-     /// <summary>
-     /// 0 	1 	
-     /// 1 	20 
-     /// 2 	400 
-     /// 3 	8, 902 
-     /// 4 	197, 281
-     /// 5 	4, 865, 609 
-     /// 6 	119, 060, 324 
-     /// 7 	3, 195, 901, 860
-     /// </summary>
-     /// <returns></returns>
+      //<summary>
+      //0 	1 	
+      //1 	20 
+      //2 	400 
+      //3 	8, 902 
+      //4 	197, 281
+      //5 	4, 865, 609 
+      //6 	119, 060, 324 
+      //7 	3, 195, 901, 860
+      //</summary>
+      //<returns></returns>
      //std::string perft2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-     /// <summary>
-     /// 0 	48 	
-     /// 1 	2039 
-     /// 2 	97862 
-     /// 3 	4085603
-     /// 4 	193690690
-     /// 5 	8031647685
-     /// </summary>
-     /// <returns></returns>
+  /*    <summary>
+      0 	48 	
+      1 	2039 
+      2 	97862 
+      3 	4085603
+      4 	193690690
+      5 	8031647685
+      </summary>
+      <returns></returns>*/
      //std::string perft3 = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
-     /// <summary>
-     /// 0 	14 	
-     /// 1 	191 
-     /// 2 	2812 
-     /// 3 	43238
-     /// 4 	674624
-     /// 5 	11030083
-     /// 6   178633661
-     /// </summary>
-     /// <returns></returns>
-     //std::string perft4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
-     //std::string perft4b = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
-     //std::string perft5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
-     //std::string perft6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
+     /* <summary>
+      0 	14 	
+      1 	191 
+      2 	2812 
+      3 	43238
+      4 	674624
+      5 	11030083
+      6   178633661
+      </summary>
+      <returns></returns>*/
+    // std::string perft4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+    // std::string perft4b = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
+    // std::string perft5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+    // std::string perft6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
-     //Board* b = new Board{ perft1 };
-    auto start = std::chrono::high_resolution_clock::now();
+    // Board* b = new Board{ perft1 };
+    //auto start = std::chrono::high_resolution_clock::now();
     //std::cout << b->ToString();
     //b->MakeMove(Move{ Coordinates{"g1"}, Coordinates{"h1"} });
     //std::cout << b->ToString();
@@ -179,8 +179,8 @@ int main()
 
 
 
-    std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    //std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
+    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     //std::cout << duration.count() << std::endl;
     /*auto start = std::chrono::high_resolution_clock::now();
     Board b4("r1b1k3/p1p2ppp/1pnp1q1r/1Q2pn2/PbNP2B1/1P2NPR1/2PBPKPP/1R6 w q - 1 1");
@@ -260,15 +260,15 @@ int main()
     Board bb{ "rnbqkbnr/ppp1pppp/8/8/3P4/4P3/PP1P1PPP/RNBQKBNR b KQkq - 0 3" };
 
     Algorithms algg;
-    for (int i = 0; i < 50;i++) {
+    for (int i = 0; i < 1;i++) {
         auto res = algg.Root(&bb, 99, 1000, true, true);
-        bb.MakeMove(res.bestMove);
-        std::cout << bb.ToString();
-        std::cout << "\nreached depth: " << res.reachedDepth << "\n";
-        std::cout << "\nhalf turn: " << i;
-        std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
-        std::cout << "\neval: " << std::to_string(res.evaluation);
-        std::cout << "\nnodes on last depth: " << std::to_string(res.nodeCount[res.nodeCount.size()-1]);
+        //bb.MakeMove(res.bestMove);
+        //std::cout << bb.ToString();
+        //std::cout << "\nreached depth: " << res.reachedDepth << "\n";
+        //std::cout << "\nhalf turn: " << i;
+        //std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
+        //std::cout << "\neval: " << std::to_string(res.evaluation);
+        //std::cout << "\nnodes on last depth: " << std::to_string(res.nodeCount[res.nodeCount.size()-1]);
     }
     //start = std::chrono::high_resolution_clock::now();
     //auto res = algg.Root(&bb, 99, 2000);
@@ -282,7 +282,7 @@ int main()
     //std::cout << "\nsecond";
 
     
-    std::cout<< algg.PerftStarterSingleThread(&bb, 2) << "\n";
+    //std::cout<< algg.PerftStarterSingleThread(&bb, 2) << "\n";
 //std::cout << algg.count;
 
 
