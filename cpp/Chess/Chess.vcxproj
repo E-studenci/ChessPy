@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Algorithms.cpp" />
+    <ClCompile Include="AlgorithmsConsts.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Chess.cpp" />
     <ClCompile Include="Move.cpp" />

@@ -6,6 +6,13 @@
 #include "Board.h"
 #include <functional>
 
+enum MoveOrdererEnum
+{
+	HANDCRAFTED,
+	TRAINING,
+	MODEL
+};
+
 class MoveOrderer
 {
 public:

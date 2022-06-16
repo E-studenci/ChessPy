@@ -60,10 +60,17 @@ public:
 		this->_moveOrderer = new MoveOrdererHandcrafted();
 	}
 
-	Algorithms(MoveOrderer *moveOrderer) {
+	Algorithms(MoveOrdererEnum moveOrdererEnum) {
 		this->table = TranspositionTable{};
 		this->table.init();
-		this->_moveOrderer = _moveOrderer;
+		switch (moveOrdererEnum) {
+			case MoveOrdererEnum::HANDCRAFTED:
+				this->_moveOrderer = new MoveOrdererHandcrafted();
+				break;
+			case MoveOrdererEnum::TRAINING:
+				this->_moveOrderer = new MoveOrdererTraining();
+				break;
+		}
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move

@@ -39,6 +39,9 @@
     <ClCompile Include="MoveOrderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AlgorithmsConsts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h">
