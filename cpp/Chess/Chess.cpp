@@ -148,7 +148,7 @@ int main()
     // std::string perft5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
     // std::string perft6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
-    // Board* b = new Board{ perft1 };
+     //Board* b = new Board{ perft1 };
     //auto start = std::chrono::high_resolution_clock::now();
     //std::cout << b->ToString();
     //b->MakeMove(Move{ Coordinates{"g1"}, Coordinates{"h1"} });
@@ -256,19 +256,20 @@ int main()
     //Board bb5{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" };
     //
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
+    auto es = std::array<Coordinates, 8>{Coordinates{ 1,2 }};
 
     Board bb{ "rnbqkbnr/ppp1pppp/8/8/3P4/4P3/PP1P1PPP/RNBQKBNR b KQkq - 0 3" };
 
     Algorithms algg;
     for (int i = 0; i < 1;i++) {
         auto res = algg.Root(&bb, 99, 1000, true, true);
-        //bb.MakeMove(res.bestMove);
-        //std::cout << bb.ToString();
-        //std::cout << "\nreached depth: " << res.reachedDepth << "\n";
-        //std::cout << "\nhalf turn: " << i;
-        //std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
-        //std::cout << "\neval: " << std::to_string(res.evaluation);
-        //std::cout << "\nnodes on last depth: " << std::to_string(res.nodeCount[res.nodeCount.size()-1]);
+        bb.MakeMove(res.bestMove);
+        std::cout << bb.ToString();
+        std::cout << "\nreached depth: " << res.reachedDepth << "\n";
+        std::cout << "\nhalf turn: " << i;
+        std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
+        std::cout << "\neval: " << std::to_string(res.evaluation);
+        std::cout << "\nnodes on last depth: " << std::to_string(res.nodeCount[res.nodeCount.size()-1]);
     }
     //start = std::chrono::high_resolution_clock::now();
     //auto res = algg.Root(&bb, 99, 2000);

@@ -528,8 +528,8 @@ std::vector<Move> Board::CalculateLegalMovesForPiece(const Coordinates& origin, 
 
     bool pinned = this->pinLines[!this->sideToMove].count(origin) == 1;
     bool kingIsInCheck = this->attackLines[!this->sideToMove].size() == 1;
-    std::vector<Coordinates> pinLine;
-    std::vector<Coordinates> attackLine;
+    std::array<Coordinates, 8> pinLine;
+    std::array<Coordinates, 8> attackLine;
     if (pinned)
     {
         pinLine = this->pinLines[!this->sideToMove][origin];
@@ -660,7 +660,7 @@ std::vector<Move> Board::CalculateLegalMovesForPiece(const Coordinates& origin, 
 
 bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destination, int movingPiece, bool movingPieceColor,
     bool pinned, bool kingIsInCheck,
-    const std::vector<Coordinates> &pinLine, const std::vector<Coordinates> &attackLine) {
+    const std::array<Coordinates, 8>&pinLine, const std::array<Coordinates, 8>&attackLine) {
     int attackedPiece = this->board[destination.row][destination.column];
     bool pieceInWay = attackedPiece != 0;
     if ((movingPiece == 6 || movingPiece == 12) && destination == this->enPassant)
@@ -672,18 +672,18 @@ bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destinatio
         if (kingIsInCheck || pinned)
         { // there is an attack line or the moving piece is pinned
             if (kingIsInCheck && pinned) {
-                if (this->CoordinateInVector(destination, attackLine) &&
-                    this->CoordinateInVector(destination, pinLine))
+                if (this->CoordinateInCollection(destination, attackLine) &&
+                    this->CoordinateInCollection(destination, pinLine))
                 {
                     return true;
                 }
             }
             else if (kingIsInCheck)
             { // there is an attack line; the piece can only move to block the attack line
-                if (this->CoordinateInVector(destination, attackLine) ||
+                if (this->CoordinateInCollection(destination, attackLine) ||
                     ((movingPiece==6 || movingPiece==12) && // check if enpassant is legal (example: "8/8/3p4/1Pp4r/1KR2pk1/8/4P1P1/8 w - c6 0 3" 3. bxc6)
                         (destination == this->enPassant) &&
-                        (this->CoordinateInVector(movingPieceColor ?
+                        (this->CoordinateInCollection(movingPieceColor ?
                             Coordinates{ destination.row - 1, destination.column } :
                             Coordinates{ destination.row + 1, destination.column }, attackLine)
                             )))
@@ -693,7 +693,7 @@ bool Board::MoveIsLegal(const Coordinates &origin, const Coordinates &destinatio
             } // /there is an attack line
             else if (pinned)
             { // the moving piece is pinned; the piece can only move along the pinLine
-                if (this->CoordinateInVector(destination, pinLine))
+                if (this->CoordinateInCollection(destination, pinLine))
                 {
                     return true;
                 }
@@ -776,12 +776,12 @@ void Board::CalculateAttackFields(bool bothSides)
                             if (attackedCol1 < 8) {
                                 this->SetAttackedField(movingPieceColor, Coordinates(attackedRow, attackedCol1));
                                 if (this->board[attackedRow][attackedCol1] == (movingPieceColor ? 1 : 7))
-                                    this->attackLines[movingPieceColor].push_back(std::vector<Coordinates>{ Coordinates{ row, column }});
+                                    this->attackLines[movingPieceColor].push_back(std::array<Coordinates, 8>{ Coordinates{ row, column }});
                             }
                             if (attackedCol2 >= 0) {
                                 this->SetAttackedField(movingPieceColor, Coordinates(attackedRow, attackedCol2));
                                 if (this->board[attackedRow][attackedCol2] == (movingPieceColor ? 1 : 7))
-                                    this->attackLines[movingPieceColor].push_back(std::vector<Coordinates>{ Coordinates{ row, column }});
+                                    this->attackLines[movingPieceColor].push_back(std::array<Coordinates, 8>{ Coordinates{ row, column }});
                             }
                         }
                     }
@@ -801,7 +801,8 @@ void Board::CalculateAttackFields(bool bothSides)
                                 // pin line is the line from the center of the moving piece to the opponent's king
                                 // piece in way is true if there is any piece in the way of the moving piece
                                 // if the piece in way is of the same color as the moving piece, the pin line is broken
-                                std::vector<Coordinates> pinLine{ Coordinates{row, column}, currentlyCalculatedPosition };
+                                std::array<Coordinates, 8> pinLine{ Coordinates{row, column}, currentlyCalculatedPosition };
+                                int index = 2;
                                 int attackedPiece = this->board[currentlyCalculatedPosition.row][currentlyCalculatedPosition.column];
                                 bool pieceInWay = attackedPiece != 0;
                                 bool enemyKingInWay = (attackedPiece != 0) &&
@@ -856,7 +857,8 @@ void Board::CalculateAttackFields(bool bothSides)
                                         } // /there is a piece in way
                                         if (!enemyKingInWay)
                                         {
-                                            pinLine.push_back(currentlyCalculatedPosition);
+                                            pinLine[index] = (currentlyCalculatedPosition);
+                                            index++;
                                         }
                                         currentlyCalculatedPosition += pieceCharacteristics.pieceMovement[directionIndex];
                                     }
@@ -869,7 +871,7 @@ void Board::CalculateAttackFields(bool bothSides)
                                     {
                                         for (const Coordinates& field : pinLine)
                                         { // set attack fields along the attack line
-                                            if (field != Coordinates{ row,column })
+                                            if (field&&field != Coordinates{ row,column })
                                                 this->SetAttackedField(movingPieceColor, field);
                                         }
                                         this->attackLines[movingPieceColor].push_back(pinLine);

@@ -55,8 +55,8 @@ private:
 	std::array<std::array<std::array<bool, 8>, 8>, 2> attackedFields; // 0-white, 1-black, 8x8bool table
 	std::array<std::array<std::array<bool, 8>, 8>, 2> defendedFields; // 0-white, 1-black, 8x8bool table
 
-	std::array<std::vector<std::vector<Coordinates>>, 2> attackLines;		 // 0-white, 1-black
-	std::array<std::map<Coordinates, std::vector<Coordinates>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
+	std::array<std::vector<std::array<Coordinates,8>>, 2> attackLines;		 // 0-white, 1-black
+	std::array<std::map<Coordinates, std::array<Coordinates, 8>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
 
 	std::vector<uint64_t> boardHistory; // all past positions for the threefold repetion rule
 	std::map<Coordinates, std::vector<Move>> allLegalMoves;		 // piece_position: moves
@@ -66,7 +66,7 @@ private:
 	std::vector<Move> CalculateLegalMovesForPiece(const Coordinates& origin, int movingPiece, bool movingPieceColor);
 	bool MoveIsLegal(const Coordinates& origin, const Coordinates& destination, int movingPiece, bool movingPieceColor,
 		bool pinned, bool kingIsInCheck,
-		const std::vector<Coordinates>& pinLine, const std::vector<Coordinates>& attackLine);
+		const std::array<Coordinates, 8>& pinLine, const std::array<Coordinates, 8>& attackLine);
 	bool EnPassantIsLegal(const Coordinates& origin, const Coordinates& destination, bool movingPieceColor);
 	void PushMove(std::vector<Move>& legalMoves, const Coordinates& origin, const Coordinates& destination,
 		bool promotion = false, bool movingPieceColor = false);
@@ -80,11 +80,16 @@ private:
 	{
 		return (field.row < 8 && field.row >= 0) && (field.column < 8 && field.column >= 0);
 	}
-	inline bool CoordinateInVector(const Coordinates& coordinate, const std::vector<Coordinates> coordinateCollection) {
+	inline bool CoordinateInCollection(const Coordinates& coordinate, const std::vector<Coordinates> coordinateCollection) {
 		for (int i = 0; i < coordinateCollection.size(); i++)
 			if (coordinate == coordinateCollection[i])
 				return true;
 		return false;
 	}
-
+	inline bool CoordinateInCollection(const Coordinates& coordinate, const std::array<Coordinates,8> coordinateCollection) {
+		for (int i = 0; i < coordinateCollection.size(); i++)
+			if (coordinate == coordinateCollection[i])
+				return true;
+		return false;
+	}
 };
