@@ -13,13 +13,13 @@
 #include "Timer.h"
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
-struct EvaluationResult
-{
+struct EvaluationResult{
 	int evaluation = 0;
 	int scoreAfterBestMove = 0;
 	Move bestMove = Move();
 	Move bestOpponentMove = Move();
 	int reachedDepth = 0;
+	std::vector<int> nodeCount = std::vector<int>();
 
 	EvaluationResult() {
 		this->bestMove = Move();
@@ -27,18 +27,32 @@ struct EvaluationResult
 		this->evaluation = 0;
 		this->bestOpponentMove = Move();
 		this->reachedDepth = 0;
+		this->nodeCount = std::vector<int>();
 	}
 
-	EvaluationResult(int reachedDepth, Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move()) {
+	EvaluationResult(int reachedDepth, Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move(), std::vector<int> nodeCount=std::vector<int>()) {
 		this->bestMove = bestMove;
 		this->scoreAfterBestMove = scoreAfterBestMove;
 		this->evaluation = evaluation;
 		this->bestOpponentMove = bestOpponentMove;
 		this->reachedDepth = reachedDepth;
+		for (int depth = 0; depth < nodeCount.size(); depth++)
+			this->nodeCount.push_back(nodeCount[depth]);
 	}
 };
-class Algorithms
-{
+struct AlphaBetaResult {
+	int score = 0;
+	int nodeCount = 0;
+	AlphaBetaResult() {
+		this->score = 0;
+		this->nodeCount = 0;
+	}
+	AlphaBetaResult(int score, int nodeCount) {
+		this->score = score;
+		this->nodeCount = nodeCount;
+	}
+};
+class Algorithms{
 public:
 	Algorithms() {
 		this->table = TranspositionTable{};
@@ -54,7 +68,7 @@ public:
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
 
-	int AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
+	AlphaBetaResult AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count = 0;
 	int max_depth = 0;
 	TranspositionTable table;
@@ -68,5 +82,4 @@ private:
 	int Quiescence(Board* board, int alpha, int beta, int ply=0);
 	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
 	int MAX_PLY = 100;
-	
 };

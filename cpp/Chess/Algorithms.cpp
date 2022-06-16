@@ -73,6 +73,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 	Move bestMoveOpponent;
 	int evaluation = 0;
 
+	std::vector<int> nodeCounts;
 	int reachedDepth = 0;
 	this->count = 0;
 	Board opponentBoard{ *board };
@@ -80,7 +81,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 	opponentBoard.hash.ToggleSTM();
 	for (int depth = 1; depth <= max_depth;depth++) {
 		reachedDepth++;
-
+		int nodeCount =0;
 		// side to move best move
 		int score;
 		int alpha = AlgorithmsConsts::MIN;
@@ -99,7 +100,9 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 				//beta = MAX;
 				board->MakeMove(move);
 				//score = -this->AlphaBeta(board, alpha, beta, depth);
-				score = -this->AlphaBeta(board, -beta, -alpha, depth - 1);
+				auto result = this->AlphaBeta(board, -beta, -alpha, depth - 1);
+				score = -result.score;
+				nodeCount += result.nodeCount;
 				board->Pop();
 				if (this->timer.Poll(this->count)) {
 					break; // Discard
@@ -123,7 +126,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 		// /side to move best move
 		// side to move evaluation
 		if (evaluatePosition) {
-			int evaluationScore = -this->AlphaBeta(board, -beta, -alpha, depth);
+			int evaluationScore = -this->AlphaBeta(board, -beta, -alpha, depth).score;
 			if (this->timer.Poll(this->count)) {
 				reachedDepth--;
 				break; // Discard
@@ -150,7 +153,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 					//beta = MAX;
 					opponentBoard.MakeMove(move);
 					//score = -this->AlphaBeta(board, alpha, beta, depth);
-					scoreOpponent = -this->AlphaBeta(&opponentBoard, -betaOpponent, -alphaOpponent, depth - 1);
+					scoreOpponent = -this->AlphaBeta(&opponentBoard, -betaOpponent, -alphaOpponent, depth - 1).score;
 					opponentBoard.Pop();
 					if (this->timer.Poll(this->count)) {
 						break; // Discard
@@ -175,8 +178,9 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 			reachedDepth--;
 			break; // Discard
 		}
+		nodeCounts.push_back(nodeCount);
 	}
-	return EvaluationResult(reachedDepth, bestMove, bestScore, evaluation * (board->sideToMove ? 1 : -1), bestMoveOpponent);
+	return EvaluationResult(reachedDepth, bestMove, bestScore, evaluation * (board->sideToMove ? 1 : -1), bestMoveOpponent, nodeCounts);
 	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
@@ -197,13 +201,14 @@ int Algorithms::EvaluatePosition(Board* board)
 	return score;// * (board->sideToMove? -1 : 1);
 }
 
-int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
+AlphaBetaResult Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 {
+	int nodeCount = 1;
 	if (this->timer.Poll(this->count)) {
-		return 0;
+		return AlphaBetaResult(0,nodeCount);
 	}
 	if (board->ThreeFoldRepetition() || board->FifyMoveRuleDraw())
-		return 0;
+		return AlphaBetaResult(0, nodeCount);
 	bool found = false;
 	bool foundHashedMove = false;
 
@@ -226,16 +231,16 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 				}
 				break;
 			case EntryType::EXACT:
-				return en.score;
+				return AlphaBetaResult(en.score, nodeCount);
 				break;
 			}
 			if (alpha >= beta)
-				return en.score;
+				return AlphaBetaResult(en.score, nodeCount);
 		}
 	}
 	if (depthLeft <= 0)
-		//return this->EvaluatePosition(board);
-		return this->Quiescence(board, alpha, beta);
+		//return AlphaBetaResult(this->EvaluatePosition(board), nodeCount);
+		return AlphaBetaResult(this->Quiescence(board, alpha, beta), nodeCount);
 	int origAlpha = alpha;
 	int bestScore = AlgorithmsConsts::MIN;
 	Move bestMove = Move{};
@@ -248,13 +253,15 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	for (const Move& move : currentLegalMovesSorted){
 		this->count++;
 		board->MakeMove(move);
-		int score = -AlphaBeta(board, -beta, -alpha, depthLeft - 1);
+		auto result = AlphaBeta(board, -beta, -alpha, depthLeft - 1);
+		int score = -result.score;
+		nodeCount += result.nodeCount;
 		board->Pop();
 		if (this->timer.Poll(this->count)) {
-			return 0;
+			return AlphaBetaResult(0, nodeCount);
 		}
 		if (score >= beta)
-			return score;
+			return AlphaBetaResult(score, nodeCount);
 		if (score > bestScore) {
 			bestScore = score;
 			bestMove = move;
@@ -263,16 +270,16 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 		}
 	}
 	if (this->timer.Poll(this->count)) {
-		return 0;
+		return AlphaBetaResult(0, nodeCount);
 	}
 	if (currentLegalMovesSorted.size() == 0) {
 		if (board->KingInCheck())
-			return -AlgorithmsConsts::MATE_SCORE;
-		else return 0;
+			return AlphaBetaResult(-AlgorithmsConsts::MATE_SCORE, nodeCount);
+		else return AlphaBetaResult(0, nodeCount);
 	}
 	if (bestMove.origin)
 		this->AddScoreToTable(*board, origAlpha, beta, bestScore, depthLeft, bestMove);
-	return bestScore;
+	return AlphaBetaResult(bestScore, nodeCount);
 }
 
 void Algorithms::AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove)

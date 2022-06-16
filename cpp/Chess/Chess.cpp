@@ -268,7 +268,7 @@ int main()
         std::cout << "\nhalf turn: " << i;
         std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
         std::cout << "\neval: " << std::to_string(res.evaluation);
-
+        std::cout << "\nnodes on last depth: " << std::to_string(res.nodeCount[res.nodeCount.size()-1]);
     }
     //start = std::chrono::high_resolution_clock::now();
     //auto res = algg.Root(&bb, 99, 2000);
