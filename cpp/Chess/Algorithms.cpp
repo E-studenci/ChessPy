@@ -83,8 +83,8 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 
 		// side to move best move
 		int score;
-		int alpha = MIN;
-		int beta = MAX;
+		int alpha = AlgorithmsConsts::MIN;
+		int beta = AlgorithmsConsts::MAX;
 		int bestScoreCurrentDepth = 0;
 		Move bestMoveCurrentDepth;
 		if (this->timer.Poll(this->count)) {
@@ -117,8 +117,8 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 		}
 		bestScore = bestScoreCurrentDepth;
 		bestMove = bestMoveCurrentDepth;
-		this->table.AddEntry(*board, EntryType::EXACT, bestScore, depth, bestMove);
-		if (bestScore == MATE_SCORE)
+		this->table.AddEntry(*board, EntryType::EXACT, bestScore, depth-1, bestMove);
+		if (bestScore == AlgorithmsConsts::MATE_SCORE)
 			break;
 		// /side to move best move
 		// side to move evaluation
@@ -134,8 +134,8 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 		// opponent best move
 		if (getOpponentBestMove) {
 			int scoreOpponent;
-			int alphaOpponent = MIN;
-			int betaOpponent = MAX;
+			int alphaOpponent = AlgorithmsConsts::MIN;
+			int betaOpponent = AlgorithmsConsts::MAX;
 			int bestScoreCurrentDepthOpponent = 0;
 			Move bestMoveCurrentDepthOpponent;
 			if (this->timer.Poll(this->count)) {
@@ -168,7 +168,7 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 			}
 			bestScoreOpponent = bestScoreCurrentDepthOpponent;
 			bestMoveOpponent = bestMoveCurrentDepthOpponent;
-			this->table.AddEntry(opponentBoard, EntryType::EXACT, bestScoreOpponent, depth, bestMoveOpponent);
+			this->table.AddEntry(opponentBoard, EntryType::EXACT, bestScoreOpponent, depth-1, bestMoveOpponent);
 		}
 		// /opponent best move
 		if (this->timer.Poll(this->count)) {
@@ -185,7 +185,7 @@ int Algorithms::EvaluatePosition(Board* board)
 	if (board->GetAllLegalMoves().size() == 0) {
 		if (board->KingInCheck())
 			//return -MATE_SCORE * (board->sideToMove ? -1 : 1);
-			return -MATE_SCORE;
+			return -AlgorithmsConsts::MATE_SCORE;
 		else
 			return 0;
 	}
@@ -195,79 +195,6 @@ int Algorithms::EvaluatePosition(Board* board)
 	//int blockedPawns = this->CountBlockedPawns(board);
 
 	return score;// * (board->sideToMove? -1 : 1);
-}
-
-std::multiset<Move> Algorithms::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures) {
-	std::multiset<Move> result;
-	for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : moves)
-	{
-		for (Move& move : keyValuePair.second)
-		{
-			if (!only_captures ||
-				(board.board[move.destination.row][move.destination.column] != 0 ||
-					(move.destination == board.enPassant &&
-						(board.board[move.destination.row][move.destination.column] == 6 ||
-							board.board[move.destination.row][move.destination.column] == 12)))) { // any move is accepted or the move is a capture
-				move.score = this->MoveValue(board, move, hashedMove, bestMoveHash);
-				result.insert(move);
-			}
-		}
-	}
-	return result;
-}
-
-double Algorithms::MoveValue(const Board& board, Move& move,bool hashedMove, uint16_t bestMoveHash)
-{
-	if (hashedMove && (move.Hash() == bestMoveHash))
-		return 1000000000;
-	double score = 0;
-	int movingPiece = board.board[move.origin.row][move.origin.column];
-	bool movingPieceColor = movingPiece > 6;
-	movingPiece -= 1;
-	int pieceScoreBefore =
-		POSITION_TABLE[movingPiece]
-		[movingPieceColor ? (7 - move.origin.row) : move.origin.row][movingPieceColor ? (7 - move.origin.column) : move.origin.column]
-		+ PIECE_VALUE[movingPiece];
-	if (move.promotion != 0) {
-		if (move.promotion == 2 || move.promotion == 8)
-			score = 10000003;
-		else if (move.promotion == 3 || move.promotion == 9)
-			score = 10000002;
-		else if (move.promotion == 5 || move.promotion == 11)
-			score = 10000001;
-		else if (move.promotion == 4 || move.promotion == 10)
-			score = 10000000;
-	}
-	else {
-		int pieceScoreAfter =
-			POSITION_TABLE[movingPiece]
-			[movingPieceColor ? (7 - move.destination.row) : move.destination.row][movingPieceColor ? (7 - move.destination.column) : move.destination.column]
-			+ PIECE_VALUE[movingPiece];
-
-		score = pieceScoreAfter - pieceScoreBefore;
-	}
-
-	int capturedPiece = board.board[move.destination.row][move.destination.column];
-	if (capturedPiece != 0) {
-		score += 2000;
-		if (board.moveHistory.size() > 0)
-		{
-			if (board.moveHistory[board.moveHistory.size() - 1].destination == move.destination)
-				score += 1000;
-		}
-		capturedPiece -= 1;
-		int capturedPieceValue = POSITION_TABLE[capturedPiece]
-			[(!movingPieceColor) ? (7 - move.destination.row) : move.destination.row][(!movingPieceColor) ? (7 - move.destination.column) : move.destination.column]
-			+ PIECE_VALUE[capturedPiece];
-		//double capture_value =fmin(0.0, capturedPieceValue - pieceScoreBefore);
-		score += capturedPieceValue - pieceScoreBefore;
-		if (capturedPieceValue > pieceScoreBefore)
-			move.goodCapture = true;
-		//score += capture_value;
-	}
-	/*double ran = (((double)rand() * (0 - 0.05) / RAND_MAX) + 0);
-	return score+ ran;*/
-	return score;
 }
 
 int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
@@ -310,14 +237,14 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 		//return this->EvaluatePosition(board);
 		return this->Quiescence(board, alpha, beta);
 	int origAlpha = alpha;
-	int bestScore = MIN;
+	int bestScore = AlgorithmsConsts::MIN;
 	Move bestMove = Move{};
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
 
 	//if (board->KingInCheck())
 	//	depthLeft++;
 
-	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
+	std::multiset<Move> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
 	for (const Move& move : currentLegalMovesSorted){
 		this->count++;
 		board->MakeMove(move);
@@ -340,7 +267,7 @@ int Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 	}
 	if (currentLegalMovesSorted.size() == 0) {
 		if (board->KingInCheck())
-			return -MATE_SCORE;
+			return -AlgorithmsConsts::MATE_SCORE;
 		else return 0;
 	}
 	if (bestMove.origin)
@@ -371,7 +298,7 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 	if (stand_pat >= beta)
 		//return beta;
 		return stand_pat;
-	const int delta = PIECE_VALUE[1];
+	const int delta = AlgorithmsConsts::PIECE_VALUE[1];
 	if (stand_pat < alpha - delta) {
 		return alpha;
 	}
@@ -380,7 +307,7 @@ int Algorithms::Quiescence(Board* board, int alpha, int beta, int ply)
 		alpha = stand_pat;
 
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<Move> currentLegalMovesSorted = this->OrderMoves(*board, currentLegalMoves, false, 0, true);
+	std::multiset<Move> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, true);
 	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 	//{
 	//	for (Move& move : keyValuePair.second)
@@ -420,10 +347,10 @@ int Algorithms::EvalPieces(const Board& board)
 				piece -= 1;
 				bool pieceColor = piece > 6;
 				int pieceScore = 
-					POSITION_TABLE[piece][pieceColor? (7-row): row][pieceColor ? (7 - column): column] + PIECE_VALUE[piece];
+					AlgorithmsConsts::POSITION_TABLE[piece][pieceColor? (7-row): row][pieceColor ? (7 - column): column] + AlgorithmsConsts::PIECE_VALUE[piece];
 				int EndGamePieceScore = 
-					END_GAME_POSITION_TABLE[piece][pieceColor ? (7 - row) : row][pieceColor ? (7 - column) : column] + END_GAME_PIECE_VALUE[piece];
-				gamePhase += GAME_PHASE_SHIFT[piece];
+					AlgorithmsConsts::END_GAME_POSITION_TABLE[piece][pieceColor ? (7 - row) : row][pieceColor ? (7 - column) : column] + AlgorithmsConsts::END_GAME_PIECE_VALUE[piece];
+				gamePhase += AlgorithmsConsts::GAME_PHASE_SHIFT[piece];
 				scores[pieceColor] += pieceScore;
 				//score += pieceScore * (pieceColor ? -1 : 1);
 				endGameScores[pieceColor] += EndGamePieceScore;

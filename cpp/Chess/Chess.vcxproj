@@ -145,15 +145,18 @@
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Chess.cpp" />
     <ClCompile Include="Move.cpp" />
+    <ClCompile Include="MoveOrderer.cpp" />
     <ClCompile Include="SafeQueue.cpp" />
     <ClCompile Include="TranspositionTable.cpp" />
     <ClCompile Include="Zobrist.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algorithms.h" />
+    <ClInclude Include="AlgorithmsConsts.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Coordinates.h" />
     <ClInclude Include="Move.h" />
+    <ClInclude Include="MoveOrderer.h" />
     <ClInclude Include="PieceCharacteristics.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Timer.h" />

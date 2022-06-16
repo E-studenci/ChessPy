@@ -190,6 +190,8 @@ void Board::Capture(Coordinates destination)
 }
 void Board::MakeMove(const Move& move, bool saveBoard)
 {
+    if (!move.origin || !move.destination)
+        return;
     this->movesAreCalculated = false;
 
     int movingPiece = this->board[move.origin.row][move.origin.column];
