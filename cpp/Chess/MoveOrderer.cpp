@@ -1,8 +1,8 @@
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
-std::multiset<Move> MoveOrderer::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
+std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
 {
-	std::multiset<Move> result;
+	std::multiset<std::reference_wrapper<Move>> result;
 	for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : moves)
 	{
 		for (Move& move : keyValuePair.second)

@@ -12,7 +12,7 @@
 #include <vector>
 #include <limits>
 #include <set>
-
+#include <functional>
 
 std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *board, int depth, bool divide)
 {
@@ -251,7 +251,7 @@ AlphaBetaResult Algorithms::AlphaBeta(Board* board, int alpha, int beta, int dep
 	//if (board->KingInCheck())
 	//	depthLeft++;
 
-	std::multiset<Move> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
+	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
 	for (const Move& move : currentLegalMovesSorted){
 		this->count++;
 		board->MakeMove(move);
@@ -316,7 +316,7 @@ AlphaBetaResult Algorithms::Quiescence(Board* board, int alpha, int beta, int pl
 		alpha = stand_pat;
 
 	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<Move> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, true);
+	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, true);
 	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 	//{
 	//	for (Move& move : keyValuePair.second)
