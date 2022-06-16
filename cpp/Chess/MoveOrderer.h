@@ -5,6 +5,7 @@
 #include "Move.h"
 #include "Board.h"
 #include <functional>
+
 class MoveOrderer
 {
 public:
@@ -17,3 +18,9 @@ class MoveOrdererHandcrafted : public MoveOrderer {
 public:
 	virtual double MoveValue(const Board& board, Move& move);
 };
+
+class MoveOrdererTraining : public MoveOrderer {
+public:
+	virtual double MoveValue(const Board& board, Move& move);
+};
+

@@ -48,6 +48,7 @@ cdef extern from "Algorithms.h":
         int reachedDepth
         CppMove bestMove
         CppMove bestOpponentMove
+        vector[int] nodeCount
 
     cdef cppclass CppAlgorithms "Algorithms":
         CppAlgorithms() except +

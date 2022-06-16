@@ -1,5 +1,6 @@
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
+
 std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
 {
 	std::multiset<std::reference_wrapper<Move>> result;
@@ -71,5 +72,18 @@ double MoveOrdererHandcrafted::MoveValue(const Board& board, Move& move)
 	}
 	/*double ran = (((double)rand() * (0 - 0.05) / RAND_MAX) + 0);
 	return score+ ran;*/
+	return score;
+}
+
+
+double MoveOrdererTraining::MoveValue(const Board& board, Move& move)
+{
+	double score = 0;
+	auto err = PyImport_AppendInittab("wrapper", PyInit_chesspy);
+	Py_Initialize();
+	auto wrapper_module = PyImport_ImportModule("wrapper");
+	score = evaluateMove(board, move);
+	std::cout << score << std::endl;
+	Py_Finalize();
 	return score;
 }

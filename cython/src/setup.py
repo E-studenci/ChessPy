@@ -18,7 +18,7 @@ ext_modules = [
     Extension(
         name="chesspy",
         sources=["chesspy/wrapper.pyx",
-                 *find_cpp_files(CPP_PATH, ["Chess.cpp"])],
+                 *find_cpp_files(CPP_PATH, ["Chess.cpp", "wrapper.cpp"])],
         include_dirs=[CPP_PATH],
         language="c++"
     )

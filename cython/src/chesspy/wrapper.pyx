@@ -157,14 +157,16 @@ class EvaluationResult:
     reached_depth: int
     best_move: Move
     best_opponent_move: Move
+    node_count: list[int]
 
 
-    def __init__(self, evaluation, score_after_best_move, reached_depth, best_move, best_opponent_move):
+    def __init__(self, evaluation, score_after_best_move, reached_depth, best_move, best_opponent_move, node_count):
         self.evaluation = evaluation
         self.score_after_best_move = score_after_best_move
         self.reached_depth = reached_depth
         self.best_move = best_move
         self.best_opponent_move = best_opponent_move
+        self.node_count = node_count
 
 
 cdef class Algorithms:
@@ -189,4 +191,15 @@ cdef class Algorithms:
         bestOpponentMove = Move()
         bestMove.instance = result.bestMove.Clone()
         bestOpponentMove.instance = result.bestOpponentMove.Clone()
-        return EvaluationResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove)
+        return EvaluationResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove, result.nodeCount)
+
+try:
+    import exposed
+    EVAL_FUNC = exposed.evaluate_move
+except:
+    EVAL_FUNC = None
+
+cdef public double evaluateMove(const CppBoard& board,CppMove& move):
+    if EVAL_FUNC:
+        return EVAL_FUNC()
+    return 0

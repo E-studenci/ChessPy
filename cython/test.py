@@ -4,6 +4,8 @@ board = chesspy.Board(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
+print(chesspy.evaluateMove())
+
 print(board.fen)
 print(board.check)
 print(board.fifty_move_rule_draw)
