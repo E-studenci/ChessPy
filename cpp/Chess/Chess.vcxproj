@@ -147,6 +147,7 @@
     <ClCompile Include="AlgorithmsConsts.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Chess.cpp" />
+    <ClCompile Include="Evaluator.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="MoveOrderer.cpp" />
     <ClCompile Include="SafeQueue.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="AlgorithmsConsts.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Coordinates.h" />
+    <ClInclude Include="Evaluator.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveOrderer.h" />
     <ClInclude Include="PieceCharacteristics.h" />

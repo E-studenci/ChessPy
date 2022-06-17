@@ -4,7 +4,8 @@
 #include "Board.h"
 #include "Coordinates.h"
 #include "Algorithms.h"
-
+#include "MoveOrderer.h"
+#include "Evaluator.h"
 #include <iostream>
 #include <chrono>
 #include <set>
@@ -260,7 +261,7 @@ int main()
 
     Board bb{ "rnbqkbnr/ppp1pppp/8/8/3P4/4P3/PP1P1PPP/RNBQKBNR b KQkq - 0 3" };
 
-    Algorithms algg;
+    Algorithms algg{ MoveOrdererEnum::HANDCRAFTED, EvaluatorParams{true,true, false} };
     for (int i = 0; i < 1;i++) {
         auto res = algg.Root(&bb, 99, 1000, true, true);
         bb.MakeMove(res.bestMove);

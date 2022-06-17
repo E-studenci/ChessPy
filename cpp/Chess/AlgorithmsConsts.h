@@ -24,4 +24,18 @@ public:
 	static const int MATE_SCORE;
 	static const int MIN;
 	static const int MAX;
+
+	static const int KING_SCORE;
+	static const int QUEEN_SCORE;
+	static const int ROOK_SCORE;
+	static const int BISHOP_SCORE;
+	static const int KNIGHT_SCORE;
+	static const int PAWN_SCORE;
+	static const int KING_SCORE_ENDGAME;
+	static const int QUEEN_SCORE_ENDGAME;
+	static const int ROOK_SCORE_ENDGAME;
+	static const int BISHOP_SCORE_ENDGAME;
+	static const int KNIGHT_SCORE_ENDGAME;
+	static const int PAWN_SCORE_ENDGAME;
+
 };

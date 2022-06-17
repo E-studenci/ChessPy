@@ -184,23 +184,6 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
-int Algorithms::EvaluatePosition(Board* board)
-{
-	if (board->GetAllLegalMoves().size() == 0) {
-		if (board->KingInCheck())
-			//return -MATE_SCORE * (board->sideToMove ? -1 : 1);
-			return -AlgorithmsConsts::MATE_SCORE;
-		else
-			return 0;
-	}
-	int score = this->EvalPieces(*board);
-	//int doubledPawns = this->CountDoubledPawns(board);
-	//int isolatedPawns = this->CountIsolatedPawns(board);
-	//int blockedPawns = this->CountBlockedPawns(board);
-
-	return score;// * (board->sideToMove? -1 : 1);
-}
-
 AlphaBetaResult Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 {
 	int nodeCount = 1;
@@ -300,7 +283,7 @@ AlphaBetaResult Algorithms::Quiescence(Board* board, int alpha, int beta, int pl
 	}
 	if (ply > this->max_depth)
 		this->max_depth = ply;
-	int stand_pat = this->EvaluatePosition(board);
+	int stand_pat = this->_evaluator->Evaluate(*board);
 	if (ply > MAX_PLY) {
 		return AlphaBetaResult(stand_pat, nodeCount);
 	}
@@ -342,38 +325,4 @@ AlphaBetaResult Algorithms::Quiescence(Board* board, int alpha, int beta, int pl
 		return AlphaBetaResult(0,nodeCount);
 	}
 	return AlphaBetaResult(alpha,nodeCount);
-}
-
-
-int Algorithms::EvalPieces(const Board& board)
-{
-	int scores[2] = { 0, 0 };
-	int endGameScores[2] = {0,0};
-	int gamePhase = 0;
-	for (int row = 0; row < 8;row++) {
-		for (int column = 0; column < 8; column++) {
-			int piece = board.board[row][column];
-			if (piece > 0) {
-				// evaluating piece and piece position
-				piece -= 1;
-				bool pieceColor = piece > 6;
-				int pieceScore = 
-					AlgorithmsConsts::POSITION_TABLE[piece][pieceColor? (7-row): row][pieceColor ? (7 - column): column] + AlgorithmsConsts::PIECE_VALUE[piece];
-				int EndGamePieceScore = 
-					AlgorithmsConsts::END_GAME_POSITION_TABLE[piece][pieceColor ? (7 - row) : row][pieceColor ? (7 - column) : column] + AlgorithmsConsts::END_GAME_PIECE_VALUE[piece];
-				gamePhase += AlgorithmsConsts::GAME_PHASE_SHIFT[piece];
-				scores[pieceColor] += pieceScore;
-				//score += pieceScore * (pieceColor ? -1 : 1);
-				endGameScores[pieceColor] += EndGamePieceScore;
-				// /evaluating piece and piece position
-
-			}
-		}
-	}
-	int score = scores[board.sideToMove] - scores[!board.sideToMove];
-	int endScore = endGameScores[board.sideToMove] - endGameScores[!board.sideToMove];
-	//std::cout << board.ToString();
-	if (gamePhase > 24)
-		gamePhase = 24;
-	return (score * gamePhase + endScore * (24-gamePhase))/24;
 }

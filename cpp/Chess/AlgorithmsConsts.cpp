@@ -122,11 +122,24 @@ const std::array<std::array<int, 8>, 8> AlgorithmsConsts::END_GAME_KING = { {
     {-27, -11,   4,  13,  14,   4,  -5, -17},
     {-53, -34, -21, -11, -28, -14, -24, -43} } };
 
-const std::array<int, 12> AlgorithmsConsts::PIECE_VALUE = { 0, 1025, 337, 365, 477, 82, 0, 1025, 337, 365, 477, 82 };
-const std::array<int, 12> AlgorithmsConsts::END_GAME_PIECE_VALUE = { 0, 936, 281, 297, 512, 94, 0, 936, 281, 297, 512, 94 };
+const std::array<int, 12> AlgorithmsConsts::PIECE_VALUE = { KING_SCORE, QUEEN_SCORE, KNIGHT_SCORE, BISHOP_SCORE, ROOK_SCORE, PAWN_SCORE, KING_SCORE, QUEEN_SCORE, KNIGHT_SCORE, BISHOP_SCORE, ROOK_SCORE, PAWN_SCORE };
+const std::array<int, 12> AlgorithmsConsts::END_GAME_PIECE_VALUE = { KING_SCORE_ENDGAME, QUEEN_SCORE_ENDGAME, KNIGHT_SCORE_ENDGAME, BISHOP_SCORE_ENDGAME, ROOK_SCORE_ENDGAME, PAWN_SCORE_ENDGAME, KING_SCORE_ENDGAME, QUEEN_SCORE_ENDGAME, KNIGHT_SCORE_ENDGAME, BISHOP_SCORE_ENDGAME, ROOK_SCORE_ENDGAME, PAWN_SCORE_ENDGAME };
 const std::array<int, 12> AlgorithmsConsts::GAME_PHASE_SHIFT = { 0, 4, 1, 1, 2, 0, 0, 4, 1, 1, 2, 0 };
 const std::array<std::array<std::array<int, 8>, 8>, 12> AlgorithmsConsts::POSITION_TABLE = { KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN,KING, QUEEN, KNIGHT, BISHOP, ROOK, PAWN };
 const std::array<std::array<std::array<int, 8>, 8>, 12> AlgorithmsConsts::END_GAME_POSITION_TABLE = { END_GAME_KING, END_GAME_QUEEN, END_GAME_KNIGHT, END_GAME_BISHOP, END_GAME_ROOK, END_GAME_PAWN,END_GAME_KING, END_GAME_QUEEN, END_GAME_KNIGHT, END_GAME_BISHOP, END_GAME_ROOK, END_GAME_PAWN };
 const int AlgorithmsConsts::MATE_SCORE = 20000;
 const int AlgorithmsConsts::MIN = -2 * MATE_SCORE;
 const int AlgorithmsConsts::MAX = 2 * MATE_SCORE;
+
+const int AlgorithmsConsts::KING_SCORE = 0;
+const int AlgorithmsConsts::QUEEN_SCORE = 1025;
+const int AlgorithmsConsts::ROOK_SCORE = 477;
+const int AlgorithmsConsts::BISHOP_SCORE = 365;
+const int AlgorithmsConsts::KNIGHT_SCORE = 337;
+const int AlgorithmsConsts::PAWN_SCORE = 82;
+const int AlgorithmsConsts::KING_SCORE_ENDGAME = 0;
+const int AlgorithmsConsts::QUEEN_SCORE_ENDGAME = 936;
+const int AlgorithmsConsts::ROOK_SCORE_ENDGAME = 512;
+const int AlgorithmsConsts::BISHOP_SCORE_ENDGAME = 297;
+const int AlgorithmsConsts::KNIGHT_SCORE_ENDGAME = 281;
+const int AlgorithmsConsts::PAWN_SCORE_ENDGAME = 94;

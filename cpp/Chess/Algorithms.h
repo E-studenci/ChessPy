@@ -2,6 +2,8 @@
 #include "Move.h"
 #include "Board.h"
 #include "SafeQueue.cpp"
+#include "Evaluator.h"
+
 
 #include <tuple>
 #include <string>
@@ -58,9 +60,10 @@ public:
 		this->table = TranspositionTable{};
 		this->table.init();
 		this->_moveOrderer = new MoveOrdererHandcrafted();
+		this->_evaluator = new Evaluator();
 	}
 
-	Algorithms(MoveOrdererEnum moveOrdererEnum) {
+	Algorithms(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams) {
 		this->table = TranspositionTable{};
 		this->table.init();
 		switch (moveOrdererEnum) {
@@ -71,6 +74,7 @@ public:
 				this->_moveOrderer = new MoveOrdererTraining();
 				break;
 		}
+		this->_evaluator = new Evaluator(evaluatorParams);
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
@@ -79,14 +83,14 @@ public:
 	int count = 0;
 	int max_depth = 0;
 	TranspositionTable table;
-	MoveOrderer *_moveOrderer = nullptr;
-
 private:
 	Timer timer;
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
-	int EvaluatePosition(Board* board);	// Returns the position score
-	int EvalPieces(const Board& board);
 	AlphaBetaResult Quiescence(Board* board, int alpha, int beta, int ply=0);
 	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
+
 	int MAX_PLY = 100;
+
+	MoveOrderer *_moveOrderer = nullptr;
+	Evaluator* _evaluator = nullptr;
 };

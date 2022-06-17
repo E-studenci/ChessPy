@@ -75,7 +75,10 @@ double MoveOrdererHandcrafted::MoveValue(const Board& board, Move& move)
 	return score;
 }
 
-
+double MoveOrdererTraining::MoveValue(const Board& board, Move& move)
+{
+	return 0;
+}
 //double MoveOrdererTraining::MoveValue(const Board& board, Move& move)
 //{
 //	double score = 0;
