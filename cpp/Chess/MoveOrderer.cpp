@@ -74,7 +74,7 @@ double MoveOrdererHandcrafted::MoveValue(const Board* board, Move* move)
 	return score+ ran;*/
 	return score;
 }
-#if defined(_DEBUG) || defined(NDEBUG)
+#if defined(SKIPCYTHON)
 double MoveOrdererTraining::MoveValue(const Board* board, Move* move)
 {
 return 0;
