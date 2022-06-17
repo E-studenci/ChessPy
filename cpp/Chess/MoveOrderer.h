@@ -10,7 +10,7 @@ enum MoveOrdererEnum
 {
 	HANDCRAFTED,
 	TRAINING,
-	MODEL
+	MODEL,
 };
 
 class MoveOrderer

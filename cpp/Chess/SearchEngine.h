@@ -62,7 +62,8 @@ public:
 		this->_moveOrderer = new MoveOrdererHandcrafted();
 		this->_evaluator = new Evaluator();
 	}
-
+	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams) {}
+	SearchEngine(int moveOrderer) : SearchEngine(moveOrderer, EvaluatorParams()) {}
 	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams) {
 		this->table = TranspositionTable{};
 		this->table.init();

@@ -143,7 +143,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="AlgorithmsConsts.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Chess.cpp" />
@@ -151,11 +150,11 @@
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="MoveOrderer.cpp" />
     <ClCompile Include="SafeQueue.cpp" />
+    <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="TranspositionTable.cpp" />
     <ClCompile Include="Zobrist.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="AlgorithmsConsts.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Coordinates.h" />
@@ -164,6 +163,7 @@
     <ClInclude Include="MoveOrderer.h" />
     <ClInclude Include="PieceCharacteristics.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="TranspositionTable.h" />
     <ClInclude Include="Zobrist.h" />
