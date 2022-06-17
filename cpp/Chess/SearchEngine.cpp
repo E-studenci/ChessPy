@@ -1,4 +1,4 @@
-#include "Algorithms.h"
+#include "SearchEngine.h"
 #include "Board.h"
 #include "Move.h"
 #include "SafeQueue.cpp"

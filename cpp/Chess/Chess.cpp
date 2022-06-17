@@ -3,7 +3,7 @@
 
 #include "Board.h"
 #include "Coordinates.h"
-#include "Algorithms.h"
+#include "SearchEngine.h"
 #include "MoveOrderer.h"
 #include "Evaluator.h"
 #include <iostream>

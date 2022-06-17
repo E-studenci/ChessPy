@@ -24,7 +24,7 @@
     <ClCompile Include="Move.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Algorithms.cpp">
+    <ClCompile Include="SearchEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SafeQueue.cpp">
@@ -53,7 +53,7 @@
     <ClInclude Include="Move.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Algorithms.h">
+    <ClInclude Include="SearchEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PieceCharacteristics.h">

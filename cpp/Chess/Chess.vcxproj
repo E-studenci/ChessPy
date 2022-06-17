@@ -143,7 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Algorithms.cpp" />
+    <ClCompile Include="SearchEngine.cpp" />
     <ClCompile Include="AlgorithmsConsts.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Chess.cpp" />
@@ -155,7 +155,7 @@
     <ClCompile Include="Zobrist.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Algorithms.h" />
+    <ClInclude Include="SearchEngine.h" />
     <ClInclude Include="AlgorithmsConsts.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Coordinates.h" />
