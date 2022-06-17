@@ -1,8 +1,9 @@
 # cython: c_string_type=unicode, c_string_encoding=utf8
 from cython.operator cimport dereference as deref
 
-from exposer cimport CppCoordinates, CppMove, CppBoard, CppEvaluationResult, CppAlgorithms
+from exposer cimport CppCoordinates, CppMove, CppBoard, CppSearchResult, CppSearchEngine
 
+import enum
 
 cdef class Coordinates:
     cdef CppCoordinates*instance
@@ -151,7 +152,7 @@ cdef class Board:
         return result
 
 
-class EvaluationResult:
+class SearchResult:
     evaluation: int
     score_after_best_move: int
     reached_depth: int
@@ -169,11 +170,20 @@ class EvaluationResult:
         self.node_count = node_count
 
 
-cdef class Algorithms:
-    cdef CppAlgorithms*instance
+class MoveOrderingType(enum.Enum):
+    HANDCRAFTED = 0
+    TRAINING = 1
+    MODEL = 2
 
-    def __cinit__(self):
-        self.instance = new CppAlgorithms()
+
+cdef class SearchEngine:
+    cdef CppSearchEngine*instance
+
+    def __cinit__(self, move_ordering_type: MoveOrderingType = None):
+        if move_ordering_type:
+            self.instance = new CppSearchEngine(move_ordering_type)
+        else:
+            self.instance = new CppSearchEngine()
 
     def __dealloc__(self):
         del self.instance
@@ -191,7 +201,7 @@ cdef class Algorithms:
         bestOpponentMove = Move()
         bestMove.instance = result.bestMove.Clone()
         bestOpponentMove.instance = result.bestOpponentMove.Clone()
-        return EvaluationResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove, result.nodeCount)
+        return SearchResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove, result.nodeCount)
 
 try:
     import exposed
@@ -199,7 +209,7 @@ try:
 except:
     EVAL_FUNC = None
 
-cdef public double evaluateMove(const CppBoard& board,CppMove& move):
+cdef public double evaluateMove(const CppBoard& board, CppMove& move):
     if EVAL_FUNC:
         return EVAL_FUNC()
     return 0

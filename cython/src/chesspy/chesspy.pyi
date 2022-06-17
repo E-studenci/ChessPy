@@ -1,4 +1,5 @@
 import typing
+import enum
 
 class Coordinates:
     row: int
@@ -38,7 +39,7 @@ class Board:
         ...
         
 
-class EvaluationResult:
+class SearchResult:
     evaluation: int
     score_after_best_move: int
     reached_depth: int
@@ -46,10 +47,16 @@ class EvaluationResult:
     best_opponent_move: Move
 
 
-class Algorithms:
+class MoveOrderingType(enum.Enum):
+    HANDCRAFTED = 0
+    TRAINING = 1
+    MODEL = 2
+
+
+class SearchEngine:
     count: int
     
-    def __init__(self) -> None:
+    def __init__(self, move_ordering_type: MoveOrderingType = None) -> None:
         ...
 
     def perft(self, board: Board, depth: int) -> int:

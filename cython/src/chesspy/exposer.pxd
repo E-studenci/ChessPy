@@ -39,10 +39,10 @@ cdef extern from "Board.h":
         vector[string] fenHistory
 
 
-cdef extern from "Algorithms.h":
-    cdef cppclass CppEvaluationResult "EvaluationResult":
-        CppEvaluationResult() except +
-        CppEvaluationResult(int reachedDepth, CppMove bestMove, int scoreAfterBestMove, int evaluation, CppMove bestOpponentMove) except +
+cdef extern from "SearchEngine.h":
+    cdef cppclass CppSearchResult "SearchResult":
+        CppSearchResult() except +
+        CppSearchResult(int reachedDepth, CppMove bestMove, int scoreAfterBestMove, int evaluation, CppMove bestOpponentMove, vector[int] nodeCount) except +
         int evaluation
         int scoreAfterBestMove
         int reachedDepth
@@ -50,9 +50,10 @@ cdef extern from "Algorithms.h":
         CppMove bestOpponentMove
         vector[int] nodeCount
 
-    cdef cppclass CppAlgorithms "Algorithms":
-        CppAlgorithms() except +
+    cdef cppclass CppSearchEngine "SearchEngine":
+        CppSearchEngine() except +
+        CppSearchEngine(int moveOrderer) except +
         int PerftStarterSingleThread(CppBoard* board, int depth)
-        CppEvaluationResult Root(CppBoard* board, int depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
+        CppSearchResult Root(CppBoard* board, int depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
         int AlphaBeta(CppBoard* board, int alpha, int beta, int depthLeft)
         int count

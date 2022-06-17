@@ -75,18 +75,20 @@ double MoveOrdererHandcrafted::MoveValue(const Board& board, Move& move)
 	return score;
 }
 
+// double MoveOrdererTraining::MoveValue(const Board& board, Move& move)
+// {
+// 	return 0;
+// }
+#include "Python.h"
+#include "wrapper.h"
+
+
 double MoveOrdererTraining::MoveValue(const Board& board, Move& move)
 {
-	return 0;
+	double score = 0;
+	PyImport_AppendInittab("chesspy", PyInit_chesspy);
+	Py_Initialize();
+	PyImport_ImportModule("chesspy");
+	score = evaluateMove(board, move);
+	return score;
 }
-//double MoveOrdererTraining::MoveValue(const Board& board, Move& move)
-//{
-//	double score = 0;
-//	auto err = PyImport_AppendInittab("wrapper", PyInit_chesspy);
-//	Py_Initialize();
-//	auto wrapper_module = PyImport_ImportModule("wrapper");
-//	score = evaluateMove(board, move);
-//	std::cout << score << std::endl;
-//	Py_Finalize();
-//	return score;
-//}
