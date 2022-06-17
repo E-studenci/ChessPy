@@ -14,7 +14,7 @@
 #include <set>
 #include <functional>
 
-std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *board, int depth, bool divide)
+std::tuple<int, std::vector<std::tuple<Move, int>>> SearchEngine::Perft(Board *board, int depth, bool divide)
 {
 	std::tuple<int, std::vector<std::tuple<Move, int>>> result; // result[0] - legalMoveCount, result[1] - legalMoveCount for move (used for divide)
 
@@ -43,7 +43,7 @@ std::tuple<int, std::vector<std::tuple<Move, int>>> Algorithms::Perft(Board *boa
 	return result;
 }
 
-int Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
+int SearchEngine::PerftStarterSingleThread(Board *board, int depth, bool divide) {
 	this->count = 0;
 	std::string retString;
 	std::tuple<int, std::vector<std::tuple<Move, int>>> result = this->Perft(board, depth, divide);
@@ -64,7 +64,7 @@ int Algorithms::PerftStarterSingleThread(Board *board, int depth, bool divide) {
 	//return retString;
 }
 
-EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
+SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
 {
 	this->timer.Start(timeInMillis);
 	int bestScore = 0;
@@ -180,11 +180,11 @@ EvaluationResult Algorithms::Root(Board* board, int max_depth, long timeInMillis
 		}
 		nodeCounts.push_back(nodeCount);
 	}
-	return EvaluationResult(reachedDepth, bestMove, bestScore, evaluation * (board->sideToMove ? 1 : -1), bestMoveOpponent, nodeCounts);
+	return SearchResult(reachedDepth, bestMove, bestScore, evaluation * (board->sideToMove ? 1 : -1), bestMoveOpponent, nodeCounts);
 	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
-AlphaBetaResult Algorithms::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
+AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
 {
 	int nodeCount = 1;
 	if (this->timer.Poll(this->count)) {
@@ -267,7 +267,7 @@ AlphaBetaResult Algorithms::AlphaBeta(Board* board, int alpha, int beta, int dep
 	return AlphaBetaResult(bestScore, nodeCount);
 }
 
-void Algorithms::AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove)
+void SearchEngine::AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove)
 {
 	if (score <= alphaOriginal)
 		this->table.AddEntry(board, EntryType::UPPERBOUND, score, depth, bestMove);
@@ -276,7 +276,7 @@ void Algorithms::AddScoreToTable(Board& board, int alphaOriginal, int beta, int 
 	else 
 		this->table.AddEntry(board, EntryType::EXACT, score, depth, bestMove);
 }
-AlphaBetaResult Algorithms::Quiescence(Board* board, int alpha, int beta, int ply){
+AlphaBetaResult SearchEngine::Quiescence(Board* board, int alpha, int beta, int ply){
 	int nodeCount = 1;
 	if (this->timer.Poll(this->count)) {
 		return AlphaBetaResult(0, nodeCount);

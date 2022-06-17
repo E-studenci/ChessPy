@@ -15,7 +15,7 @@
 #include "Timer.h"
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
-struct EvaluationResult{
+struct SearchResult{
 	int evaluation = 0;
 	int scoreAfterBestMove = 0;
 	Move bestMove = Move();
@@ -23,7 +23,7 @@ struct EvaluationResult{
 	int reachedDepth = 0;
 	std::vector<int> nodeCount = std::vector<int>();
 
-	EvaluationResult() {
+	SearchResult() {
 		this->bestMove = Move();
 		this->scoreAfterBestMove = 0;
 		this->evaluation = 0;
@@ -32,7 +32,7 @@ struct EvaluationResult{
 		this->nodeCount = std::vector<int>();
 	}
 
-	EvaluationResult(int reachedDepth, Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move(), std::vector<int> nodeCount=std::vector<int>()) {
+	SearchResult(int reachedDepth, Move bestMove, int scoreAfterBestMove, int evaluation = 0, Move bestOpponentMove = Move(), std::vector<int> nodeCount=std::vector<int>()) {
 		this->bestMove = bestMove;
 		this->scoreAfterBestMove = scoreAfterBestMove;
 		this->evaluation = evaluation;
@@ -54,16 +54,16 @@ struct AlphaBetaResult {
 		this->nodeCount = nodeCount;
 	}
 };
-class Algorithms{
+class SearchEngine{
 public:
-	Algorithms() {
+	SearchEngine() {
 		this->table = TranspositionTable{};
 		this->table.init();
 		this->_moveOrderer = new MoveOrdererHandcrafted();
 		this->_evaluator = new Evaluator();
 	}
 
-	Algorithms(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams) {
+	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams) {
 		this->table = TranspositionTable{};
 		this->table.init();
 		switch (moveOrdererEnum) {
@@ -77,7 +77,7 @@ public:
 		this->_evaluator = new Evaluator(evaluatorParams);
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
-	EvaluationResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
+	SearchResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
 
 	AlphaBetaResult AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
 	int count = 0;

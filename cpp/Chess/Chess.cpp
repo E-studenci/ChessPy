@@ -110,7 +110,7 @@ int main()
      b9.MakeMove(Move{ Coordinates{6,3}, Coordinates{4,3} });*/
 
      //std::cout << "\nperft, motherfuckers\n";
-     //Algorithms alg;
+     //SearchEngine alg;
      //std::string perft1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
       //<summary>
       //0 	1 	
@@ -233,7 +233,7 @@ int main()
     //Board bb{ "1rbqk2r/p1pp1p1p/6p1/2b1p3/p3P1nP/2PQ1N2/1P1B1PP1/RN2KB1R w KQk - 2 12" };
     ////Board bb{ "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10" };
     //Board bb{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" };
-    //Algorithms algg;
+    //SearchEngine algg;
     //start = std::chrono::high_resolution_clock::now();
     //auto res = algg.Root(&bb, 99, 120000);
     //std::cout << res.first.ToString();
@@ -261,7 +261,7 @@ int main()
 
     Board bb{ "rnbqkbnr/ppp1pppp/8/8/3P4/4P3/PP1P1PPP/RNBQKBNR b KQkq - 0 3" };
 
-    Algorithms algg{ MoveOrdererEnum::HANDCRAFTED, EvaluatorParams{true,true, false} };
+    SearchEngine algg{ MoveOrdererEnum::HANDCRAFTED, EvaluatorParams{true,true, false} };
     for (int i = 0; i < 1;i++) {
         auto res = algg.Root(&bb, 99, 1000, true, true);
         bb.MakeMove(res.bestMove);
