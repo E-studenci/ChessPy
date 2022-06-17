@@ -258,12 +258,11 @@ int main()
     //
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
     auto es = std::array<Coordinates, 8>{Coordinates{ 1,2 }};
+    Board bb{ "rn2kbnr/pp1q1ppp/B2p4/2p1pb2/Q2PP3/2P2N2/PP3PPP/RNB1K2R b KQkq - 4 6" };
 
-    Board bb{ "rnbqkbnr/ppp1pppp/8/8/3P4/4P3/PP1P1PPP/RNBQKBNR b KQkq - 0 3" };
-
-    SearchEngine algg{ static_cast<MoveOrdererEnum>(1), EvaluatorParams{true,true, false} };
+    SearchEngine algg{ static_cast<MoveOrdererEnum>(0), EvaluatorParams{true,true, false} };
     for (int i = 0; i < 1;i++) {
-        auto res = algg.Root(&bb, 99, 1000, true, true);
+        auto res = algg.Root(&bb, 99, 1000, false, false);
         bb.MakeMove(res.bestMove);
         std::cout << bb.ToString();
         std::cout << "\nreached depth: " << res.reachedDepth << "\n";

@@ -92,26 +92,23 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 			break; // Do not start a new ply
 		}
 		std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-		for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
-		{
-			for (const Move& move : keyValuePair.second)
-			{
-				//alpha = MIN;
-				//beta = MAX;
-				board->MakeMove(move);
-				//score = -this->AlphaBeta(board, alpha, beta, depth);
-				auto result = this->AlphaBeta(board, -beta, -alpha, depth - 1);
-				score = -result.score;
-				nodeCount += result.nodeCount;
-				board->Pop();
-				if (this->timer.Poll(this->count)) {
-					break; // Discard
-				}
-				if (score > alpha) {
-					alpha = score;
-					bestScoreCurrentDepth = score;
-					bestMoveCurrentDepth = move;
-				}
+		std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0);
+		for (const Move& move : currentLegalMovesSorted) {
+			//alpha = MIN;
+			//beta = MAX;
+			board->MakeMove(move);
+			//score = -this->AlphaBeta(board, alpha, beta, depth);
+			auto result = this->AlphaBeta(board, -beta, -alpha, depth - 1);
+			score = -result.score;
+			nodeCount += result.nodeCount;
+			board->Pop();
+			if (this->timer.Poll(this->count)) {
+				break; // Discard
+			}
+			if (score > alpha) {
+				alpha = score;
+				bestScoreCurrentDepth = score;
+				bestMoveCurrentDepth = move;
 			}
 		}
 		if (this->timer.Poll(this->count)) {
@@ -145,24 +142,21 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 				break; // Do not start a new ply
 			}
 			std::map<Coordinates, std::vector<Move>> currentLegalMovesOpponent = opponentBoard.GetAllLegalMoves();
-			for (const std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMovesOpponent)
-			{
-				for (const Move& move : keyValuePair.second)
-				{
-					//alpha = MIN;
-					//beta = MAX;
-					opponentBoard.MakeMove(move);
-					//score = -this->AlphaBeta(board, alpha, beta, depth);
-					scoreOpponent = -this->AlphaBeta(&opponentBoard, -betaOpponent, -alphaOpponent, depth - 1).score;
-					opponentBoard.Pop();
-					if (this->timer.Poll(this->count)) {
-						break; // Discard
-					}
-					if (scoreOpponent > alphaOpponent) {
-						alphaOpponent = scoreOpponent;
-						bestScoreCurrentDepthOpponent = scoreOpponent;
-						bestMoveCurrentDepthOpponent = move;
-					}
+			std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0);
+			for (const Move& move : currentLegalMovesSorted) {
+				//alpha = MIN;
+				//beta = MAX;
+				opponentBoard.MakeMove(move);
+				//score = -this->AlphaBeta(board, alpha, beta, depth);
+				scoreOpponent = -this->AlphaBeta(&opponentBoard, -betaOpponent, -alphaOpponent, depth - 1).score;
+				opponentBoard.Pop();
+				if (this->timer.Poll(this->count)) {
+					break; // Discard
+				}
+				if (scoreOpponent > alphaOpponent) {
+					alphaOpponent = scoreOpponent;
+					bestScoreCurrentDepthOpponent = scoreOpponent;
+					bestMoveCurrentDepthOpponent = move;
 				}
 			}
 			if (this->timer.Poll(this->count)) {
