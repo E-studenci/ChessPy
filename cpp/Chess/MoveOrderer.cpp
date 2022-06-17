@@ -74,12 +74,14 @@ double MoveOrdererHandcrafted::MoveValue(const Board* board, Move* move)
 	return score+ ran;*/
 	return score;
 }
-#if DEBUG || RELEASE
+#if defined(_DEBUG) || defined(NDEBUG)
 double MoveOrdererTraining::MoveValue(const Board* board, Move* move)
 {
 return 0;
 }
+
 #else
+
 #include "Python.h"
 #include "wrapper.h"
 
