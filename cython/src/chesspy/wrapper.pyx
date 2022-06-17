@@ -209,7 +209,7 @@ try:
 except:
     EVAL_FUNC = None
 
-cdef public double evaluateMove(const CppBoard& board, CppMove& move):
+cdef public double evaluateMove(const CppBoard* board, CppMove* move):
     if EVAL_FUNC:
         return EVAL_FUNC()
     return 0

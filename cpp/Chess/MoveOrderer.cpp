@@ -74,13 +74,12 @@ double MoveOrdererHandcrafted::MoveValue(const Board* board, Move* move)
 	return score+ ran;*/
 	return score;
 }
-#ifndef __PYX_HAVE_chesspy
- double MoveOrdererTraining::MoveValue(const Board* board, Move* move)
- {
- 	return 0;
- }
-#endif
-#ifdef __PYX_HAVE_chesspy
+#if DEBUG || RELEASE
+double MoveOrdererTraining::MoveValue(const Board* board, Move* move)
+{
+return 0;
+}
+#else
 #include "Python.h"
 #include "wrapper.h"
 
