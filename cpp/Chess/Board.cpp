@@ -1260,3 +1260,7 @@ PieceCharacteristics Board::GetPieceMovement(int piece)
 {
     return this->pieceMovement[piece - 1];
 }
+
+Board* Board::Clone() {
+	return new Board(*this);
+}
