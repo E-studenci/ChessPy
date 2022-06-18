@@ -1,0 +1,15 @@
+data_path: "data/positions.fen"
+max_game_length: 5
+max_move_time: 500
+max_depth: 10
+
+# ignore, only for hydra
+defaults:
+    - _self_
+    - override hydra/hydra_logging: disabled
+    - override hydra/job_logging: disabled
+
+hydra:
+    output_subdir: null
+    run:
+        dir: .
