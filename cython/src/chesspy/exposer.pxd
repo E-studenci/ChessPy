@@ -37,6 +37,7 @@ cdef extern from "Board.h":
         string ToString()
         vector[vector[int]] GetBoard()
         vector[string] fenHistory
+        CppBoard* Clone()
 
 
 cdef extern from "SearchEngine.h":

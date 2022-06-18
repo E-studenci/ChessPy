@@ -46,6 +46,7 @@ public:
 	}
 	Zobrist hash;
 	std::vector<std::string> fenHistory;
+	Board* Clone();
 
 private:
 	std::array<PieceCharacteristics, 12> pieceMovement;

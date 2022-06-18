@@ -1,7 +1,7 @@
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
 
-std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
+std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
 {
 	std::multiset<std::reference_wrapper<Move>> result;
 	for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : moves)
@@ -23,7 +23,7 @@ std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(const Board&
 	}
 	return result;
 }
-double MoveOrdererHandcrafted::MoveValue(const Board* board, Move* move)
+double MoveOrdererHandcrafted::MoveValue(Board* board, Move* move)
 {
 	double score = 0;
 	int movingPiece = board->board[move->origin.row][move->origin.column];
@@ -75,7 +75,7 @@ double MoveOrdererHandcrafted::MoveValue(const Board* board, Move* move)
 	return score;
 }
 #if defined(SKIPCYTHON)
-double MoveOrdererTraining::MoveValue(const Board* board, Move* move)
+double MoveOrdererTraining::MoveValue(Board* board, Move* move)
 {
 return 0;
 }
@@ -86,7 +86,7 @@ return 0;
 #include "wrapper.h"
 
 
-double MoveOrdererTraining::MoveValue(const Board* board, Move* move)
+double MoveOrdererTraining::MoveValue(Board* board, Move* move)
 {
 	double score = 0;
 	PyImport_AppendInittab("chesspy", PyInit_chesspy);

@@ -94,8 +94,9 @@ class MoveDict(dict):
 cdef class Board:
     cdef CppBoard*instance
 
-    def __cinit__(self, char *fen):
-        self.instance = new CppBoard(fen)
+    def __cinit__(self, fen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', init=True):
+        if init:
+            self.instance = new CppBoard(fen)
 
     def __dealloc__(self):
         del self.instance
@@ -181,7 +182,7 @@ cdef class SearchEngine:
 
     def __cinit__(self, move_ordering_type: MoveOrderingType = None):
         if move_ordering_type:
-            self.instance = new CppSearchEngine(move_ordering_type)
+            self.instance = new CppSearchEngine(int(move_ordering_type))
         else:
             self.instance = new CppSearchEngine()
 
@@ -203,13 +204,15 @@ cdef class SearchEngine:
         bestOpponentMove.instance = result.bestOpponentMove.Clone()
         return SearchResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove, result.nodeCount)
 
-try:
-    import exposed
-    EVAL_FUNC = exposed.evaluate_move
-except:
-    EVAL_FUNC = None
 
-cdef public double evaluateMove(const CppBoard* board, CppMove* move):
-    if EVAL_FUNC:
-        return EVAL_FUNC()
-    return 0
+cdef public double evaluateMove(CppBoard* board, CppMove* move):
+    py_board = Board(init=False)
+    py_board.instance = board.Clone()
+    py_move = Move()
+    py_move.instance = move.Clone()
+
+    try:
+        import exposed
+        return exposed._FUNC(py_board, py_move)
+    except:
+        return 0.0
