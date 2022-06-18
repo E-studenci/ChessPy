@@ -11,6 +11,16 @@
 #include <unordered_map>
 #include <map>
 #include "Zobrist.h"
+
+enum GameStatusEnum {
+	ONGOING,
+	STALEMATE,
+	MATE,
+	THREEFOLD_REPETITION,
+	FIFTY_MOVER_ULE,
+	INSUFFICIENT_MATERIAL
+};
+
 class Board
 {
 public:
@@ -27,7 +37,8 @@ public:
 	Board() : Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 	~Board();
 	std::vector<std::vector<int>> GetBoard();
-	std::map<Coordinates, std::vector<Move>> GetAllLegalMoves();
+	std::vector<Move> GetAllLegalMoves();
+	int GetGameStatus();
 	bool KingInCheck(bool opponent = false);
 	void Pop(bool saveBoard=false);																			 // unmake the last move
 	void MakeMove(const Move& move, bool saveBoard=false);														 // commit a move
@@ -44,6 +55,7 @@ public:
 	bool FifyMoveRuleDraw() {
 		return this->seventyFiveMoveRuleCounter > 99;
 	}
+	bool InsufficientMaterial();
 	Zobrist hash;
 	std::vector<std::string> fenHistory;
 
@@ -59,7 +71,7 @@ private:
 	std::array<std::map<Coordinates, std::array<Coordinates, 8>>, 2> pinLines; // 0-white, 1-black, the key is the pinned piece
 
 	std::vector<uint64_t> boardHistory; // all past positions for the threefold repetion rule
-	std::map<Coordinates, std::vector<Move>> allLegalMoves;		 // piece_position: moves
+	std::vector<Move> allLegalMoves;		 // piece_position: moves
 	bool movesAreCalculated = false;
 
 	void CalculateLegalMoves();

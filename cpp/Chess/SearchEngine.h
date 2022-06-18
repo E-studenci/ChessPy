@@ -22,7 +22,6 @@ struct SearchResult{
 	Move bestOpponentMove = Move();
 	int reachedDepth = 0;
 	std::vector<int> nodeCount = std::vector<int>();
-
 	SearchResult() {
 		this->bestMove = Move();
 		this->scoreAfterBestMove = 0;
@@ -61,10 +60,11 @@ public:
 		this->table.init();
 		this->_moveOrderer = new MoveOrdererHandcrafted();
 		this->_evaluator = new Evaluator();
+		this->skipHashTables = false;
 	}
 	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams) {}
 	SearchEngine(int moveOrderer) : SearchEngine(moveOrderer, EvaluatorParams()) {}
-	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams) {
+	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams, bool skipHashTables = false) {
 		this->table = TranspositionTable{};
 		this->table.init();
 		switch (moveOrdererEnum) {
@@ -76,6 +76,7 @@ public:
 				break;
 		}
 		this->_evaluator = new Evaluator(evaluatorParams);
+		this->skipHashTables = skipHashTables;
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	SearchResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
@@ -85,6 +86,8 @@ public:
 	int max_depth = 0;
 	TranspositionTable table;
 private:
+
+	bool skipHashTables = false;
 	Timer timer;
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	AlphaBetaResult Quiescence(Board* board, int alpha, int beta, int ply=0);

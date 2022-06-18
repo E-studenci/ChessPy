@@ -466,7 +466,7 @@ void Board::Pop(bool saveBoard)
     }
 }
 
-std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves()
+std::vector<Move> Board::GetAllLegalMoves()
 {
     if (!movesAreCalculated)
     {
@@ -476,6 +476,21 @@ std::map<Coordinates, std::vector<Move>> Board::GetAllLegalMoves()
         this->movesAreCalculated = true;
     }
     return this->allLegalMoves;
+}
+int Board::GetGameStatus()
+{
+    if (this->GetAllLegalMoves().size() == 0) {
+        if (this->KingInCheck())
+            return GameStatusEnum::MATE;
+        return GameStatusEnum::STALEMATE;
+    }
+    if (this->FifyMoveRuleDraw())
+        return GameStatusEnum::FIFTY_MOVER_ULE;
+    if (this->ThreeFoldRepetition())
+        return GameStatusEnum::THREEFOLD_REPETITION;
+    if (this->InsufficientMaterial())
+        return GameStatusEnum::INSUFFICIENT_MATERIAL;
+    return GameStatusEnum::ONGOING;
 }
 bool Board::KingInCheck(bool opponent)
 {
@@ -497,8 +512,8 @@ void Board::CalculateLegalMoves()
         // If there are > 1 attack lines (double check):
         // only the king can move
         std::vector<Move> kingMoves = CalculateLegalMovesForPiece(this->kingPos[sideToMove], this->sideToMove ? 7 : 1, this->sideToMove);
-        if (kingMoves.size() > 0)
-            this->allLegalMoves.insert({this->kingPos[sideToMove], kingMoves});
+        if (kingMoves.size() >0)
+            this->allLegalMoves.insert(this->allLegalMoves.end(), kingMoves.begin(), kingMoves.end());
     }
     else
     {
@@ -513,8 +528,7 @@ void Board::CalculateLegalMoves()
                     if (movingPieceColor == this->sideToMove)
                     {
                         std::vector<Move> pieceMoves = CalculateLegalMovesForPiece(Coordinates(row, column), movingPiece, movingPieceColor);
-                        if (pieceMoves.size() > 0)
-                            this->allLegalMoves.insert({Coordinates(row, column), pieceMoves});
+                        this->allLegalMoves.insert(this->allLegalMoves.end(), pieceMoves.begin(), pieceMoves.end());
                     }
                 }
             }
@@ -1102,17 +1116,14 @@ std::string Board::LegalMovesToString() {
         {12, "p"},
         {6, "P"} };
     std::string retString = "\n";
-    for (const std::pair<Coordinates, std::vector<Move>>& keyValuePair : this->allLegalMoves) {
-        retString += Coordinates::ToString(keyValuePair.first) += ": ";
-        for (const Move& move : keyValuePair.second) {
-            retString += Coordinates::ToString(move.destination);
-            if (move.promotion != 0) {
-                retString += "=" + pieceMap[move.promotion];
-            }
-            retString += ", ";
+    for (const Move& move : this->GetAllLegalMoves()) {
+        retString += Coordinates::ToString(move.destination);
+        if (move.promotion != 0) {
+            retString += "=" + pieceMap[move.promotion];
         }
-        retString += "\n";
+        retString += ", ";
     }
+    retString += "\n";
     return retString;
 }
 Board::~Board()
@@ -1149,6 +1160,39 @@ std::array<std::array<std::array<bool, 8>, 8>, 16> Board::GetNeuralNetworkRepres
         }
     }
     return retArray;
+}
+
+bool Board::InsufficientMaterial()
+{
+    std::array<int, 2>knightCount;
+    std::array<int, 2>bishopCount;
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            int piece = this->board[row][column];
+            if (piece != 0) {
+                if (piece != 1 && piece != 7
+                    && piece != 3 && piece != 9
+                    && piece != 4 && piece != 10) {
+                    return false;
+                }
+                else if (piece == 3 || piece == 9)
+                    knightCount[piece > 6]++;
+                else if (piece == 4 || piece == 10)
+                    bishopCount[piece > 6]++;
+            }
+        }
+    }
+    for (int color = 0; color < 2;color++) {
+        if (bishopCount[color] == 0 && knightCount[color] == 0) {
+            if (bishopCount[!color] == 0 && knightCount[!color] == 0)
+                return true; // K vs K
+            if (bishopCount[!color] == 1 && knightCount[!color] == 0)
+                return true; // K vs KB
+            if (bishopCount[!color] == 0)
+                return true; // K vs KNN or K vs KN
+        }
+    }
+    return false;
 }
 
 void Board::InitPieceMovement()

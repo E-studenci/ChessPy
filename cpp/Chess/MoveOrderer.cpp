@@ -1,24 +1,21 @@
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
 
-std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(const Board& board, std::map<Coordinates, std::vector<Move>>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
+std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(const Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
 {
 	std::multiset<std::reference_wrapper<Move>> result;
-	for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : moves)
+	for (Move& move : moves)
 	{
-		for (Move& move : keyValuePair.second)
-		{
-			if (!only_captures ||
-				(board.board[move.destination.row][move.destination.column] != 0 ||
-					(move.destination == board.enPassant &&
-						(board.board[move.destination.row][move.destination.column] == 6 ||
-							board.board[move.destination.row][move.destination.column] == 12)))) { // any move is accepted or the move is a capture
-				if (hashedMove && (move.Hash() == bestMoveHash))
-					move.score = 10000000;
-				else
-					move.score = this->MoveValue(&board, &move);
-				result.insert(move);
-			}
+		if (!only_captures ||
+			(board.board[move.destination.row][move.destination.column] != 0 ||
+				(move.destination == board.enPassant &&
+					(board.board[move.destination.row][move.destination.column] == 6 ||
+						board.board[move.destination.row][move.destination.column] == 12)))) { // any move is accepted or the move is a capture
+			if (hashedMove && (move.Hash() == bestMoveHash))
+				move.score = 10000000;
+			else
+				move.score = this->MoveValue(&board, &move);
+			result.insert(move);
 		}
 	}
 	return result;

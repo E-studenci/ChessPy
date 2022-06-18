@@ -18,26 +18,23 @@ std::tuple<int, std::vector<std::tuple<Move, int>>> SearchEngine::Perft(Board *b
 {
 	std::tuple<int, std::vector<std::tuple<Move, int>>> result; // result[0] - legalMoveCount, result[1] - legalMoveCount for move (used for divide)
 
-	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
-	for (const std::pair<const Coordinates, std::vector<Move>> &keyValuePair : currentLegalMoves)
+	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
+	for (const Move &move : currentLegalMoves)
 	{
-		for (const Move &move : keyValuePair.second)
+		int res = 0;
+		if (depth == 1)
 		{
-			int res = 0;
-			if (depth == 1)
-			{
-				res = 1;
-			}
-			else
-			{
-				board->MakeMove(move);
-				res = std::get<0>(Perft(board, depth - 1));
-				board->Pop();
-			}
-			std::get<0>(result) += res;
-			if (divide) {
-				std::get<1>(result).push_back(std::tuple<Move, int>{ move, res });
-			}
+			res = 1;
+		}
+		else
+		{
+			board->MakeMove(move);
+			res = std::get<0>(Perft(board, depth - 1));
+			board->Pop();
+		}
+		std::get<0>(result) += res;
+		if (divide) {
+			std::get<1>(result).push_back(std::tuple<Move, int>{ move, res });
 		}
 	}
 	return result;
@@ -91,7 +88,7 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 		if (this->timer.Poll(this->count)) {
 			break; // Do not start a new ply
 		}
-		std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
+		std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
 		std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0);
 		for (const Move& move : currentLegalMovesSorted) {
 			//alpha = MIN;
@@ -141,7 +138,7 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 			if (this->timer.Poll(this->count)) {
 				break; // Do not start a new ply
 			}
-			std::map<Coordinates, std::vector<Move>> currentLegalMovesOpponent = opponentBoard.GetAllLegalMoves();
+			std::vector<Move> currentLegalMovesOpponent = opponentBoard.GetAllLegalMoves();
 			std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0);
 			for (const Move& move : currentLegalMovesSorted) {
 				//alpha = MIN;
@@ -194,36 +191,37 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 	if (found && !(en.cutoff == EntryType::EMPTY_ENTRY)) {
 		foundHashedMove = true;
 		bestMoveHash = en.move_hash;
-		if (en.depth >= depthLeft) {
-			switch (en.cutoff) {
-			case EntryType::LOWERBOUND:
-				if (en.score > alpha) {
-					alpha = en.score;
+		if (!this->skipHashTables)
+			if (en.depth >= depthLeft) {
+				switch (en.cutoff) {
+				case EntryType::LOWERBOUND:
+					if (en.score > alpha) {
+						alpha = en.score;
+					}
+					break;
+				case EntryType::UPPERBOUND:
+					if (en.score < beta) {
+						beta = en.score;
+						foundHashedMove = false;
+					}
+					break;
+				case EntryType::EXACT:
+					return AlphaBetaResult(en.score, nodeCount);
+					break;
 				}
-				break;
-			case EntryType::UPPERBOUND:
-				if (en.score < beta) {
-					beta = en.score;
-					foundHashedMove = false;
-				}
-				break;
-			case EntryType::EXACT:
-				return AlphaBetaResult(en.score, nodeCount);
-				break;
+				if (alpha >= beta)
+					return AlphaBetaResult(en.score, nodeCount);
 			}
-			if (alpha >= beta)
-				return AlphaBetaResult(en.score, nodeCount);
-		}
 	}
 	if (depthLeft <= 0) {
-		//return AlphaBetaResult(this->EvaluatePosition(board), nodeCount);
+		//return AlphaBetaResult(this->_evaluator->Evaluate(*board), nodeCount);
 		auto result = this->Quiescence(board, alpha, beta);
 		return AlphaBetaResult(result.score, nodeCount);
 	}
 	int origAlpha = alpha;
 	int bestScore = AlgorithmsConsts::MIN;
 	Move bestMove = Move{};
-	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
+	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
 
 	//if (board->KingInCheck())
 	//	depthLeft++;
@@ -292,7 +290,7 @@ AlphaBetaResult SearchEngine::Quiescence(Board* board, int alpha, int beta, int 
 	if (alpha < stand_pat)
 		alpha = stand_pat;
 
-	std::map<Coordinates, std::vector<Move>> currentLegalMoves = board->GetAllLegalMoves();
+	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
 	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, true);
 	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 	//{

@@ -109,9 +109,7 @@ int main()
      b9.GetAllLegalMoves();
      b9.MakeMove(Move{ Coordinates{6,3}, Coordinates{4,3} });*/
 
-     //std::cout << "\nperft, motherfuckers\n";
-     //SearchEngine alg;
-     //std::string perft1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    
       //<summary>
       //0 	1 	
       //1 	20 
@@ -148,9 +146,6 @@ int main()
     // std::string perft4b = "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1";
     // std::string perft5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
     // std::string perft6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
-
-     //Board* b = new Board{ perft1 };
-    //auto start = std::chrono::high_resolution_clock::now();
     //std::cout << b->ToString();
     //b->MakeMove(Move{ Coordinates{"g1"}, Coordinates{"h1"} });
     //std::cout << b->ToString();
@@ -165,6 +160,11 @@ int main()
     //b->GetAllLegalMoves();
     //std::cout << alg.PerftStarterSingleThread(b,1, true) << "\n";
 
+    //std::cout << "\nperft, motherfuckers\n";
+    //SearchEngine alg;
+    //std::string perft1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    //Board* b = new Board{ perft1 };
+    //auto start = std::chrono::high_resolution_clock::now();
     //std::cout << alg.PerftStarterSingleThread(b, 1) << "\n";
     //std::cout << alg.PerftStarterSingleThread(b, 2) << "\n";
     //std::cout << alg.PerftStarterSingleThread(b, 3) << "\n";
@@ -177,12 +177,12 @@ int main()
     std::cout << alg.PerftStarterSingleThread(b, 10) << "\n";
     std::cout << alg.PerftStarterSingleThread(b, 11) << "\n";*/
     //std::cout << alg.PerftStarterSingleThread(b, 12) << "\n";
-
-
-
     //std::chrono::steady_clock::time_point stop = std::chrono::high_resolution_clock::now();
     //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     //std::cout << duration.count() << std::endl;
+
+
+
     /*auto start = std::chrono::high_resolution_clock::now();
     Board b4("r1b1k3/p1p2ppp/1pnp1q1r/1Q2pn2/PbNP2B1/1P2NPR1/2PBPKPP/1R6 w q - 1 1");
     for (int i = 0; i < 1000000; i++) {
@@ -258,7 +258,7 @@ int main()
     //
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
     auto es = std::array<Coordinates, 8>{Coordinates{ 1,2 }};
-    Board bb{ "rn2kbnr/pp1q1ppp/B2p4/2p1pb2/Q2PP3/2P2N2/PP3PPP/RNB1K2R b KQkq - 4 6" };
+    Board bb{ "1b1r1rk1/6q1/p2p1p2/2pP2p1/6PR/P1N1B3/1P1RQPK1/8 b - - 0 43" };
 
     SearchEngine algg{ static_cast<MoveOrdererEnum>(0), EvaluatorParams{true,true, false} };
     for (int i = 0; i < 1;i++) {
@@ -269,7 +269,10 @@ int main()
         std::cout << "\nhalf turn: " << i;
         std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
         std::cout << "\neval: " << std::to_string(res.evaluation);
-        std::cout << "\nnodes on last depth: " << std::to_string(res.nodeCount[res.nodeCount.size()-1]);
+        std::cout << "\nnodes: ";
+        for (int nodes: res.nodeCount)
+            std::cout << std::to_string(nodes)<<", ";
+        std::cout << "\nfen: " << bb.ToFen();
     }
     //start = std::chrono::high_resolution_clock::now();
     //auto res = algg.Root(&bb, 99, 2000);
