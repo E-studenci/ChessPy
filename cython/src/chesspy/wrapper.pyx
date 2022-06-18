@@ -87,9 +87,18 @@ cdef class Move:
 class MoveDict(dict):
     def __getitem__(self, val):
         if isinstance(val, tuple):
-            val = Coordinates(*val)        
+            val = Coordinates(*val)
         return super().__getitem__(val)
-    
+
+
+class GameStatus(enum.IntEnum):
+    ONGOING = 0
+    STALEMATE = 1
+    MATE = 2
+    THREEFOLD_REPETITION = 3
+    FIFTY_MOVER_RULE = 4
+    INSUFFICIENT_MATERIAL = 5
+
 
 cdef class Board:
     cdef CppBoard*instance
@@ -107,6 +116,10 @@ cdef class Board:
     @property
     def board(self):
         return self.instance.GetBoard()
+    
+    @property
+    def game_status(self):
+        return GameStatus(self.instance.GetGameStatus())
 
     @property
     def fen_history(self):
@@ -135,21 +148,12 @@ cdef class Board:
         self.instance.Pop(True)
     
     def get_all_legal_moves(self):
-        result = MoveDict()
-        mappings = self.instance.GetAllLegalMoves()
-        for pair in mappings:
-            cords = pair.first
-            moves = pair.second
-            converted_moves = []
-            for i in range(moves.size()):
-                x = moves[i].origin.row
-                py_move = Move(
-                    Coordinates(moves[i].origin.row, moves[i].origin.column),
-                    Coordinates(moves[i].destination.row, moves[i].destination.column),
-                    moves[i].promotion
-                ) 
-                converted_moves.append(py_move)
-            result[Coordinates(cords.row, cords.column)] = converted_moves
+        result = []
+        moves = self.instance.GetAllLegalMoves()
+        for i in range(moves.size()):
+            py_move = Move()
+            py_move.instance = moves[i].Clone()
+            result.append(py_move)
         return result
 
 
@@ -171,7 +175,7 @@ class SearchResult:
         self.node_count = node_count
 
 
-class MoveOrderingType(enum.Enum):
+class MoveOrderingType(enum.IntEnum):
     HANDCRAFTED = 0
     TRAINING = 1
     MODEL = 2
@@ -180,11 +184,8 @@ class MoveOrderingType(enum.Enum):
 cdef class SearchEngine:
     cdef CppSearchEngine*instance
 
-    def __cinit__(self, move_ordering_type: MoveOrderingType = None):
-        if move_ordering_type:
-            self.instance = new CppSearchEngine(int(move_ordering_type))
-        else:
-            self.instance = new CppSearchEngine()
+    def __cinit__(self, move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED, use_hash_tables: bool = True):
+        self.instance = new CppSearchEngine(int(move_ordering_type), use_hash_tables)
 
     def __dealloc__(self):
         del self.instance
@@ -202,7 +203,14 @@ cdef class SearchEngine:
         bestOpponentMove = Move()
         bestMove.instance = result.bestMove.Clone()
         bestOpponentMove.instance = result.bestOpponentMove.Clone()
-        return SearchResult(result.evaluation, result.scoreAfterBestMove, result.reachedDepth, bestMove, bestOpponentMove, result.nodeCount)
+        return SearchResult(
+            result.evaluation,
+            result.scoreAfterBestMove,
+            result.reachedDepth,
+            bestMove,
+            bestOpponentMove,
+            result.nodeCount
+        )
 
 
 cdef public double evaluateMove(CppBoard* board, CppMove* move):

@@ -16,6 +16,14 @@ class Move:
         self, origin: Coordinates, destination: Coordinates, promotion: int = 0
     ) -> None: ...
 
+class GameStatus(enum.IntEnum):
+    ONGOING = 0
+    STALEMATE = 1
+    MATE = 2
+    THREEFOLD_REPETITION = 3
+    FIFTY_MOVER_RULE = 4
+    INSUFFICIENT_MATERIAL = 5
+
 class Board:
     board: list[list[int]]
     fen_history: list[str]
@@ -27,7 +35,7 @@ class Board:
     def __init__(self, fen: bytes) -> None: ...
     def make_move(self, move: Move) -> None: ...
     def pop_move(self) -> None: ...
-    def get_all_legal_moves(self) -> dict[Coordinates, list[Move]]: ...
+    def get_all_legal_moves(self) -> list[Move]: ...
 
 class SearchResult:
     evaluation: int
@@ -37,7 +45,7 @@ class SearchResult:
     best_opponent_move: Move
     node_count: list[int]
 
-class MoveOrderingType(enum.Enum):
+class MoveOrderingType(enum.IntEnum):
     HANDCRAFTED = 0
     TRAINING = 1
     MODEL = 2
@@ -45,7 +53,11 @@ class MoveOrderingType(enum.Enum):
 class SearchEngine:
     count: int
 
-    def __init__(self, move_ordering_type: MoveOrderingType = None) -> None: ...
+    def __init__(
+        self,
+        move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED,
+        use_hash_tables: bool = True,
+    ) -> None: ...
     def perft(self, board: Board, depth: int) -> int: ...
     def root(
         self,

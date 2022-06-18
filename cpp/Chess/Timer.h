@@ -16,6 +16,6 @@ public:
 		return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start) > allocatedTime;
 	}
 private:
-	std::chrono::steady_clock::time_point start;
+	std::chrono::system_clock::time_point start;
 	std::chrono::milliseconds allocatedTime;
 };

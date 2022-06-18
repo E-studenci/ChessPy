@@ -62,8 +62,8 @@ public:
 		this->_evaluator = new Evaluator();
 		this->skipHashTables = false;
 	}
-	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams) {}
-	SearchEngine(int moveOrderer) : SearchEngine(moveOrderer, EvaluatorParams()) {}
+	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams, bool skipHashTables) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams, skipHashTables) {}
+	SearchEngine(int moveOrderer, bool skipHashTables) : SearchEngine(moveOrderer, EvaluatorParams(), skipHashTables) {}
 	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams, bool skipHashTables = false) {
 		this->table = TranspositionTable{};
 		this->table.init();

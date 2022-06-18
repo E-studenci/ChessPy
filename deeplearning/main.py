@@ -9,7 +9,7 @@ import reinforcement.environment as env
 @hydra.main(config_path="config", config_name="default.yaml", version_base=None)
 def main(config):
     for board in env.GameProvider(config.data_path):
-        engine = chesspy.SearchEngine(0)
+        engine = chesspy.SearchEngine(chesspy.MoveOrderingType.TRAINING)
         for result in env.GameManager(
             board,
             engine,
