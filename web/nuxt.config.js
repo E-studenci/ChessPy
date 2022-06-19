@@ -54,7 +54,7 @@ export default {
     // module options
     sockets: [{
       name: 'main',
-      url: 'http://localhost:3000'
+      url: 'http://localhost:5000'
     }]
   },
 

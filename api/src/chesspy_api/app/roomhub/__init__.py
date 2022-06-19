@@ -3,10 +3,11 @@ import uuid
 import enum
 import random
 import threading
-
+from functools import partial
 import flask
 import chesspy
 import flask_socketio as fs
+from flask import request
 
 
 class GameStatus(enum.Enum):
@@ -27,7 +28,7 @@ class Player:
         self.is_bot = is_bot
 
 
-def move_from_dict(self, move):
+def move_from_dict(move):
     return chesspy.Move(
         chesspy.Coordinates(move["origin_row"], move["origin_column"]),
         chesspy.Coordinates(move["destination_row"], move["destination_column"]),
@@ -35,7 +36,7 @@ def move_from_dict(self, move):
     )
 
 
-def move_to_dict(self, move):
+def move_to_dict(move):
     return {
         "origin_row": move.origin.row,
         "origin_column": move.origin.column,
@@ -45,19 +46,23 @@ def move_to_dict(self, move):
     }
 
 
+def coordinates_to_dict(coordinates):
+    return "row" + str(coordinates.row) + "column" + str(coordinates.column)
+
+
 def bot_make_move(board, room_id):
     from chesspy_api import ROOM_HUB
 
     engine = chesspy.SearchEngine(0)
     result = engine.root(board, 99, 1000)
     best_move = result.best_move
-    ROOM_HUB.make_move({"room_id": room_id, "move": move_from_dict(best_move)})
+    ROOM_HUB.make_move(True, {"room_id": room_id, "move": move_to_dict(best_move)})
 
 
+# SOCKET = None
 class RoomHub:
     open_rooms: list["Room"] = {}
     rooms: dict[uuid.UUID, "Room"] = {}
-    socket = fs.SocketIO()
 
     def __init__(
         self, flask_app: flask.Flask, logger, cors_allowed_origins="*"
@@ -68,36 +73,43 @@ class RoomHub:
             engineio_logger=True,
             cors_allowed_origins=cors_allowed_origins,
         )  # TODO: TEMP
+        self.socket.on_event("find_game", self.find_game)
+        self.socket.on_event("make_move", partial(self.make_move, is_bot=False))
+        self.socket.on_event("disconnect", self.disconnected)
 
-    @socket.on("find_game")
     def find_game(self, json_data):
-        data = json.load(json_data)
+        data = json_data
         if data["against_bot"]:
-            game_room = Room(uuid.uuid1, fs.request.sid, self.socket)
+            game_room = Room(uuid.uuid1, Player(request.sid, False), self.socket)
             self.rooms[game_room.id] = game_room
-            self.socket.join_room(game_room.id)
+            fs.join_room(game_room.id)
+            self.socket.emit(
+                "find_game",
+                json.dumps({"found": True, "message": "Found an open bot!"}),
+                to=game_room.id,
+            )
             game_room.add_player(Player(-1, True))
             self.start_room(game_room.id)
         else:
             if len(self.open_rooms > 0):
                 game_room = self.open_rooms.pop()
-                self.socket.join_room(game_room.id)
+                fs.join_room(game_room.id)
                 self.socket.emit(
                     "find_game",
                     json.dumps({"found": True, "message": "Found an opponent"}),
                     to=game_room.id,
                 )
-                game_room.add_player(Player(fs.request.sid, False))
+                game_room.add_player(Player(request.sid, False))
                 self.rooms[game_room.id] = game_room
                 self.start_room(game_room.id)
             else:
-                game_room = Room(uuid.uuid1, Player(fs.request.sid, False), self.socket)
+                game_room = Room(uuid.uuid1, Player(request.sid, False), self.socket)
                 self.open_rooms.append(game_room)
-                self.socket.join_room(game_room.id)
+                fs.join_room(game_room.id)
                 self.socket.emit(
                     "find_game",
                     json.dumps({"found": False, "message": "Looking for an opponent"}),
-                    to=fs.request.sid,
+                    to=request.sid,
                 )
 
     def start_room(self, game_room_id):
@@ -113,6 +125,7 @@ class RoomHub:
         else:
             if res[0][0].is_bot:
                 bot_make_move(room.board, game_room_id)
+                self.socket.emit("game_started", json.dumps({"color": 1}), to=res[0][1])
             else:
                 self.socket.emit(
                     "game_started",
@@ -120,53 +133,66 @@ class RoomHub:
                     to=res[0][0],
                 )
 
-    @socket.on("make_move")
-    def make_move(self, json_data):
-        data = json.load(json_data)
-        room_id = data["room_id"]
-        if not self.rooms[room_id]:  # the room doesn't exist
-            self.socket.emit(
-                "make_move_error",
-                {"message": "The game does not exist"},
-                to=fs.request.sid,
-            )
-            return
-        else:
-            room = self.rooms[room_id]
-            result = room.make_move_check(
-                fs.request.sid, move_from_dict(data["move"])
-            )
-            if not result[0]:  # the move wasn't legal
+    def make_move(self, is_bot, json_data):
+        if not is_bot:
+            data = json_data
+            room_id = data["room_id"]
+            if not self.rooms[room_id]:  # the room doesn't exist
                 self.socket.emit(
-                    "make_move_error", {"message": result[1]}, to=fs.request.sid
+                    "make_move_error",
+                    {"message": "The game does not exist"},
+                    to=request.sid,
                 )
+                return
             else:
-                room.make_move(move_from_dict(data["move"]))
-                res = room.end_turn()
-                if not res[0]:  # the game ended after the move
-                    game_status = room.end_game()
-                    self.socket.emit("game_ended", json.dumps(game_status), to=room_id)
-                    self.socket.close_room(room_id)
+                room = self.rooms[room_id]
+                result = room.make_move_check(request.sid, move_from_dict(data["move"]))
+                if not result[0]:  # the move wasn't legal
+                    self.socket.emit(
+                        "make_move_error", {"message": result[1]}, to=request.sid
+                    )
                 else:
-                    self.socket.emit("turn_ended", json.dumps(res[1]), to=room_id)
-                    if (room.players[room.turn].is_bot):
-                        bot_make_move(room.board, room.id)
+                    room.make_move(move_from_dict(data["move"]))
+                    res = room.end_turn()
+                    if not res[0]:  # the game ended after the move
+                        game_status = room.end_game()
+                        self.socket.emit(
+                            "game_ended", json.dumps(game_status), to=room_id
+                        )
+                        self.socket.close_room(room_id)
+                    else:
+                        self.socket.emit("turn_ended", json.dumps(res[1]), to=room_id)
+                        if room.players[room.turn].is_bot:
+                            bot_make_move(room.board, room.id)
+        else:
+            data = json_data
+            room_id = data["room_id"]
+            room = self.rooms[room_id]
+            room.make_move(move_from_dict(data["move"]))
+            res = room.end_turn()
+            if not res[0]:  # the game ended after the move
+                game_status = room.end_game()
+                self.socket.emit("game_ended", json.dumps(game_status), to=room_id)
+                self.socket.close_room(room_id)
+            else:
+                self.socket.emit("turn_ended", json.dumps(res[1]), to=room_id)
+                if room.players[room.turn].is_bot:
+                    bot_make_move(room.board, room.id)
 
-    @socket.on("disconnect")
     def disconnected(self):
         for i, room in enumerate(self.open_rooms):
-            if fs.request.sid in room.players:
+            if request.sid in room.players:
                 self.socket.close_room(room.id)
                 self.open_rooms.remove(i)
         for room in self.rooms.values():
-            if fs.request.sid in room.players:
+            if request.sid in room.players:
                 room.end_game()
                 self.socket.emit(
                     "game_ended",
                     json.dumps(
                         {
                             "status": GameStatus.DISCONNECTED,
-                            "winner": 1 if room.players[0] == fs.request.sid else 0,
+                            "winner": 1 if room.players[0] == request.sid else 0,
                         }
                     ),
                     to=room.id,
@@ -207,19 +233,19 @@ class Room:
         random.shuffle(self.players)
         self.times = [600, 600]
         self.timer = RepeatTimer(1, self.timer_fun)
+        all_legal_moves = self.board.get_all_legal_moves()
         self.timer.start()
-        return (self.players, self.board.get_all_legal_moves())
+        moves_dict = list(map(lambda move: move_to_dict(move), all_legal_moves))
+        return (self.players, moves_dict)
 
     def make_move_check(self, player_id, chosen_move: chesspy.Move):
-        if not any(player == player_id for player in self.players):
+        if not any(player.id == player_id for player in self.players):
             return (False, "It's not your game")
         if self.players[self.turn] != player_id:
             return (False, "It's not your turn")
         if self.game_status != GameStatus.ONGOING:
             return (False, "The game is not active")
-        if not any(
-            chosen_move in moves for moves in self.board.get_all_legal_moves().values()
-        ):
+        if not any(chosen_move in moves for moves in self.board.get_all_legal_moves()):
             return (False, "No cheating!")
 
     def make_move(self, chosen_move):
@@ -228,7 +254,7 @@ class Room:
         self.times[self.turn] += self.time_after_turn
 
     def end_turn(self):
-        self.game_status = GameStatus(self.board.game_status())
+        self.game_status = GameStatus(self.board.game_status)
         self.turn = int(not self.turn)
         if self.game_status != GameStatus.ONGOING:
             return (False, self.board)
@@ -241,14 +267,8 @@ class Room:
                 {
                     "board": self.board.board,
                     "turn": self.turn,
-                    "legal_moves": dict(
-                        map(
-                            lambda key_val: (
-                                key_val[0],
-                                move_to_dict(key_val[1]),
-                                all_legal_moves,
-                            )
-                        )
+                    "legal_moves": (
+                        list(map(lambda move: move_to_dict(move), all_legal_moves))
                     ),
                     "king_in_check": self.board.check,
                 },
@@ -280,8 +300,8 @@ class Room:
             return {"status": self.game_status, "winner": not self.turn}
 
     def timer_fun(self):
-        self.timers[self.turn] -= 1
-        if self.timers[self.turn] <= 0:
+        self.times[self.turn] -= 1
+        if self.times[self.turn] <= 0:
             self.end_game()
         else:
             self.socket.emit("timers", json.dumps(self.times), to=self.id)
