@@ -1,3 +1,4 @@
+import json
 import uuid
 import enum
 import random
@@ -10,14 +11,47 @@ import flask_socketio as fs
 
 class GameStatus(enum.Enum):
     ONGOING = 0
-    CHECKMATE = 1
+    MATE = 1
     STALEMATE = 2
-    FIFTY_MOVES = 3
     THREEFOLD_REPETITION = 4
+    FIFTY_MOVER_RULE = 3
     INSUFFICIENT_MATERIAL = 5
     DRAW = 6
-    TIME_RUN_OUT = 7
+    TIME_RAN_OUT = 7
     DISCONNECTED = 8
+
+
+class Player:
+    def __init__(self, id, is_bot):
+        self.id = id
+        self.is_bot = is_bot
+
+
+def move_from_dict(self, move):
+    return chesspy.Move(
+        chesspy.Coordinates(move["origin_row"], move["origin_column"]),
+        chesspy.Coordinates(move["destination_row"], move["destination_column"]),
+        move["promotion"],
+    )
+
+
+def move_to_dict(self, move):
+    return {
+        "origin_row": move.origin.row,
+        "origin_column": move.origin.column,
+        "destination_row": move.destination.row,
+        "destination_column": move.destination.column,
+        "promotion": move.promotion,
+    }
+
+
+def bot_make_move(board, room_id):
+    from chesspy_api import ROOM_HUB
+
+    engine = chesspy.SearchEngine(0)
+    result = engine.root(board, 99, 1000)
+    best_move = result.best_move
+    ROOM_HUB.make_move({"room_id": room_id, "move": move_from_dict(best_move)})
 
 
 class RoomHub:
@@ -36,37 +70,59 @@ class RoomHub:
         )  # TODO: TEMP
 
     @socket.on("find_game")
-    def find_game(self):  # TODO: add options (game length)
-        if len(self.open_rooms > 0):
-            game_room = self.open_rooms.pop()
-            self.socket.join_room(game_room.id)
-            self.socket.emit(
-                "find_game",
-                {"found": True, "message": "Found an opponent"},
-                to=game_room.id,
-            )
-            game_room.add_player(fs.request.sid)
+    def find_game(self, json_data):
+        data = json.load(json_data)
+        if data["against_bot"]:
+            game_room = Room(uuid.uuid1, fs.request.sid, self.socket)
             self.rooms[game_room.id] = game_room
+            self.socket.join_room(game_room.id)
+            game_room.add_player(Player(-1, True))
             self.start_room(game_room.id)
         else:
-            game_room = Room(uuid.uuid1, fs.request.sid, self.socket)
-            self.open_rooms.append(game_room)
-            self.socket.join_room(game_room.id)
-            self.socket.emit(
-                "find_game",
-                {"found": False, "message": "Looking for an opponent"},
-                to=fs.request.sid,
-            )
+            if len(self.open_rooms > 0):
+                game_room = self.open_rooms.pop()
+                self.socket.join_room(game_room.id)
+                self.socket.emit(
+                    "find_game",
+                    json.dumps({"found": True, "message": "Found an opponent"}),
+                    to=game_room.id,
+                )
+                game_room.add_player(Player(fs.request.sid, False))
+                self.rooms[game_room.id] = game_room
+                self.start_room(game_room.id)
+            else:
+                game_room = Room(uuid.uuid1, Player(fs.request.sid, False), self.socket)
+                self.open_rooms.append(game_room)
+                self.socket.join_room(game_room.id)
+                self.socket.emit(
+                    "find_game",
+                    json.dumps({"found": False, "message": "Looking for an opponent"}),
+                    to=fs.request.sid,
+                )
 
     def start_room(self, game_room_id):
-        res = self.rooms[game_room_id].start_game()
-        self.socket.emit(
-            "game_started", {"color": 0, "legal_moves": res[1]}, to=res[0][0]
-        )
-        self.socket.emit("game_started", {"color": 1}, to=res[0][1])
+        room = self.rooms[game_room_id]
+        res = room.start_game()
+        if not any(player.is_bot for player in res[0]):
+            self.socket.emit(
+                "game_started",
+                json.dumps({"color": 0, "legal_moves": res[1]}),
+                to=res[0][0],
+            )
+            self.socket.emit("game_started", json.dumps({"color": 1}), to=res[0][1])
+        else:
+            if res[0][0].is_bot:
+                bot_make_move(room.board, game_room_id)
+            else:
+                self.socket.emit(
+                    "game_started",
+                    json.dumps({"color": 0, "legal_moves": res[1]}),
+                    to=res[0][0],
+                )
 
     @socket.on("make_move")
-    def make_move(self, data):
+    def make_move(self, json_data):
+        data = json.load(json_data)
         room_id = data["room_id"]
         if not self.rooms[room_id]:  # the room doesn't exist
             self.socket.emit(
@@ -76,21 +132,25 @@ class RoomHub:
             )
             return
         else:
-            result = self.rooms[room_id].make_move_check(fs.request.sid, data["move"])
+            room = self.rooms[room_id]
+            result = room.make_move_check(
+                fs.request.sid, move_from_dict(data["move"])
+            )
             if not result[0]:  # the move wasn't legal
                 self.socket.emit(
                     "make_move_error", {"message": result[1]}, to=fs.request.sid
                 )
             else:
-                self.rooms[room_id].make_move(data["move"])
-                res = self.rooms[room_id].end_turn()
+                room.make_move(move_from_dict(data["move"]))
+                res = room.end_turn()
                 if not res[0]:  # the game ended after the move
-                    game_status = self.rooms[room_id].end_game()
-                    self.socket.emit("game_ended", game_status, to=room_id)
+                    game_status = room.end_game()
+                    self.socket.emit("game_ended", json.dumps(game_status), to=room_id)
                     self.socket.close_room(room_id)
                 else:
-                    # TODO: add king checks to ret
-                    self.socket.emit("turn_ended", res[1], to=room_id)
+                    self.socket.emit("turn_ended", json.dumps(res[1]), to=room_id)
+                    if (room.players[room.turn].is_bot):
+                        bot_make_move(room.board, room.id)
 
     @socket.on("disconnect")
     def disconnected(self):
@@ -103,10 +163,12 @@ class RoomHub:
                 room.end_game()
                 self.socket.emit(
                     "game_ended",
-                    {
-                        "status": GameStatus.DISCONNECTED,
-                        "winner": 1 if room.players[0] == fs.request.sid else 0,
-                    },
+                    json.dumps(
+                        {
+                            "status": GameStatus.DISCONNECTED,
+                            "winner": 1 if room.players[0] == fs.request.sid else 0,
+                        }
+                    ),
                     to=room.id,
                 )
                 self.socket.close_room(room.id)
@@ -127,7 +189,7 @@ class Room:
     def __init__(
         self,
         id,
-        player_one,
+        player_one: Player,
         socket: fs.SocketIO,
         fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     ):
@@ -137,7 +199,7 @@ class Room:
         self.socket = socket
         self.time_after_turn = 0
 
-    def add_player(self, player_two):
+    def add_player(self, player_two: Player):
         self.players.append(player_two)
 
     def start_game(self):
@@ -166,48 +228,31 @@ class Room:
         self.times[self.turn] += self.time_after_turn
 
     def end_turn(self):
-        self.check_game_ending_conditions()
-        self.game_status = self.board.game_status
+        self.game_status = GameStatus(self.board.game_status())
         self.turn = int(not self.turn)
         if self.game_status != GameStatus.ONGOING:
             return (False, self.board)
         else:
             self.timer = RepeatTimer(1, self.timer_fun)
             self.timer.start()
+            all_legal_moves = self.board.get_all_legal_moves()
             return (
                 True,
                 {
                     "board": self.board.board,
                     "turn": self.turn,
-                    "legal_moves": self.board.get_all_legal_moves(),
+                    "legal_moves": dict(
+                        map(
+                            lambda key_val: (
+                                key_val[0],
+                                move_to_dict(key_val[1]),
+                                all_legal_moves,
+                            )
+                        )
+                    ),
                     "king_in_check": self.board.check,
                 },
             )
-
-    def check_game_ending_conditions(self):
-        """
-        :param player: current player
-        :return: returns:
-                GameStatus.FIFTY_MOVES            : if the fifty move rule has been broken;
-                GameStatus.CHECKMATE              : if the current player is in mate;
-                GameStatus.THREEFOLD_REPETITION   : if the threefold repetition rule has been broken;
-                GameStatus.INSUFFICIENT_MATERIAL  : if neither player can possibly mate the opposing player;
-                GameStatus.ONGOING                : otherwise
-        """
-        player_move_count = len(self.board.get_all_legal_moves().values())
-        if self.board.fifty_move_rule_draw():
-            self.game_status = GameStatus.FIFTY_MOVES
-        elif player_move_count == 0:
-            if self.board.check:
-                self.game_status = GameStatus.CHECKMATE
-            else:
-                self.game_status = GameStatus.STALEMATE
-        elif self.board.three_fold_repetition():
-            self.game_status = GameStatus.THREEFOLD_REPETITION
-        # elif self.InsufficientMaterial(): TODO
-        #     self.game_status = GameStatus.INSUFFICIENT_MATERIAL
-        else:
-            self.game_status = GameStatus.ONGOING
 
     def end_game(self):
         try:
@@ -215,7 +260,7 @@ class Room:
         except:
             pass
         if any(time <= 0 for time in self.times):
-            self.game_status = GameStatus.TIME_RUN_OUT
+            self.game_status = GameStatus.TIME_RAN_OUT
             return {
                 "status": self.game_status,
                 "winner": 1 if self.timers[0] <= 0 else 0,
@@ -224,7 +269,7 @@ class Room:
             self.game_status == status
             for status in [
                 GameStatus.DRAW,
-                GameStatus.FIFTY_MOVES,
+                GameStatus.FIFTY_MOVER_RULE,
                 GameStatus.INSUFFICIENT_MATERIAL,
                 GameStatus.STALEMATE,
                 GameStatus.THREEFOLD_REPETITION,
@@ -239,4 +284,4 @@ class Room:
         if self.timers[self.turn] <= 0:
             self.end_game()
         else:
-            self.socket.emit("timers", self.times, to=self.id)
+            self.socket.emit("timers", json.dumps(self.times), to=self.id)
