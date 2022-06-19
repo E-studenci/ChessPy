@@ -25,19 +25,20 @@
 #         f"Score: {result.score_after_best_move} | Max depth: {result.reached_depth} | Nodes {alg.count}")
 
 
-def evaluate_move(board, move):
-    return 1
+# def evaluate_move(board, move):
+    # return 1
 
 
 import chesspy
-import exposed
+# import exposed
 
-exposed.set_func(evaluate_move)
+# exposed.set_func(evaluate_move)
 
-board = chesspy.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+board = chesspy.Board("rnbqkbnr/pp2pppp/8/3p4/3N4/8/PPP1PPPP/RNBQKB1R w KQkq - 0 4")
 
-se = chesspy.SearchEngine(1)
+se = chesspy.SearchEngine(0)
 
 result = se.root(board, 99, 1000)
 
+print(result.best_move)
 print(result.reached_depth)
