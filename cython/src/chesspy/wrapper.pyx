@@ -71,7 +71,7 @@ cdef class Move:
     @destination.setter
     def destination(self, Coordinates destination):
         self.instance.destination = deref(destination.instance)
-    
+
     @property
     def promotion(self):
         return self.instance.promotion
@@ -184,8 +184,8 @@ class MoveOrderingType(enum.IntEnum):
 cdef class SearchEngine:
     cdef CppSearchEngine*instance
 
-    def __cinit__(self, move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED, use_hash_tables: bool = True):
-        self.instance = new CppSearchEngine(int(move_ordering_type), use_hash_tables)
+    def __cinit__(self, move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED, skip_hash_tables: bool = True):
+        self.instance = new CppSearchEngine(int(move_ordering_type), skip_hash_tables)
 
     def __dealloc__(self):
         del self.instance

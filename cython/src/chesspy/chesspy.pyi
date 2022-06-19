@@ -26,6 +26,7 @@ class GameStatus(enum.IntEnum):
 
 class Board:
     board: list[list[int]]
+    game_status: GameStatus
     fen_history: list[str]
     check: bool
     three_fold_repetition: bool
@@ -56,7 +57,7 @@ class SearchEngine:
     def __init__(
         self,
         move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED,
-        use_hash_tables: bool = True,
+        skip_hash_tables: bool = False,
     ) -> None: ...
     def perft(self, board: Board, depth: int) -> int: ...
     def root(
