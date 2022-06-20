@@ -4,10 +4,10 @@
 void TranspositionTable::AddEntry(Board& board,EntryType type, int score, int depth, Move& bestMove)
 {
 	auto key = board.hash.Key();
-	bool found = false;
-	this->GetEntry(board, &found);
+	auto res = this->table[board.hash.Key() % table.size()];
+	bool found = res.cutoff != EntryType::EMPTY_ENTRY;
 	if (found)
-		if (this->table[key % table.size()].depth >= depth)
+		if (key == res.key && this->table[key % table.size()].depth >= depth)
 			return;
 	this->table[key % table.size()].key = key;
 	this->table[key % table.size()].move_hash = bestMove.Hash();
