@@ -15,6 +15,7 @@ $pieces: (
 
 .piece {
   position: absolute;
+  background-repeat: no-repeat;
   background-size: 100%;
   width: 12.5%;
   height: 12.5%;
@@ -24,7 +25,6 @@ $pieces: (
 
 .dragging {
   z-index: 204;
-  cursor: move;
 }
 
 
