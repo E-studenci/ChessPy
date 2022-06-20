@@ -1,33 +1,51 @@
 <template>
-    <div :class="`${piece} ${images[type]}`" />
+    <div :class="`piece ${pieceType}`" :style="style" @mousedown="clip()" @mouseup="unclip()" />
 </template>
 
 <script>
+import { pieceCssMapping } from '@/static/mappings'
+import { mapState, mapMutations } from 'vuex'
+
 export default {
-    components: true,
     props: {
         type: {
             type: Number,
             required: true
+        },
+        mousePosition: {
+            type: Number,
+            required: false
         }
     },
     data() {
         return {
-            images: {
-                12: "black-pawn",
-                6: "white-pawn",
-                10: "black-bishop",
-                4: "white-bishop",
-                9: "black-knight",
-                3: "white-knight",
-                11: "black-rook",
-                5: "white-rook",
-                8: "black-queen",
-                2: "white-queen",
-                7: "black-king",
-                1: "white-king",
-            }
+            pieceType: pieceCssMapping[this.type],
+            isClipped: false
         }
+    },
+    computed: {
+        style() {
+            return {
+                transform: `translate(${100}%, ${100}%)`
+            }
+        },
+        ...mapState(['clipped'])
+    },
+    methods: {
+        clip() {
+            if (!this.clipped && !this.isClipped) {
+                this.isClipped = true
+                this.setClipped(this.type)
+
+            }
+        },
+        unclip() {
+            if (this.isClipped) {
+                this.isClipped = false
+                this.setClipped(null)
+            }
+        },
+        ...mapMutations({ setClipped: 'set' })
     }
 }
 </script>

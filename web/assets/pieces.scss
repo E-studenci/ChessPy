@@ -1,16 +1,15 @@
-$pieces: 
-(
-  "black-pawn": "/pieces/black_pawn.svg", 
+$pieces: (
+  "black-pawn": "/pieces/black_pawn.svg",
   "white-pawn": "/pieces/white_pawn.svg",
-  "black-bishop": "/pieces/black_bishop.svg", 
+  "black-bishop": "/pieces/black_bishop.svg",
   "white-bishop": "/pieces/white_bishop.svg",
-  "black-knight": "/pieces/black_knight.svg", 
+  "black-knight": "/pieces/black_knight.svg",
   "white-knight": "/pieces/white_knight.svg",
-  "black-rook": "/pieces/black_rook.svg", 
+  "black-rook": "/pieces/black_rook.svg",
   "white-rook": "/pieces/white_rook.svg",
-  "black-queen": "/pieces/black_queen.svg", 
+  "black-queen": "/pieces/black_queen.svg",
   "white-queen": "/pieces/white_queen.svg",
-  "black-king": "/pieces/black_king.svg", 
+  "black-king": "/pieces/black_king.svg",
   "white-king": "/pieces/white_king.svg",
 );
 
@@ -23,8 +22,17 @@ $pieces:
   left: 0;
 }
 
-@each $name, $path in $pieces {
+.dragging {
+  z-index: 204;
+  cursor: move;
+}
+
+
+@each $name,
+$path in $pieces {
   .#{$name} {
     background-image: url($path);
   }
-};
+}
+
+;
