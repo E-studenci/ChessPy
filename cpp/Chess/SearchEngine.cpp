@@ -206,7 +206,6 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 				case EntryType::UPPERBOUND:
 					if (en.score < beta) {
 						beta = en.score;
-						foundHashedMove = false;
 					}
 					break;
 				case EntryType::EXACT:

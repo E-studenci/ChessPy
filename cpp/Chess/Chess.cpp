@@ -262,7 +262,7 @@ int main()
     SearchEngine algg{ static_cast<MoveOrdererEnum>(0), EvaluatorParams{true,true, false} };
     for (int i = 0; i < 50;i++) {
         Board bb{ "rnbqk2r/ppp3pp/1b1Pp3/5p2/4N1n1/3B1N2/PPPP1PPP/R1BQK2R w KQkq - 0 8" };
-        auto res = algg.Root(&bb, 99, 1000, false, false);
+        auto res = algg.Root(&bb, 99, 10000, false, false);
         bb.MakeMove(res.bestMove);
         std::cout << bb.ToString();
         std::cout << "\nreached depth: " << res.reachedDepth << "\n";
