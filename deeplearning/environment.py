@@ -40,21 +40,26 @@ class GameManager:
         self.max_depth = max_depth
         self.max_move_time = max_move_time
         self.move_count = 0
+        self.move = None
 
     def __iter__(self):
         self.move_count = 0
+        self.move = None
         return self
 
     def __next__(self) -> chesspy.SearchResult:
         if self.move_count > self.max_game_length:
             raise StopIteration
 
-        if len(self.board.get_all_legal_moves()) <= 0:
+        if self.board.game_status != chesspy.GameStatus.ONGOING:
             raise StopIteration
-
+        
+        if self.move:
+            self.board.make_move(self.move)
+    
         search_result = self.engine.root(self.board, self.max_depth, self.max_move_time)
 
-        self.board.make_move(search_result.best_move)
+        self.move = search_result.best_move
 
         self.move_count += 1
 

@@ -30,9 +30,10 @@ cdef extern from "Board.h":
         bool KingInCheck(bool opponent)
         bool ThreeFoldRepetition()
         bool FifyMoveRuleDraw()
+        int GetGameStatus()
         void MakeMove(const CppMove &move, bool saveBoard)
         void Pop(bool saveBoard)
-        map[CppCoordinates, vector[CppMove]] GetAllLegalMoves()
+        vector[CppMove] GetAllLegalMoves()
         string ToFen()
         string ToString()
         vector[vector[int]] GetBoard()
@@ -53,7 +54,7 @@ cdef extern from "SearchEngine.h":
 
     cdef cppclass CppSearchEngine "SearchEngine":
         CppSearchEngine() except +
-        CppSearchEngine(int moveOrderer) except +
+        CppSearchEngine(int moveOrderer, bool skipHashTables) except +
         int PerftStarterSingleThread(CppBoard* board, int depth)
         CppSearchResult Root(CppBoard* board, int depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
         int AlphaBeta(CppBoard* board, int alpha, int beta, int depthLeft)

@@ -485,7 +485,7 @@ int Board::GetGameStatus()
         return GameStatusEnum::STALEMATE;
     }
     if (this->FifyMoveRuleDraw())
-        return GameStatusEnum::FIFTY_MOVER_ULE;
+        return GameStatusEnum::FIFTY_MOVER_RULE;
     if (this->ThreeFoldRepetition())
         return GameStatusEnum::THREEFOLD_REPETITION;
     if (this->InsufficientMaterial())

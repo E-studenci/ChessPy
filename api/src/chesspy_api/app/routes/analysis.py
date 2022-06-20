@@ -7,7 +7,7 @@ from chesspy_api import APP
 
 anal_route = "/analysis"
 
-alg = chesspy.Algorithms()
+alg = chesspy.SearchEngine(0)
 
 
 @APP.route(f"{anal_route}", methods=["GET"])

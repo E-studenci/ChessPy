@@ -65,8 +65,8 @@ public:
 			for (int j = 0;j < this->killerMoveSize;j++)
 				this->killerMoves[i][j] = uint16_t(0);
 	}
-	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams) {}
-	SearchEngine(int moveOrderer) : SearchEngine(moveOrderer, EvaluatorParams()) {}
+	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams, bool skipHashTables) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams, skipHashTables) {}
+	SearchEngine(int moveOrderer, bool skipHashTables) : SearchEngine(moveOrderer, EvaluatorParams(), skipHashTables) {}
 	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams, bool skipHashTables = false) {
 		this->table = TranspositionTable{};
 		this->table.init();
