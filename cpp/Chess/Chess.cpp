@@ -258,10 +258,10 @@ int main()
     //
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
     auto es = std::array<Coordinates, 8>{Coordinates{ 1,2 }};
-    Board bb{ "1b1r1rk1/6q1/p2p1p2/2pP2p1/6PR/P1N1B3/1P1RQPK1/8 b - - 0 43" };
 
     SearchEngine algg{ static_cast<MoveOrdererEnum>(0), EvaluatorParams{true,true, false} };
-    for (int i = 0; i < 1;i++) {
+    for (int i = 0; i < 50;i++) {
+        Board bb{ "rnbqk2r/ppp3pp/1b1Pp3/5p2/4N1n1/3B1N2/PPPP1PPP/R1BQK2R w KQkq - 0 8" };
         auto res = algg.Root(&bb, 99, 1000, false, false);
         bb.MakeMove(res.bestMove);
         std::cout << bb.ToString();
@@ -273,6 +273,9 @@ int main()
         for (int nodes: res.nodeCount)
             std::cout << std::to_string(nodes)<<", ";
         std::cout << "\nfen: " << bb.ToFen();
+        std::cout << "\nhits: " << algg.table.hits;
+        std::cout << "\ncollisions: " << algg.table.collisions ;
+
     }
     //start = std::chrono::high_resolution_clock::now();
     //auto res = algg.Root(&bb, 99, 2000);

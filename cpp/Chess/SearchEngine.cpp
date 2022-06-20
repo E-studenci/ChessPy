@@ -63,6 +63,9 @@ int SearchEngine::PerftStarterSingleThread(Board *board, int depth, bool divide)
 
 SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
 {
+	for (int i = 0;i < 20;i++)
+		for (int j = 0;j < this->killerMoveSize;j++)
+			this->killerMoves[i][j] = uint16_t(0);
 	this->timer.Start(timeInMillis);
 	int bestScore = 0;
 	Move bestMove;
@@ -89,7 +92,7 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 			break; // Do not start a new ply
 		}
 		std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
-		std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0);
+		std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, std::array<uint16_t,2>());
 		for (const Move& move : currentLegalMovesSorted) {
 			//alpha = MIN;
 			//beta = MAX;
@@ -139,7 +142,7 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 				break; // Do not start a new ply
 			}
 			std::vector<Move> currentLegalMovesOpponent = opponentBoard.GetAllLegalMoves();
-			std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0);
+			std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, std::array<uint16_t, 2> ());
 			for (const Move& move : currentLegalMovesSorted) {
 				//alpha = MIN;
 				//beta = MAX;
@@ -175,8 +178,9 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
-AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int depthLeft)
+AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int depthLeft, int ply)
 {
+	ply++;
 	int nodeCount = 1;
 	if (this->timer.Poll(this->count)) {
 		return AlphaBetaResult(0,nodeCount);
@@ -226,19 +230,24 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 	//if (board->KingInCheck())
 	//	depthLeft++;
 
-	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash);
+	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash, this->killerMoves[ply]);
 	for (const Move& move : currentLegalMovesSorted){
 		this->count++;
 		board->MakeMove(move);
-		auto result = AlphaBeta(board, -beta, -alpha, depthLeft - 1);
+		auto result = AlphaBeta(board, -beta, -alpha, depthLeft - 1, ply);
 		int score = -result.score;
 		nodeCount += result.nodeCount;
 		board->Pop();
 		if (this->timer.Poll(this->count)) {
 			return AlphaBetaResult(0, nodeCount);
 		}
-		if (score >= beta)
+		if (score >= beta) {
+			auto moveHash = move.Hash();
+			if (!(foundHashedMove && en.move_hash == moveHash)
+				&& (board->board[move.destination.row][move.destination.column] == 0))
+				this->insertKillerMove(moveHash, ply);
 			return AlphaBetaResult(score, nodeCount);
+		}
 		if (score > bestScore) {
 			bestScore = score;
 			bestMove = move;
@@ -291,13 +300,13 @@ AlphaBetaResult SearchEngine::Quiescence(Board* board, int alpha, int beta, int 
 		alpha = stand_pat;
 
 	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, true);
+	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, std::array<uint16_t, 2>(), true);
 	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
 	//{
 	//	for (Move& move : keyValuePair.second)
 	for (const Move& move : currentLegalMovesSorted) {
-		if (!move.goodCapture)
-			continue;
+		/*if (!move.goodCapture)
+			continue;*/
 		this->count++;
 		board->MakeMove(move);
 		auto result = this->Quiescence(board, -beta, -alpha, ply + 1);

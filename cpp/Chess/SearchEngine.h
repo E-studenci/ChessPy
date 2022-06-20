@@ -61,6 +61,9 @@ public:
 		this->_moveOrderer = new MoveOrdererHandcrafted();
 		this->_evaluator = new Evaluator();
 		this->skipHashTables = false;
+		for (int i = 0;i < 20;i++)
+			for (int j = 0;j < this->killerMoveSize;j++)
+				this->killerMoves[i][j] = uint16_t(0);
 	}
 	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams) {}
 	SearchEngine(int moveOrderer) : SearchEngine(moveOrderer, EvaluatorParams()) {}
@@ -77,16 +80,26 @@ public:
 		}
 		this->_evaluator = new Evaluator(evaluatorParams);
 		this->skipHashTables = skipHashTables;
+		for (int i = 0;i < 20;i++)
+			for (int j = 0;j < this->killerMoveSize;j++)
+				this->killerMoves[i][j] = uint16_t(0);
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	SearchResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
 
-	AlphaBetaResult AlphaBeta(Board* board, int alpha, int beta, int depthLeft);
+	AlphaBetaResult AlphaBeta(Board* board, int alpha, int beta, int depthLeft, int ply=-1);
 	int count = 0;
 	int max_depth = 0;
 	TranspositionTable table;
 private:
-
+	const int killerMoveSize = 2;
+	void insertKillerMove(uint16_t moveHash, int ply) {
+		for (int slot = 0; slot < this->killerMoves[ply].size() - 1; slot++) {
+			this->killerMoves[ply][slot] = this->killerMoves[ply][slot + 1];
+		}
+		this->killerMoves[ply][this->killerMoves[ply].size() - 1] = moveHash;
+	}
+	std::array<std::array<uint16_t, 2>, 20> killerMoves;
 	bool skipHashTables = false;
 	Timer timer;
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible

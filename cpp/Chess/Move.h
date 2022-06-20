@@ -27,7 +27,7 @@ public:
 				(this->promotion == 4 || this->promotion == 10) ? 3 : 4;
 			res |= (prom << uint8_t{ 12 });
 		}
-		res|= (this->origin.row << uint8_t{ 9 });
+		res |= (this->origin.row << uint8_t{ 9 });
 		res |= (this->origin.column << uint8_t{ 6 });
 		res |= (this->destination.row << uint8_t{ 3 });
 		res |= (this->destination.column);

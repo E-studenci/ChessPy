@@ -1,7 +1,7 @@
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
 
-std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, bool only_captures)
+std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, std::array<uint16_t, 2> killerMoves, bool only_captures)
 {
 	std::multiset<std::reference_wrapper<Move>> result;
 	for (Move& move : moves)
@@ -11,10 +11,20 @@ std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board
 				(move.destination == board.enPassant &&
 					(board.board[move.destination.row][move.destination.column] == 6 ||
 						board.board[move.destination.row][move.destination.column] == 12)))) { // any move is accepted or the move is a capture
-			if (hashedMove && (move.Hash() == bestMoveHash))
+			auto moveHash = move.Hash();
+			if (hashedMove && (moveHash == bestMoveHash))
 				move.score = 10000000;
-			else
-				move.score = this->MoveValue(&board, &move);
+			else {
+				bool isKiller = false;
+				for (int i = 0;i < killerMoves.size();i++) {
+					if (killerMoves[i] == moveHash) {
+						move.score = 1000;
+						isKiller = true;
+					}
+				}
+				if (!isKiller)
+					move.score = this->MoveValue(&board, &move);
+			}
 			result.insert(move);
 		}
 	}

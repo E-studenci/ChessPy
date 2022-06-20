@@ -19,6 +19,11 @@ void TranspositionTable::AddEntry(Board& board,EntryType type, int score, int de
 Entry TranspositionTable::GetEntry(const Board& board, bool* found)
 {
 	auto res = this->table[board.hash.Key() % table.size()];
+	if (res.cutoff != EntryType::EMPTY_ENTRY) {
+		if (res.key == board.hash.Key())
+			this->hits++;
+		else this->collisions++;
+	}
 	if (res.key == board.hash.Key()) {
 		*found = true;
 		return res;

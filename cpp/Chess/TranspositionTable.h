@@ -48,11 +48,15 @@ public:
 	uint8_t depth = 0;
 	uint16_t move_hash = 0;
 	EntryType cutoff = EntryType::EMPTY_ENTRY;
+
 };
 class TranspositionTable
 {
 public:
-	void init(int MB = 10) {
+
+	int hits = 0;
+	int collisions = 0;
+	void init(int MB = 30) {
 		this->table.clear();
 		this->table.resize(static_cast<unsigned long long>(MB) * 1024 * 1024 / sizeof(Entry));
 	}
