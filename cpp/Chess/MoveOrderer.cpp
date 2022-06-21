@@ -1,7 +1,7 @@
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
 
-std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, std::array<uint16_t, 2> killerMoves, bool only_captures)
+std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, std::array<uint16_t, 2> killerMoves, bool only_captures, bool useMVVLVA)
 {
 	std::multiset<std::reference_wrapper<Move>> result;
 	for (Move& move : moves)
@@ -22,8 +22,12 @@ std::multiset<std::reference_wrapper<Move>> MoveOrderer::OrderMoves(Board& board
 						isKiller = true;
 					}
 				}
-				if (!isKiller)
-					move.score = this->MoveValue(&board, &move);
+				if (!isKiller) {
+					if (useMVVLVA)
+						move.score = this->MoveValue(&board, &move);
+					else
+						move.score = 0;
+				}
 			}
 			result.insert(move);
 		}

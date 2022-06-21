@@ -15,6 +15,46 @@
 #include "Timer.h"
 #include "MoveOrderer.h"
 #include "AlgorithmsConsts.h"
+
+struct SearchParams {
+	SearchParams() {
+		this->useNullMovePruning = false;
+		this->useKillerMoves = true;
+		this->useHashedPositions = true;
+		this->useHashedMoves = true;
+		this->useQuiescence = true;
+		this->useCheckExtension = true;
+		this->useMVVLVA = true;
+
+	}
+	SearchParams(bool useNullMovePruning, bool useKillerMoves,
+		bool useHashedPositions, bool useHashedMoves, bool useQuiescence, bool useCheckExtension, bool useMVVLVA) {
+		this->useNullMovePruning = useNullMovePruning;
+		this->useKillerMoves = useKillerMoves;
+		this->useHashedPositions = useHashedPositions;
+		this->useHashedMoves = useHashedMoves;
+		this->useQuiescence = useQuiescence;
+		this->useCheckExtension = useCheckExtension;
+		this->useMVVLVA = useMVVLVA;
+	}
+	void operator=(const SearchParams& other) {
+		this->useNullMovePruning = other.useNullMovePruning;
+		this->useKillerMoves = other.useKillerMoves;
+		this->useHashedPositions = other.useHashedPositions;
+		this->useHashedMoves = other.useHashedMoves;
+		this->useQuiescence = other.useQuiescence;
+		this->useCheckExtension = other.useCheckExtension;
+		this->useMVVLVA = other.useMVVLVA;
+	}
+	bool useNullMovePruning;
+	bool useKillerMoves;
+	bool useHashedPositions;
+	bool useHashedMoves;
+	bool useQuiescence;
+	bool useCheckExtension;
+	bool useMVVLVA;
+};
+
 struct SearchResult{
 	int evaluation = 0;
 	int scoreAfterBestMove = 0;
@@ -60,14 +100,18 @@ public:
 		this->table.init();
 		this->_moveOrderer = new MoveOrdererHandcrafted();
 		this->_evaluator = new Evaluator();
-		this->skipHashTables = false;
 		for (int i = 0;i < 20;i++)
 			for (int j = 0;j < this->killerMoveSize;j++)
 				this->killerMoves[i][j] = uint16_t(0);
+		this->searchParams = SearchParams();
 	}
-	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams, bool skipHashTables) : SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams, skipHashTables) {}
-	SearchEngine(int moveOrderer, bool skipHashTables) : SearchEngine(moveOrderer, EvaluatorParams(), skipHashTables) {}
-	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams, bool skipHashTables = false) {
+	SearchEngine(int moveOrderer) :
+		SearchEngine(moveOrderer, EvaluatorParams(), SearchParams()) {}
+	// V
+	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams, SearchParams searchParams) :
+		SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams, searchParams) {}
+	// V
+	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams, SearchParams searchParams) {
 		this->table = TranspositionTable{};
 		this->table.init();
 		switch (moveOrdererEnum) {
@@ -79,15 +123,16 @@ public:
 				break;
 		}
 		this->_evaluator = new Evaluator(evaluatorParams);
-		this->skipHashTables = skipHashTables;
 		for (int i = 0;i < 20;i++)
 			for (int j = 0;j < this->killerMoveSize;j++)
 				this->killerMoves[i][j] = uint16_t(0);
+		this->searchParams = searchParams;
+
 	}
 	int PerftStarterSingleThread(Board* board, int depth, bool divide = false);
 	SearchResult Root(Board* board, int depth, long timeInMillis, bool evaluatePosition = false, bool getOpponentBestMove = false); // Returns the best move and score after the move
 
-	AlphaBetaResult AlphaBeta(Board* board, int alpha, int beta, int depthLeft, int ply=-1);
+	AlphaBetaResult AlphaBeta(Board* board, int alpha, int beta, int depthLeft, int ply=-1, bool isNullMove=false);
 	int count = 0;
 	int max_depth = 0;
 	TranspositionTable table;
@@ -99,15 +144,16 @@ private:
 		}
 		this->killerMoves[ply][this->killerMoves[ply].size() - 1] = moveHash;
 	}
-	std::array<std::array<uint16_t, 2>, 20> killerMoves;
-	bool skipHashTables = false;
 	Timer timer;
 	static std::tuple<int, std::vector<std::tuple<Move, int>>> Perft(Board* board, int depth, bool divide = false); // returns the number of moves possible
 	AlphaBetaResult Quiescence(Board* board, int alpha, int beta, int ply=0);
 	void AddScoreToTable(Board& board, int alphaOriginal, int beta, int score, int depth, Move& bestMove);
 
 	int MAX_PLY = 100;
-
 	MoveOrderer *_moveOrderer = nullptr;
 	Evaluator* _evaluator = nullptr;
+
+	std::array<std::array<uint16_t, 2>, 20> killerMoves;
+
+	SearchParams searchParams;
 };

@@ -16,7 +16,7 @@ enum MoveOrdererEnum
 class MoveOrderer
 {
 public:
-	std::multiset<std::reference_wrapper<Move>> OrderMoves(Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, std::array<uint16_t, 2> killerMoves,bool only_captures=false);
+	std::multiset<std::reference_wrapper<Move>> OrderMoves(Board& board, std::vector<Move>& moves, bool hashedMove, uint16_t bestMoveHash, std::array<uint16_t, 2> killerMoves,bool only_captures=false, bool useMVVLVA=true);
 	virtual double MoveValue(Board* board, Move* move) = 0;
 	~MoveOrderer()=default;
 };

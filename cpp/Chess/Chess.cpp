@@ -259,13 +259,14 @@ int main()
     //std::cout << "\n hash: " << bb.hash.Verify(bb5);
     auto es = std::array<Coordinates, 8>{Coordinates{ 1,2 }};
 
-    SearchEngine algg{ static_cast<MoveOrdererEnum>(0), EvaluatorParams{true,true, false} };
+    SearchEngine algg{ static_cast<MoveOrdererEnum>(0), EvaluatorParams{true,true, false}, SearchParams{} };
+    Board bb{ "rnbqk2r/ppp3pp/1b1Pp3/5p2/4N1n1/3B1N2/PPPP1PPP/R1BQK2R w KQkq - 0 8" };
     for (int i = 0; i < 50;i++) {
-        Board bb{ "rnbqk2r/ppp3pp/1b1Pp3/5p2/4N1n1/3B1N2/PPPP1PPP/R1BQK2R w KQkq - 0 8" };
-        auto res = algg.Root(&bb, 99, 10000, false, false);
+        auto res = algg.Root(&bb, 99, 2000, false, false);
         bb.MakeMove(res.bestMove);
-        std::cout << bb.ToString();
+        //std::cout << bb.ToString();
         std::cout << "\nreached depth: " << res.reachedDepth << "\n";
+        std::cout << "\nbest move: " << res.bestMove.ToString();
         std::cout << "\nhalf turn: " << i;
         std::cout << "\nopponent move: " << res.bestOpponentMove.ToString();
         std::cout << "\neval: " << std::to_string(res.evaluation);

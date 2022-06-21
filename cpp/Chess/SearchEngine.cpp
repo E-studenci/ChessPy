@@ -178,7 +178,7 @@ SearchResult SearchEngine::Root(Board* board, int max_depth, long timeInMillis, 
 	//return std::pair<Move, std::pair<int, int>>{ best_move, std::pair<int, int>{best_score, reachedDepth} };
 }
 
-AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int depthLeft, int ply)
+AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int depthLeft, int ply, bool isNullMove)
 {
 	ply++;
 	int nodeCount = 1;
@@ -187,15 +187,26 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 	}
 	if (board->ThreeFoldRepetition() || board->FifyMoveRuleDraw())
 		return AlphaBetaResult(0, nodeCount);
+	if (depthLeft <= 0) {
+		if (this->searchParams.useQuiescence) {
+			auto result = this->Quiescence(board, alpha, beta);
+			return AlphaBetaResult(result.score, nodeCount);
+		}
+		else return AlphaBetaResult(this->_evaluator->Evaluate(*board), nodeCount);
+	}
+
+	// Tranposition table
 	bool found = false;
 	bool foundHashedMove = false;
 
 	uint16_t bestMoveHash = 0;
 	Entry en = this->table.GetEntry(*board, &found);
 	if (found && !(en.cutoff == EntryType::EMPTY_ENTRY)) {
-		foundHashedMove = true;
-		bestMoveHash = en.move_hash;
-		if (!this->skipHashTables)
+		if (this->searchParams.useHashedMoves) {
+			foundHashedMove = true;
+			bestMoveHash = en.move_hash;
+		}
+		if (this->searchParams.useHashedPositions)
 			if (en.depth >= depthLeft) {
 				switch (en.cutoff) {
 				case EntryType::LOWERBOUND:
@@ -204,6 +215,7 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 					}
 					break;
 				case EntryType::UPPERBOUND:
+					foundHashedMove = false;
 					if (en.score < beta) {
 						beta = en.score;
 					}
@@ -216,20 +228,46 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 					return AlphaBetaResult(en.score, nodeCount);
 			}
 	}
-	if (depthLeft <= 0) {
-		//return AlphaBetaResult(this->_evaluator->Evaluate(*board), nodeCount);
-		auto result = this->Quiescence(board, alpha, beta);
-		return AlphaBetaResult(result.score, nodeCount);
+	// /Tranposition table
+
+	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
+	// null move pruning
+	if (this->searchParams.useNullMovePruning) {
+		if (!isNullMove && !board->KingInCheck() && depthLeft > 1) {
+			int pieceCount = 0;
+			int pawnCount = 0;
+			for (int row = 0; row < 8; row++) {
+				for (int column = 0; column < 8;column++) {
+					int piece = board->board[row][column];
+					if (piece != 0 && ((piece > 6) == board->sideToMove)) {
+						if (piece == 6 || piece == 12)
+							pawnCount++;
+						pieceCount++;
+					}
+				}
+			}
+			if (pieceCount > 3 && !(pieceCount == pawnCount + 1)) {
+				board->ChangeSideToMove();
+				int r = 2 + (depthLeft > (6 + ((pieceCount < 3) ? 2 : 0)));
+				auto eval = AlphaBeta(board, -beta, -beta + 1, depthLeft - r - 1, ply, true);
+				board->ChangeSideToMove();
+				if (eval.score >= beta)
+					return eval;
+			}
+		}
 	}
+	// /null move pruning
+
 	int origAlpha = alpha;
 	int bestScore = AlgorithmsConsts::MIN;
 	Move bestMove = Move{};
-	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
 
-	//if (board->KingInCheck())
-	//	depthLeft++;
+	if (this->searchParams.useCheckExtension) {
+		if (board->KingInCheck())
+			depthLeft++;
+	}
 
-	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash, this->killerMoves[ply]);
+	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, foundHashedMove, bestMoveHash, this->killerMoves[ply], false, this->searchParams.useMVVLVA);
 	for (const Move& move : currentLegalMovesSorted){
 		this->count++;
 		board->MakeMove(move);
@@ -242,9 +280,11 @@ AlphaBetaResult SearchEngine::AlphaBeta(Board* board, int alpha, int beta, int d
 		}
 		if (score >= beta) {
 			auto moveHash = move.Hash();
-			if (!(foundHashedMove && en.move_hash == moveHash)
-				&& (board->board[move.destination.row][move.destination.column] == 0))
-				this->insertKillerMove(moveHash, ply);
+			if (this->searchParams.useKillerMoves) {
+				if (!(foundHashedMove && en.move_hash == moveHash)
+					&& (board->board[move.destination.row][move.destination.column] == 0))
+					this->insertKillerMove(moveHash, ply);
+			}
 			return AlphaBetaResult(score, nodeCount);
 		}
 		if (score > bestScore) {
@@ -288,7 +328,6 @@ AlphaBetaResult SearchEngine::Quiescence(Board* board, int alpha, int beta, int 
 		return AlphaBetaResult(stand_pat, nodeCount);
 	}
 	if (stand_pat >= beta)
-		//return beta;
 		return AlphaBetaResult(stand_pat, nodeCount);
 	const int delta = AlgorithmsConsts::PIECE_VALUE[1];
 	if (stand_pat < alpha - delta) {
@@ -299,13 +338,8 @@ AlphaBetaResult SearchEngine::Quiescence(Board* board, int alpha, int beta, int 
 		alpha = stand_pat;
 
 	std::vector<Move> currentLegalMoves = board->GetAllLegalMoves();
-	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, std::array<uint16_t, 2>(), true);
-	//for (std::pair<const Coordinates, std::vector<Move>>& keyValuePair : currentLegalMoves)
-	//{
-	//	for (Move& move : keyValuePair.second)
+	std::multiset<std::reference_wrapper<Move>> currentLegalMovesSorted = this->_moveOrderer->OrderMoves(*board, currentLegalMoves, false, 0, std::array<uint16_t, 2>(), true, this->searchParams.useMVVLVA);
 	for (const Move& move : currentLegalMovesSorted) {
-		/*if (!move.goodCapture)
-			continue;*/
 		this->count++;
 		board->MakeMove(move);
 		auto result = this->Quiescence(board, -beta, -alpha, ply + 1);
@@ -316,7 +350,6 @@ AlphaBetaResult SearchEngine::Quiescence(Board* board, int alpha, int beta, int 
 			return AlphaBetaResult(0, nodeCount);
 		}
 		if (score >= beta)
-			//return beta;
 			return AlphaBetaResult(score, nodeCount);
 		if (score > alpha)
 			alpha = score;

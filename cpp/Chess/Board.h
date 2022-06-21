@@ -59,7 +59,10 @@ public:
 	Zobrist hash;
 	std::vector<std::string> fenHistory;
 	Board* Clone();
-
+	void ChangeSideToMove() {
+		this->sideToMove = !this->sideToMove;
+		this->hash.ToggleSTM();
+	}
 private:
 	std::array<PieceCharacteristics, 12> pieceMovement;
 	void InitPieceMovement();
@@ -85,7 +88,6 @@ private:
 		bool promotion = false, bool movingPieceColor = false);
 	void CalculateAttackFields(bool bothSides=false);		   // calculate attackfields
 	void Capture(Coordinates destination); // invoked inside Board::MakeMove if the move was a take
-	int GameStatus();					   // 0-ongoing, 1-draw, 2-win
 	bool PieceColor(int piece) { return piece < 7; }
 	void SetAttackedField(bool attackingPieceColor, const Coordinates& attackedField);
 	void Clear(); // clears attack fields etc
