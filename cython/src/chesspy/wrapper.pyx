@@ -1,7 +1,7 @@
 # cython: c_string_type=unicode, c_string_encoding=utf8
 from cython.operator cimport dereference as deref
 
-from exposer cimport CppCoordinates, CppMove, CppBoard, CppSearchResult, CppSearchEngine
+from exposer cimport CppCoordinates, CppMove, CppBoard, CppSearchResult, CppSearchParams, CppSearchEngine
 
 import enum
 
@@ -180,12 +180,38 @@ class MoveOrderingType(enum.IntEnum):
     TRAINING = 1
     MODEL = 2
 
+cdef class SearchParams:
+    cdef CppSearchParams*instance
+
+    def __cinit__(
+        self, 
+        use_null_move_pruning: bool = False, 
+        use_killer_moves: bool = True, 
+        use_hashed_positions: bool = True, 
+        use_hashed_moves: bool = True, 
+        use_quiescence: bool = True, 
+        use_check_extension: bool = True, 
+        use_MVVLVA: bool = True
+    ):
+        self.instance = new CppSearchParams(
+            use_null_move_pruning, 
+            use_killer_moves,
+            use_hashed_positions,
+            use_hashed_moves,
+            use_quiescence,
+            use_check_extension,
+            use_MVVLVA
+        )
+    
+    def __dealloc__(self):
+        del self.instance
+
 
 cdef class SearchEngine:
     cdef CppSearchEngine*instance
 
-    def __cinit__(self, move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED, skip_hash_tables: bool = True):
-        self.instance = new CppSearchEngine(int(move_ordering_type), skip_hash_tables)
+    def __cinit__(self, move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED, serch_params: SearchParams = SearchParams()):
+        self.instance = new CppSearchEngine(int(move_ordering_type), deref(serch_params.instance))
 
     def __dealloc__(self):
         del self.instance

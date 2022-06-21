@@ -42,6 +42,17 @@ cdef extern from "Board.h":
 
 
 cdef extern from "SearchEngine.h":
+    cdef cppclass CppSearchParams "SearchParams":
+        CppSearchParams() except +
+        CppSearchParams(bool useNullMovePruning, bool useKillerMoves, bool useHashedPositions, bool useHashedMoves, bool useQuiescence, bool useCheckExtension, bool useMVVLVA) except +
+        bool useNullMovePruning
+        bool useKillerMoves
+        bool useHashedPositions
+        bool useHashedMoves
+        bool useQuiescence
+        bool useCheckExtension
+        bool useMVVLVA
+
     cdef cppclass CppSearchResult "SearchResult":
         CppSearchResult() except +
         CppSearchResult(int reachedDepth, CppMove bestMove, int scoreAfterBestMove, int evaluation, CppMove bestOpponentMove, vector[int] nodeCount) except +
@@ -54,7 +65,7 @@ cdef extern from "SearchEngine.h":
 
     cdef cppclass CppSearchEngine "SearchEngine":
         CppSearchEngine() except +
-        CppSearchEngine(int moveOrderer, bool skipHashTables) except +
+        CppSearchEngine(int moveOrderer, CppSearchParams searchParams) except +
         int PerftStarterSingleThread(CppBoard* board, int depth)
         CppSearchResult Root(CppBoard* board, int depth, long timeInMillis, bool evaluatePosition, bool getOpponentBestMove)
         int AlphaBeta(CppBoard* board, int alpha, int beta, int depthLeft)

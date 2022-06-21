@@ -110,6 +110,9 @@ public:
 	// V
 	SearchEngine(int moveOrderer, EvaluatorParams evaluatorParams, SearchParams searchParams) :
 		SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), evaluatorParams, searchParams) {}
+	
+	SearchEngine(int moveOrderer, SearchParams searchParams) :
+		SearchEngine(static_cast<MoveOrdererEnum>(moveOrderer), EvaluatorParams(), searchParams) {}
 	// V
 	SearchEngine(MoveOrdererEnum moveOrdererEnum, EvaluatorParams evaluatorParams, SearchParams searchParams) {
 		this->table = TranspositionTable{};

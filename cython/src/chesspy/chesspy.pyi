@@ -51,13 +51,27 @@ class MoveOrderingType(enum.IntEnum):
     TRAINING = 1
     MODEL = 2
 
+
+class SearchParams:
+    def __init__(
+        self,
+        use_null_move_pruning: bool = False,
+        use_killer_moves: bool = True,
+        use_hashed_positions: bool = True,
+        use_hashed_moves: bool = True,
+        use_quiescence: bool = True,
+        use_check_extension: bool = True,
+        use_MVVLVA: bool = True
+    ) -> None: ...
+
+
 class SearchEngine:
     count: int
 
     def __init__(
         self,
         move_ordering_type: MoveOrderingType = MoveOrderingType.HANDCRAFTED,
-        skip_hash_tables: bool = False,
+        search_params: SearchParams = SearchParams(),
     ) -> None: ...
     def perft(self, board: Board, depth: int) -> int: ...
     def root(
