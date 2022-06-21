@@ -1,12 +1,12 @@
-data_path: "data/positions-small.fen"
+data_path: "./data/fens/positions-small.fen"
+model_save_path: "./data/models/"
 max_game_length: 5
 max_move_time: 10000
 max_depth: 3
 lr: 0.0001
 max_memory: 20
-gamma: 0.5
+no_change_range: 30
 
-# ignore, only for hydra
 defaults:
     - _self_
     - override hydra/hydra_logging: disabled

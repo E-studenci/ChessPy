@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.autograd as autograd
 
 
 class Linear_QNet(nn.Module):
@@ -9,14 +10,13 @@ class Linear_QNet(nn.Module):
         self.seq = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, output_size)
+            nn.Linear(hidden_size, output_size),
         )
-    
+
     def forward(self, X):
         X = self.seq(X)
         return X
-    
-    
+
 
 class QTrainer:
     def __init__(self, model, lr, gamma):
@@ -26,38 +26,13 @@ class QTrainer:
         self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
 
-    def train_step(self, state, action, reward, next_state, done):
-        # state = torch.tensor(state, dtype=torch.float)
-        # next_state = torch.tensor(next_state, dtype=torch.float)
-        # action = torch.tensor(action, dtype=torch.long)
-        # reward = torch.tensor(reward, dtype=torch.float)
-        # # (n, x)
-
-        # if len(state.shape) == 1:
-        #     # (1, x)
-        #     state = torch.unsqueeze(state, 0)
-        #     next_state = torch.unsqueeze(next_state, 0)
-        #     action = torch.unsqueeze(action, 0)
-        #     reward = torch.unsqueeze(reward, 0)
-        #     done = (done, )
-
-        # # 1: predicted Q values with current state
-        # pred = self.model(state)
-
-        # target = pred.clone()
-        # for idx in range(len(done)):
-        #     Q_new = reward[idx]
-        #     if not done[idx]:
-        #         Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
-
-        #     target[idx][torch.argmax(action[idx]).item()] = Q_new
-    
-        # # 2: Q_new = r + y * max(next_predicted Q value) -> only do this if not done
-        # # pred.clone()
-        # # preds[argmax(action)] = Q_new
-        # self.optimizer.zero_grad()
-        # loss = self.criterion(target, pred)
-        # loss.backward()
-
-        # self.optimizer.step()
-        pass
+    def train_step(self, current_reward, previous_results):
+        previous_rewards = list(map(lambda item: item[1], previous_results))
+        expected = (min(previous_rewards) + self.gamma * current_reward) / 2
+        current_reward_tensor = torch.Tensor([current_reward])
+        expected_tensor = torch.Tensor([expected])
+        self.optimizer.zero_grad()
+        loss = self.criterion(current_reward_tensor, expected_tensor)
+        loss = autograd.Variable(loss, requires_grad=True)
+        loss.backward()
+        self.optimizer.step()

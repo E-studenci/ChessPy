@@ -1,4 +1,5 @@
 import typing
+import random
 
 import chesspy
 
@@ -53,10 +54,10 @@ class GameManager:
 
         if self.board.game_status != chesspy.GameStatus.ONGOING:
             raise StopIteration
-        
+
         if self.move:
             self.board.make_move(self.move)
-    
+
         search_result = self.engine.root(self.board, self.max_depth, self.max_move_time)
 
         self.move = search_result.best_move
@@ -64,3 +65,26 @@ class GameManager:
         self.move_count += 1
 
         return search_result
+
+
+class Awardee:
+    def __init__(self, no_change_range: int) -> None:
+        self.no_change_range = no_change_range
+
+    def award(self, current_number_of_nodes: int, previous_results: list):
+        if not previous_results:
+            return random.randint(-5, 5)
+
+        previous_nodes = list(map(lambda item: item[0], previous_results))
+
+        average = sum(previous_nodes) / len(previous_nodes)
+        if (
+            current_number_of_nodes < average + self.no_change_range
+            and current_number_of_nodes > average - self.no_change_range
+        ):
+            return 0
+        elif current_number_of_nodes > average + self.no_change_range:
+            return -10
+        elif current_number_of_nodes < average - self.no_change_range:
+            return 10
+        return 0
