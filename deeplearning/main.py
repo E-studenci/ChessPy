@@ -39,7 +39,7 @@ def main(config):
 
     agent = ag.Agent(model, config.model_save_path, config.lr, config.max_memory)
 
-    awardee = env.Awardee(config.no_change_range)
+    awarder = env.Awarder(config.no_change_range)
 
     while True:
         try:
@@ -69,7 +69,7 @@ def main(config):
 
                     board.make_move(result.best_move)
 
-                    reward = awardee.award(
+                    reward = awarder.award(
                         result.node_count[-1], agent.memory.get(board.hash)
                     )
 

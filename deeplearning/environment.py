@@ -67,7 +67,7 @@ class GameManager:
         return search_result
 
 
-class Awardee:
+class Awarder:
     def __init__(self, no_change_range: int) -> None:
         self.no_change_range = no_change_range
 
