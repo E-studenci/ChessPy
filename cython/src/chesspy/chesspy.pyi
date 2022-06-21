@@ -32,6 +32,7 @@ class Board:
     three_fold_repetition: bool
     fifty_move_rule_draw: bool
     fen: str
+    hash: str
 
     def __init__(self, fen: bytes) -> None: ...
     def make_move(self, move: Move) -> None: ...

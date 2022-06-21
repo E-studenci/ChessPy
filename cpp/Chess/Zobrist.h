@@ -5,12 +5,15 @@
 class Zobrist
 {
 public:
-    Zobrist() {}
+    Zobrist() {
+        this->key = 0;
+    }
     Zobrist(const Zobrist& other) {
         this->key = other.key;
-         
     }
-
+    void operator=(const Zobrist& other) {
+        this->key = other.key;
+    }
     void Recalculate(class Board* board) { key = Generate(*board); }
     uint64_t Key() const { return key; }
 

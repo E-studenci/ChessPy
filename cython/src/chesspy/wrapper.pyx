@@ -140,6 +140,10 @@ cdef class Board:
     @property
     def fen(self):
         return self.instance.ToFen()
+
+    @property
+    def hash(self):
+        return self.instance.GetCurrentKey()
     
     def make_move(self, Move move):
         self.instance.MakeMove(deref(move.instance), True)

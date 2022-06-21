@@ -121,6 +121,7 @@ Board::Board(std::string fen)
     // parse turn counter
     this->turnCounter = atoi(splitFen[5].c_str());
     // /parse turn counter
+    this->hash = Zobrist();
     this->hash.Recalculate(this);
 
     this->fenHistory.push_back(fen);

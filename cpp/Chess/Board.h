@@ -9,6 +9,7 @@
 #include <vector>
 #include <array>
 #include <unordered_map>
+#include <sstream>
 #include <map>
 #include "Zobrist.h"
 
@@ -57,6 +58,11 @@ public:
 	}
 	bool InsufficientMaterial();
 	Zobrist hash;
+	std::string GetCurrentKey() {
+        std::ostringstream os;
+        os << this->hash.Key();
+        return os.str();
+    }
 	std::vector<std::string> fenHistory;
 	Board* Clone();
 	void ChangeSideToMove() {

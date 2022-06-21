@@ -4,12 +4,13 @@ import exposed
 import torch
 
 import environment as env
-import model as m
+import model as md
+import agent as ag
 
 
 @hydra.main(config_path="config", config_name="default.yaml", version_base=None)
 def main(config):
-    model = m.MoveEvaluator()
+    model = md.Linear_QNet(12, 64, 1)
     
     def evaluate_move(board: chesspy.Board, move: chesspy.Move):
         start_row = move.origin.row
@@ -36,16 +37,44 @@ def main(config):
 
     exposed.set_func(evaluate_move)
     
-    for board in env.GameProvider(config.data_path):
-        engine = chesspy.SearchEngine(chesspy.MoveOrderingType.TRAINING, True)
-        for result in env.GameManager(
-            board,
-            engine,
-            config.max_game_length,
-            config.max_depth,
-            config.max_move_time,
-        ):
-            print(board.fen, result.node_count)
+    trainer = md.QTrainer(
+        model,
+        config.lr,
+        config.gamma
+    )
+    
+    agent = ag.Agent(
+        config.lr,
+        config.max_memory
+    )
+
+    while True:
+        try:
+            for board in env.GameProvider(config.data_path):
+                engine = chesspy.SearchEngine(
+                    chesspy.MoveOrderingType.TRAINING,
+                    chesspy.SearchParams(
+                        use_null_move_pruning=True,
+                        use_killer_moves=True,
+                        use_hashed_positions=True,
+                        use_hashed_moves=True,
+                        use_quiescence=True,
+                        use_check_extension=True,
+                        use_MVVLVA=True,
+                    )
+                )
+
+                for result in env.GameManager(
+                    board,
+                    engine,
+                    config.max_game_length,
+                    config.max_depth,
+                    config.max_move_time,
+                ):
+                    
+                    agent.remember(board.hash, result.node_count[-1])        
+        except KeyboardInterrupt:
+            break
 
 
 if __name__ == "__main__":

@@ -28,17 +28,27 @@
 # def evaluate_move(board, move):
     # return 1
 
-
 import chesspy
-# import exposed
 
-# exposed.set_func(evaluate_move)
+board = chesspy.Board(
+    "1k1r2nr/p1p1b2p/Bpnp2p1/4qp2/1P3PP1/PQP1P1PN/1B1PN3/1K1R3R b - - 0 1"
+)
 
-board = chesspy.Board("rnbqkbnr/pp2pppp/8/3p4/3N4/8/PPP1PPPP/RNBQKB1R w KQkq - 0 4")
+se = chesspy.SearchEngine(
+    chesspy.MoveOrderingType.HANDCRAFTED,
+    chesspy.SearchParams(
+        use_null_move_pruning=False,
+        use_killer_moves=True,
+        use_hashed_positions=True,
+        use_hashed_moves=True,
+        use_quiescence=True,
+        use_check_extension=True,
+        use_MVVLVA=True,
+    ),
+)
 
-se = chesspy.SearchEngine(0)
-
-result = se.root(board, 99, 1000)
+result = se.root(board, 99, 2000)
 
 print(result.best_move)
 print(result.reached_depth)
+print(result.node_count)
