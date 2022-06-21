@@ -1,5 +1,11 @@
 <template>
-    <div :class="`piece ${pieceType}`" :style="style" @mousedown="clip()" @mouseup="unclip()" />
+    <div 
+        :class="`piece ${pieceType} ${this.isClipped ? 'dragging' : ''}`"
+        :style="style" 
+        @mousedown="clip()"
+        @mouseup="unclip()"
+        ref="piece" 
+        draggable="false" />
 </template>
 
 <script>
@@ -12,9 +18,9 @@ export default {
             type: Number,
             required: true
         },
-        mousePosition: {
-            type: Number,
-            required: false
+        position: {
+            type: Object,
+            required: true
         }
     },
     data() {
@@ -24,14 +30,35 @@ export default {
         }
     },
     computed: {
+        x() {
+            if (this.boardRect) {
+                if (this.isClipped) {
+                    return this.mousePosition.x - (this.boardRect.width / 16)
+                }
+                return this.position.x * (this.boardRect.width / 8)
+            }
+            return 0
+        },
+        y() {
+            if (this.boardRect) {
+                if (this.isClipped) {
+                    return this.mousePosition.y - (this.boardRect.height / 16)
+                }
+                return this.position.y * (this.boardRect.width / 8)
+            }
+            return 0
+        },
         style() {
             return {
-                transform: `translate(${100}%, ${100}%)`
+                transform: `translate(${this.x}px, ${this.y}px)`
             }
         },
-        ...mapState(['clipped'])
+        ...mapState(['clipped', 'mousePosition', 'boardRect'])
     },
     methods: {
+        getBoundingClientRect() {
+            return this.$refs?.piece?.getBoundingClientRect()
+        },
         clip() {
             if (!this.clipped && !this.isClipped) {
                 this.isClipped = true
@@ -45,7 +72,7 @@ export default {
                 this.setClipped(null)
             }
         },
-        ...mapMutations({ setClipped: 'set' })
+        ...mapMutations({ setClipped: 'setClipped' })
     }
 }
 </script>
