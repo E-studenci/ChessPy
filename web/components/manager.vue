@@ -24,6 +24,7 @@
 
 <script>
 import { mapState } from "vuex";
+import { useSound } from "@vueuse/sound";
 
 export default {
     name: "IndexPage",
@@ -47,17 +48,16 @@ export default {
         ...mapState(["board"]),
     },
     mounted() {
-        this.socket = this.$nuxtSocket({
-            // nuxt-socket-io opts:
-            name: "main", // Use socket "home"
-            channel: "/", // connect to '/index'
-            // socket.io-client opts:
-            reconnection: false,
-        });
-
-        this.socket.on("connect", () => {
-            console.log("Connected");
-        });
+        // this.socket = this.$nuxtSocket({
+        //     // nuxt-socket-io opts:
+        //     name: "main", // Use socket "home"
+        //     channel: "/", // connect to '/index'
+        //     // socket.io-client opts:
+        //     reconnection: false,
+        // });
+        // this.socket.on("connect", () => {
+        //     console.log("Connected");
+        // });
         // this.socket.on("find_game", (msg, cb) => {
         //   console.log(msg);
         //   console.log(cb);

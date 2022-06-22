@@ -39,6 +39,7 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
+    'nuxt-use-sound'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -56,6 +57,27 @@ export default {
       name: 'main',
       url: 'http://localhost:5000'
     }]
+  },
+
+  sound: {
+    capture: {
+      src: "/sounds/capture.mp3",
+      options: {
+        volume: 1
+      }
+    },
+    move: {
+      src: "/sounds/move.mp3",
+      options: {
+        volume: 1
+      }
+    },
+    music: {
+      src: "/sounds/music1.mp3",
+      options: {
+        volume: 1
+      }
+    },
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
