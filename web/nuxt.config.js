@@ -72,8 +72,20 @@ export default {
         volume: 1
       }
     },
-    music: {
+    jesica: {
       src: "/sounds/music1.mp3",
+      options: {
+        volume: 1
+      }
+    },
+    friend: {
+      src: "/sounds/music2.mp3",
+      options: {
+        volume: 1
+      }
+    },
+    countries: {
+      src: "/sounds/music4.mp3",
       options: {
         volume: 1
       }

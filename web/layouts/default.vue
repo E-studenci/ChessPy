@@ -30,8 +30,8 @@ export default {
                     to: "/game",
                 },
                 {
-                    title: "Ranking",
-                    to: "/ranking",
+                    title: "History",
+                    to: "/history",
                 },
                 {
                     title: "Settings",
