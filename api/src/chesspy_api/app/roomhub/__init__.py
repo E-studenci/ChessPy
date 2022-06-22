@@ -49,11 +49,23 @@ def move_to_dict(move):
 def coordinates_to_dict(coordinates):
     return "row" + str(coordinates.row) + "column" + str(coordinates.column)
 
+engine = chesspy.SearchEngine(
+    chesspy.MoveOrderingType.HANDCRAFTED,
+    chesspy.SearchParams(
+        use_null_move_pruning=False,
+        use_killer_moves=True,
+        use_hashed_positions=True,
+        use_hashed_moves=True,
+        use_quiescence=True,
+        use_check_extension=True,
+        use_MVVLVA=True,
+    ),
+)
+
 
 def bot_make_move(board, room_id):
     from chesspy_api import ROOM_HUB
 
-    engine = chesspy.SearchEngine(0)
     result = engine.root(board, 99, 1000)
     best_move = result.best_move
     ROOM_HUB.make_move(True, {"room_id": room_id, "move": move_to_dict(best_move)})
