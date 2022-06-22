@@ -7,8 +7,18 @@ from chesspy_api import APP
 
 anal_route = "/analysis"
 
-alg = chesspy.SearchEngine(0)
-
+alg = chesspy.SearchEngine(
+    chesspy.MoveOrderingType.HANDCRAFTED,
+    chesspy.SearchParams(
+        use_null_move_pruning=False,
+        use_killer_moves=True,
+        use_hashed_positions=True,
+        use_hashed_moves=True,
+        use_quiescence=True,
+        use_check_extension=True,
+        use_MVVLVA=True,
+    ),
+)
 
 @APP.route(f"{anal_route}", methods=["GET"])
 @rp.response_wrapper()
